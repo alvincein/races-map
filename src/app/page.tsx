@@ -1,66 +1,50 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { supabase } from '@/lib/supabase';
+import HomeClient from '@/components/HomeClient';
+import { Race } from '@/types/database';
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+// Opt out of caching if we want real-time updates, or revalidate every hour
+export const revalidate = 3600; 
+
+export default async function Home() {
+  let races: Race[] = [];
+
+  try {
+    // We only fetch races that have coordinates AND have at least one sub-race
+    const { data, error } = await supabase
+      .from('races')
+      .select('*, sub_races!inner(id)')
+      .not('location_lat', 'is', null)
+      .not('location_lng', 'is', null)
+      .limit(1000); 
+    
+    if (error) {
+      console.error('Error fetching races:', error);
+    } else if (data) {
+      // Deduplicate races (Supabase inner join might return multiple rows per race)
+      const uniqueRaces = Array.from(new Map(data.map(item => [item.id, item])).values());
+      races = uniqueRaces as unknown as Race[];
+    }
+  } catch (err) {
+    console.error('Supabase configuration missing or error occurred:', err);
+  }
+
+  // Fallback data if Supabase connection fails or is not yet configured
+  if (races.length === 0) {
+    races = [
+      {
+        id: "89812f61-0666-48ce-a08a-2af4d72df863",
+        event_name: "Half Marathon Mykonos 21km",
+        description: "Το EVOLUTION TRAINING CLUB, προκηρύσσει τον αγώνα HALF MARATHON...",
+        dates: ["2026-04-19"],
+        max_distance: 21000,
+        event_type: "Road",
+        location_place: "Φάρος Αρμενιστής",
+        location_lat: 37.4850517,
+        location_lng: 25.3171581,
+        created_at: "2026-03-28",
+      } as unknown as Race
+    ];
+  }
+
+  return <HomeClient initialRaces={races} />;
 }

@@ -1,0 +1,193 @@
+/* =========================================
+   Elevation Widget — Bottom Analysis Panel
+   ========================================= */
+
+.elevation-widget {
+  position: absolute;
+  bottom: 24px;
+  left: 420px;
+  right: 24px;
+  z-index: 1100;
+  padding: 20px;
+  border-radius: 16px;
+  animation: widgetSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(13, 17, 23, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes widgetSlideUp {
+  from { transform: translateY(100%) scale(0.95); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.widget-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.widget-title .title-icon { color: var(--accent-primary); }
+
+.widget-stats {
+  display: flex;
+  gap: 20px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.w-stat {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.w-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.w-value {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+}
+
+.w-value.accent-green { color: #10b981; }
+.w-value.accent-red { color: #ef4444; }
+
+.close-widget {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: white;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.close-widget:hover { background: rgba(255, 255, 255, 0.15); }
+
+.widget-content {
+  position: relative;
+}
+
+.hover-indicator {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-primary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.h-stat span { opacity: 0.8; }
+
+.desktop-only { display: flex; }
+
+/* =========================================
+   Mobile — Full-width bottom bar
+   ========================================= */
+@media (max-width: 768px) {
+  .elevation-widget {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 16px 16px 0 0;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    z-index: 1100;
+  }
+
+  .widget-header {
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+
+  .widget-title {
+    font-size: 13px;
+  }
+
+  .widget-title .title-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .widget-stats {
+    gap: 12px;
+  }
+
+  .w-label {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+  }
+
+  .w-value {
+    font-size: 13px;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .close-widget {
+    padding: 8px;
+    min-width: 34px;
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hover-indicator {
+    font-size: 10px;
+    padding: 3px 10px;
+    gap: 8px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 380px) {
+  .elevation-widget {
+    padding: 10px 12px;
+  }
+
+  .widget-title span {
+    display: none;
+  }
+
+  .widget-stats {
+    gap: 10px;
+  }
+
+  .w-value {
+    font-size: 12px;
+  }
+}

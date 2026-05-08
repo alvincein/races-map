@@ -1,0 +1,96 @@
+/* =========================================
+   Elevation Profile Chart
+   ========================================= */
+
+.elevation-chart-container {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  touch-action: none; /* Prevent scroll while dragging on chart */
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ele-tag {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 600;
+}
+
+.ele-bounds {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.8);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.ele-line {
+  width: 20px;
+  height: 1px;
+  background: rgba(255,255,255,0.2);
+}
+
+.elevation-svg {
+  width: 100%;
+  height: 80px;
+  overflow: visible;
+  cursor: crosshair;
+}
+
+.chart-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* =========================================
+   Mobile
+   ========================================= */
+@media (max-width: 768px) {
+  .elevation-chart-container {
+    padding: 10px 12px;
+    margin-top: 8px;
+    border-radius: 10px;
+  }
+
+  .chart-header {
+    margin-bottom: 8px;
+  }
+
+  .ele-tag {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .ele-bounds {
+    font-size: 10px;
+    gap: 6px;
+  }
+
+  .ele-line {
+    width: 14px;
+  }
+
+  .elevation-svg {
+    height: 60px;
+  }
+
+  .chart-footer {
+    margin-top: 6px;
+    font-size: 9px;
+  }
+}
