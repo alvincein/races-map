@@ -14,8 +14,20 @@ import {
   Icon
 } from 'lucide-react';
 import { sneaker } from '@lucide/lab';
+import type { RouteIndex } from '../types/routes';
 import { WeatherWidget } from './WeatherWidget';
 import './Sidebar.css';
+
+function getSubRaceName(s: SubRace): string {
+  if (s.name) return s.name;
+  const cat = s.category?.toLowerCase();
+  if (cat === 'marathon') return 'Μαραθώνιος';
+  if (cat === 'half-marathon') return 'Ημιμαραθώνιος';
+  if (cat === 'ultra-marathon') return 'Ultra';
+  if (cat === 'kids-run') return 'Παιδικός Αγώνας';
+  if (s.distance) return `${s.distance / 1000}km`;
+  return s.category || 'Αγώνας';
+}
 
 // Memoized Race Card for performance
 const RaceCard = React.memo(({ race, isSelected, onClick }: {
@@ -61,7 +73,7 @@ interface SidebarProps {
   onBack: () => void;
   isMinimized?: boolean;
   onMinimize?: () => void;
-  fetchedRoutes: Record<string, any>;
+  fetchedRoutes: RouteIndex;
 }
 
 export default function Sidebar({
@@ -225,17 +237,6 @@ export default function Sidebar({
                   const hasRoute = !!routeData;
                   const isSelected = selectedSubRaceId === sub.id;
 
-                  const getSubRaceName = (s: any) => {
-                    if (s.name) return s.name;
-                    const cat = s.category?.toLowerCase();
-                    if (cat === 'marathon') return "Μαραθώνιος";
-                    if (cat === 'half-marathon') return "Ημιμαραθώνιος";
-                    if (cat === 'ultra-marathon') return "Ultra";
-                    if (cat === 'kids-run') return "Παιδικός Αγώνας";
-                    if (s.distance) return `${s.distance / 1000}km`;
-                    return s.category || 'Αγώνας';
-                  };
-
                   return (
                     <div
                       key={sub.id}
@@ -265,7 +266,7 @@ export default function Sidebar({
                         <div className="stat-box highlight">
                           <span className="stat-label">Απόστ.</span>
                           <span className="stat-value">
-                            {sub.distance ? `${sub.distance / 1000}km` : (routeData ? `${(routeData.stats.distance / 1000).toFixed(1)}km` : '?')}
+                            {sub.distance ? `${sub.distance / 1000}km` : (routeData ? `${(routeData.distance / 1000).toFixed(1)}km` : '?')}
                           </span>
                         </div>
                         {(sub.elevation !== null && sub.elevation !== undefined) || routeData ? (

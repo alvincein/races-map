@@ -1,17 +1,12 @@
 import React, { useMemo, useRef, useCallback } from 'react';
+import type { RoutePoint } from '../types/routes';
 import './ElevationProfile.css';
 
-interface Point {
-  d: number; // distance
-  e: number; // elevation
-  c?: [number, number]; // coords
-}
-
 interface ElevationProfileProps {
-  data: Point[];
+  data: RoutePoint[];
   color?: string;
-  onHover?: (point: Point | null) => void;
-  hoveredPoint?: Point | null;
+  onHover?: (point: RoutePoint | null) => void;
+  hoveredPoint?: RoutePoint | null;
 }
 
 export const ElevationProfile: React.FC<ElevationProfileProps> = ({ 

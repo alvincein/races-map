@@ -5,8 +5,27 @@ import Map, { Marker, NavigationControl, Source, Layer } from 'react-map-gl/mapl
 import { Layers, Mountain, Calendar, MapPin, Maximize2, ChevronRight, Icon, Play, Flag, Navigation } from 'lucide-react';
 import { sneaker } from '@lucide/lab';
 import useSupercluster from 'use-supercluster';
-import { Race } from '../types/database';
+import type Supercluster from 'supercluster';
+import type { StyleSpecification } from 'maplibre-gl';
+import type { MapRef } from 'react-map-gl/maplibre';
+import { Race, SubRace } from '../types/database';
+import type { RouteData, RouteIndex } from '../types/routes';
 import 'maplibre-gl/dist/maplibre-gl.css';
+
+interface HoverPoint {
+  d: number;
+  e: number;
+  c?: [number, number];
+}
+
+interface RacePointProps {
+  cluster: false;
+  raceId: string;
+  race: Race;
+}
+
+type ClusterFeature = Supercluster.ClusterFeature<Supercluster.AnyProps>;
+type RacePointFeature = Supercluster.PointFeature<RacePointProps>;
 
 const ROUTE_COLORS = [
   '#FFE800', // Primary Yellow
@@ -23,74 +42,63 @@ interface MapClientProps {
   races: Race[];
   selectedRace: Race | null;
   selectedSubRaceId: string | null;
-  subRaces: any[];
+  subRaces: SubRace[];
   onRaceSelect: (race: Race) => void;
   onClusterClick: (races: Race[]) => void;
   onVisibleRacesChange: (races: Race[]) => void;
   onDeselect: () => void;
-  hoveredPoint: any | null;
-  fetchedRoutes: Record<string, any>;
+  hoveredPoint: HoverPoint | null;
+  fetchedRoutes: RouteIndex;
 }
 
-// Available map styles
-const MAP_STYLES: any[] = [
+interface MapStyle {
+  id: string;
+  label: string;
+  value: string | StyleSpecification;
+}
+
+function rasterStyle(
+  sourceId: string,
+  tilesUrl: string,
+  attribution?: string,
+): StyleSpecification {
+  return {
+    version: 8,
+    sources: {
+      [sourceId]: {
+        type: 'raster',
+        tiles: [tilesUrl],
+        tileSize: 256,
+        ...(attribution ? { attribution } : {}),
+      },
+    },
+    layers: [{ id: `${sourceId}-layer`, type: 'raster', source: sourceId }],
+  };
+}
+
+const ESRI_ATTRIBUTION = 'Tiles &copy; Esri';
+const ESRI_TOPO_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}';
+const ESRI_SAT_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const ESRI_LABELS_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
+
+const HYBRID_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    'esri-satellite': { type: 'raster', tiles: [ESRI_SAT_URL], tileSize: 256 },
+    'esri-labels': { type: 'raster', tiles: [ESRI_LABELS_URL], tileSize: 256 },
+  },
+  layers: [
+    { id: 'satellite-layer', type: 'raster', source: 'esri-satellite' },
+    { id: 'labels-layer', type: 'raster', source: 'esri-labels' },
+  ],
+};
+
+const MAP_STYLES: MapStyle[] = [
   { id: 'dark', label: 'Σκούρο', value: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' },
   { id: 'voyager', label: 'Χάρτης', value: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json' },
-  { 
-    id: 'terrain', 
-    label: 'Τοπογραφικός', 
-    value: {
-      version: 8,
-      sources: {
-        'esri-topo': {
-          type: 'raster',
-          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],
-          tileSize: 256,
-          attribution: 'Tiles &copy; Esri'
-        }
-      },
-      layers: [{ id: 'topo-layer', type: 'raster', source: 'esri-topo' }]
-    }
-  },
-  { 
-    id: 'satellite',
-    label: 'Δορυφόρος', 
-    value: {
-      version: 8,
-      sources: {
-        'esri-satellite': {
-          type: 'raster',
-          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-          tileSize: 256,
-          attribution: 'Tiles &copy; Esri'
-        }
-      },
-      layers: [{ id: 'satellite-layer', type: 'raster', source: 'esri-satellite' }]
-    }
-  },
-  { 
-    id: 'hybrid',
-    label: 'Υβριδικός', 
-    value: {
-      version: 8,
-      sources: {
-        'esri-satellite': {
-          type: 'raster',
-          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-          tileSize: 256
-        },
-        'esri-labels': {
-          type: 'raster',
-          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'],
-          tileSize: 256
-        }
-      },
-      layers: [
-        { id: 'satellite-layer', type: 'raster', source: 'esri-satellite' },
-        { id: 'labels-layer', type: 'raster', source: 'esri-labels' }
-      ]
-    }
-  }
+  { id: 'terrain', label: 'Τοπογραφικός', value: rasterStyle('esri-topo', ESRI_TOPO_URL, ESRI_ATTRIBUTION) },
+  { id: 'satellite', label: 'Δορυφόρος', value: rasterStyle('esri-satellite', ESRI_SAT_URL, ESRI_ATTRIBUTION) },
+  { id: 'hybrid', label: 'Υβριδικός', value: HYBRID_STYLE },
 ];
 
 // Memoized Single Race Marker
@@ -148,39 +156,39 @@ const RaceMarker = React.memo(({ race, isSelected, onClick, offset, lng: propLng
 });
 
 // Memoized Cluster Marker
-const ClusterMarker = React.memo(({ 
-  cluster, 
-  supercluster, 
-  viewStateZoom, 
-  onZoom, 
+const ClusterMarker = React.memo(({
+  cluster,
+  supercluster,
+  viewStateZoom,
+  onZoom,
   onSpiderfy,
   onRaceClick
-}: { 
-  cluster: any, 
-  supercluster: any, 
-  viewStateZoom: number, 
+}: {
+  cluster: ClusterFeature,
+  supercluster: Supercluster<RacePointProps> | null,
+  viewStateZoom: number,
   onZoom: (lng: number, lat: number, zoom: number) => void,
   onSpiderfy: (id: number, races: Race[], lng: number, lat: number) => void,
   onRaceClick: (race: Race, lng: number, lat: number) => void
 }) => {
   const [longitude, latitude] = cluster.geometry.coordinates;
   const { point_count: pointCount, cluster_id: clusterId } = cluster.properties;
-  
+
   // Only fetch leaves on hover for performance
-  const [hoveredLeaves, setHoveredLeaves] = useState<any[]>([]);
+  const [hoveredLeaves, setHoveredLeaves] = useState<RacePointFeature[]>([]);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     if (supercluster && hoveredLeaves.length === 0) {
-      setHoveredLeaves(supercluster.getLeaves(clusterId, 10));
+      setHoveredLeaves(supercluster.getLeaves(clusterId, 10) as RacePointFeature[]);
     }
   };
 
   const handleMouseLeave = () => {
     hoverTimeoutRef.current = setTimeout(() => {
       setHoveredLeaves([]);
-    }, 150); // 150ms buffer to reach the list
+    }, 150);
   };
 
   return (
@@ -199,10 +207,10 @@ const ClusterMarker = React.memo(({
           onClick={(e) => {
             e.stopPropagation();
             const expansionZoom = supercluster?.getClusterExpansionZoom(clusterId) ?? 20;
-            
+
             if (expansionZoom > 18 || expansionZoom <= viewStateZoom) {
-              const allLeaves = supercluster?.getLeaves(clusterId, Infinity) || [];
-              const clusterRaces = allLeaves.map((leaf: any) => leaf.properties.race);
+              const allLeaves = (supercluster?.getLeaves(clusterId, Infinity) ?? []) as RacePointFeature[];
+              const clusterRaces = allLeaves.map(leaf => leaf.properties.race);
               onSpiderfy(clusterId, clusterRaces, longitude, latitude);
             } else {
               onZoom(longitude, latitude, Math.min(expansionZoom, 18));
@@ -216,7 +224,7 @@ const ClusterMarker = React.memo(({
           <div className="cluster-hover-list glass-panel animation-slide-up">
             <div className="cluster-hover-title">Αγώνες στην περιοχή</div>
             <div className="hover-list-scroll" onWheel={(e) => e.stopPropagation()}>
-              {hoveredLeaves.map((leaf: any) => {
+              {hoveredLeaves.map(leaf => {
                 const r = leaf.properties.race;
                 return (
                   <div 
@@ -270,7 +278,7 @@ export default function MapClient({
   hoveredPoint,
   fetchedRoutes
 }: MapClientProps) {
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
   const [showStyleMenu, setShowStyleMenu] = useState(false);
   const [spiderfiedCluster, setSpiderfiedCluster] = useState<{ 
@@ -311,24 +319,23 @@ export default function MapClient({
 
   const [bounds, setBounds] = useState<[number, number, number, number] | undefined>(undefined);
 
-  const points = useMemo(() => {
+  const points = useMemo<RacePointFeature[]>(() => {
     return races
-      .filter(r => r.location_lat && r.location_lng)
+      .filter((r): r is Race & { location_lat: number; location_lng: number } =>
+        r.location_lat != null && r.location_lng != null,
+      )
       .map(race => ({
-        type: 'Feature' as const,
+        type: 'Feature',
         properties: { cluster: false, raceId: race.id, race },
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [race.location_lng!, race.location_lat!]
-        }
+        geometry: { type: 'Point', coordinates: [race.location_lng, race.location_lat] },
       }));
   }, [races]);
 
-  const { clusters, supercluster } = useSupercluster({
+  const { clusters, supercluster } = useSupercluster<RacePointProps>({
     points,
     bounds,
     zoom: Math.floor(viewState.zoom),
-    options: { radius: 50, maxZoom: 20 }
+    options: { radius: 50, maxZoom: 20 },
   });
 
   const updateBounds = useCallback(() => {
@@ -459,39 +466,32 @@ export default function MapClient({
   }, [selectedRace]);
 
 
-  const routesToShow = useMemo(() => {
+  const routesToShow = useMemo<(RouteData & { isFocused: boolean })[]>(() => {
     if (!selectedRace || !subRaces.length) return [];
-    
-    // Find all sub-races of the selected race that have a route
-    const routes = subRaces
+    return subRaces
       .filter(sub => fetchedRoutes[sub.id])
-      .map(sub => {
-        const routeData = fetchedRoutes[sub.id];
-        return {
-          ...routeData,
-          isFocused: selectedSubRaceId === sub.id
-        };
-      });
-
-    return routes;
+      .map(sub => ({
+        ...fetchedRoutes[sub.id],
+        isFocused: selectedSubRaceId === sub.id,
+      }));
   }, [selectedRace, selectedSubRaceId, subRaces, fetchedRoutes]);
 
   // Handle focusing on a specific sub-race route
   useEffect(() => {
-    if (selectedSubRaceId && mapRef.current) {
-      const focusedRoute = routesToShow.find((r: any) => r.isFocused);
-      if (focusedRoute) {
-        const coords = focusedRoute.geojson.geometry.coordinates;
-        const bounds = coords.reduce((acc: any, coord: any) => {
-          return [
-            [Math.min(acc[0][0], coord[0]), Math.min(acc[0][1], coord[1])],
-            [Math.max(acc[1][0], coord[0]), Math.max(acc[1][1], coord[1])]
-          ];
-        }, [[coords[0][0], coords[0][1]], [coords[0][0], coords[0][1]]]);
-        
-        mapRef.current?.fitBounds(bounds, { padding: 100, duration: 1500 });
-      }
+    if (!selectedSubRaceId || !mapRef.current) return;
+    const focusedRoute = routesToShow.find(r => r.isFocused);
+    if (!focusedRoute) return;
+
+    const coords = focusedRoute.geojson.geometry.coordinates as [number, number][];
+    if (coords.length === 0) return;
+    let minLng = coords[0][0], minLat = coords[0][1], maxLng = coords[0][0], maxLat = coords[0][1];
+    for (const [lng, lat] of coords) {
+      if (lng < minLng) minLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lng > maxLng) maxLng = lng;
+      if (lat > maxLat) maxLat = lat;
     }
+    mapRef.current.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 100, duration: 1500 });
   }, [selectedSubRaceId, routesToShow]);
 
   return (
@@ -515,17 +515,16 @@ export default function MapClient({
       >
         <NavigationControl position="bottom-right" />
 
-        {clusters.map(cluster => {
-          const isCluster = cluster.properties.cluster;
-          if (isCluster) {
+        {clusters.map(feature => {
+          if (feature.properties.cluster) {
+            const clusterFeature = feature as ClusterFeature;
             // Hide the actual cluster marker if it's currently spiderfied
-            if (spiderfiedCluster && spiderfiedCluster.id === cluster.id) return null;
-            
+            if (spiderfiedCluster && spiderfiedCluster.id === clusterFeature.id) return null;
             return (
-              <ClusterMarker 
-                key={`cluster-${cluster.id}`}
-                cluster={cluster}
-                supercluster={supercluster}
+              <ClusterMarker
+                key={`cluster-${clusterFeature.id}`}
+                cluster={clusterFeature}
+                supercluster={supercluster ?? null}
                 viewStateZoom={viewState.zoom}
                 onZoom={handleClusterZoom}
                 onSpiderfy={handleSpiderfy}
@@ -533,15 +532,16 @@ export default function MapClient({
               />
             );
           }
-          
+
+          const racePoint = feature as RacePointFeature;
           // Skip if this is the selected race (rendered separately for consistency)
-          if (selectedRace && cluster.properties.raceId === selectedRace.id) return null;
+          if (selectedRace && racePoint.properties.raceId === selectedRace.id) return null;
 
           return (
-            <RaceMarker 
-              key={`race-${cluster.properties.raceId}`}
-              race={cluster.properties.race}
-              isSelected={false} // Selection handled by standalone marker
+            <RaceMarker
+              key={`race-${racePoint.properties.raceId}`}
+              race={racePoint.properties.race}
+              isSelected={false}
               onClick={handleRaceClick}
             />
           );
@@ -603,7 +603,7 @@ export default function MapClient({
         })}
 
         {/* Render Routes for Selected Race */}
-        {routesToShow.map((route: any, index: number) => {
+        {routesToShow.map((route, index) => {
           const color = ROUTE_COLORS[index % ROUTE_COLORS.length];
           const isFocused = route.isFocused;
           const hasSelection = !!selectedSubRaceId;

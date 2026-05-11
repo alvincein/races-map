@@ -1,30 +1,16 @@
 import React from 'react';
 import { ElevationProfile } from './ElevationProfile';
 import { Route, X } from 'lucide-react';
+import type { RouteData, RoutePoint } from '../types/routes';
+import type { SubRace } from '../types/database';
 import './ElevationWidget.css';
 
-interface Point {
-  d: number;
-  e: number;
-}
-
 interface ElevationWidgetProps {
-  routeData: {
-    stats: {
-      distance: number;
-      gain: number;
-      loss: number;
-      max_ele: number;
-      min_ele: number;
-    };
-    profile: Point[];
-  };
-  officialStats?: {
-    distance: number | null;
-    elevation: number | null;
-  };
-  hoveredPoint: Point | null;
-  onHover: (point: Point | null) => void;
+  routeData: RouteData;
+  /** When the sub-race has its own official distance/elevation, prefer those over GPX-derived stats. */
+  officialStats: Pick<SubRace, 'distance' | 'elevation'> | null;
+  hoveredPoint: RoutePoint | null;
+  onHover: (point: RoutePoint | null) => void;
   onClose: () => void;
 }
 
@@ -35,11 +21,11 @@ export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
   onHover,
   onClose 
 }) => {
-  const displayDistance = officialStats?.distance 
+  const displayDistance = officialStats?.distance
     ? (officialStats.distance / 1000).toFixed(1) + 'km'
-    : (routeData.stats.distance / 1000).toFixed(1) + 'km';
-    
-  const displayGain = officialStats?.elevation !== undefined && officialStats?.elevation !== null
+    : (routeData.distance / 1000).toFixed(1) + 'km';
+
+  const displayGain = officialStats?.elevation != null
     ? '+' + Math.round(officialStats.elevation) + 'm'
     : '+' + Math.round(routeData.stats.gain) + 'm';
   return (
