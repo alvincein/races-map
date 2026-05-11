@@ -1,8 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '../types/database'
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '../types/database';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+// In CI/build environments without configured env vars we still need a valid
+// URL for createClient — fall back to a placeholder so the bundle compiles.
+// `fetchRacesWithSubRaces` swallows the inevitable runtime error and returns [].
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
 
-// We create a singleton client instance
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey)
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey);

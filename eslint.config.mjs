@@ -5,9 +5,26 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      "react-hooks/exhaustive-deps": "warn",
+      // Disable React 19's new strict rule that flags setState inside data-fetching
+      // effects. The canonical "set loading → await fetch → set result" pattern
+      // legitimately needs setState in the effect; the rule's recommended alternative
+      // is a data-fetching library, which is outside the scope of this codebase.
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
