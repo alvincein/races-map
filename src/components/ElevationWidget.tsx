@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React from 'react';
 import { ElevationProfile } from './ElevationProfile';
 import { Route, X } from 'lucide-react';
 import './ElevationWidget.css';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { SlidersHorizontal, X, Check, Calendar, MapPin, Trophy, Navigation } from 'lucide-react';
-import { FilterState } from './HomeClient';
+import { SlidersHorizontal, X, Calendar, MapPin, Trophy, Navigation } from 'lucide-react';
+import { FilterState, DEFAULT_FILTERS, DistanceBucket } from '../types/filters';
 import './FilterWidget.css';
 
 interface FilterWidgetProps {
@@ -16,7 +16,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
     'Ιούλ', 'Αύγ', 'Σεπ', 'Οκτ', 'Νοέ', 'Δεκ'
   ];
 
-  const distanceRanges = [
+  const distanceRanges: { id: DistanceBucket; label: string }[] = [
     { id: '5k', label: '5χλμ - 10χλμ' },
     { id: '10k', label: '10χλμ - 20χλμ' },
     { id: '21k', label: 'Ημιμαραθώνιος' },
@@ -40,7 +40,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
     { id: 'Voreio Aigaio', label: 'Βόρειο Αιγαίο' },
   ];
 
-  const toggleDistance = (id: string) => {
+  const toggleDistance = (id: DistanceBucket) => {
     const newDistances = filters.distanceRange.includes(id)
       ? filters.distanceRange.filter(d => d !== id)
       : [...filters.distanceRange, id];
@@ -226,15 +226,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
           <div className="panel-footer">
             <button
               className="clear-all-btn"
-              onClick={() => onChange({
-                type: 'all',
-                distanceRange: [],
-                months: [],
-                upcomingOnly: true,
-                dateRange: 'all',
-                regions: [],
-                hasGpxOnly: false
-              })}
+              onClick={() => onChange(DEFAULT_FILTERS)}
             >
               Επαναφορά
             </button>

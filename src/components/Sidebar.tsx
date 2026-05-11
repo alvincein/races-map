@@ -1,27 +1,19 @@
 "use client";
 
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Race, SubRace } from '../types/database';
-import { FilterState } from './HomeClient';
 import {
   Calendar,
   MapPin,
-  ChevronRight,
   Search,
   ArrowLeft,
   ExternalLink,
-  Trophy,
-  TrendingUp,
-  Euro,
   Navigation,
   Route,
-  ArrowUpRight,
-  Maximize2,
   Mountain,
   Icon
 } from 'lucide-react';
 import { sneaker } from '@lucide/lab';
-import { ElevationProfile } from './ElevationProfile';
 import { WeatherWidget } from './WeatherWidget';
 import './Sidebar.css';
 
