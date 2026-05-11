@@ -19,6 +19,10 @@ interface ElevationWidgetProps {
     };
     profile: Point[];
   };
+  officialStats?: {
+    distance: number | null;
+    elevation: number | null;
+  };
   hoveredPoint: Point | null;
   onHover: (point: Point | null) => void;
   onClose: () => void;
@@ -26,10 +30,18 @@ interface ElevationWidgetProps {
 
 export const ElevationWidget: React.FC<ElevationWidgetProps> = ({ 
   routeData, 
+  officialStats,
   hoveredPoint, 
   onHover,
   onClose 
 }) => {
+  const displayDistance = officialStats?.distance 
+    ? (officialStats.distance / 1000).toFixed(1) + 'km'
+    : (routeData.stats.distance / 1000).toFixed(1) + 'km';
+    
+  const displayGain = officialStats?.elevation !== undefined && officialStats?.elevation !== null
+    ? '+' + Math.round(officialStats.elevation) + 'm'
+    : '+' + Math.round(routeData.stats.gain) + 'm';
   return (
     <div className="elevation-widget">
       <div className="widget-header">
@@ -40,11 +52,11 @@ export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
         <div className="widget-stats">
           <div className="w-stat">
             <span className="w-label">Απόσταση</span>
-            <span className="w-value">{(routeData.stats.distance / 1000).toFixed(1)}km</span>
+            <span className="w-value">{displayDistance}</span>
           </div>
           <div className="w-stat">
             <span className="w-label">D+</span>
-            <span className="w-value accent-green">+{routeData.stats.gain}m</span>
+            <span className="w-value accent-green">{displayGain}</span>
           </div>
           <div className="w-stat">
             <span className="w-label">D-</span>
@@ -79,7 +91,7 @@ export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
             </div>
             <div className="h-stat">
               <span>Υψόμετρο: </span>
-              <strong>{hoveredPoint.e}m</strong>
+              <strong>{Math.round(hoveredPoint.e)}m</strong>
             </div>
           </div>
         )}

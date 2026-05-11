@@ -2,21 +2,21 @@
 
 import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import Map, { Marker, NavigationControl, Source, Layer } from 'react-map-gl/maplibre';
-import { Layers, Mountain, Footprints, Calendar, MapPin, Maximize2, ChevronRight } from 'lucide-react';
+import { Layers, Mountain, Calendar, MapPin, Maximize2, ChevronRight, Icon, Play, Flag, Navigation } from 'lucide-react';
+import { sneaker } from '@lucide/lab';
 import useSupercluster from 'use-supercluster';
 import { Race } from '../types/database';
-import raceRoutes from '../data/raceRoutes.json';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const ROUTE_COLORS = [
-  '#FF5733', // Primary Coral
-  '#FF8D33', // Orange
-  '#FFC300', // Gold
-  '#FFB133', // Amber
-  '#FF4433', // Deep Coral
-  '#FFCC33', // Yellow
-  '#FF7033', // Soft Orange
-  '#FF9933', // Warm Orange
+  '#FFE800', // Primary Yellow
+  '#00E5FF', // Cyan
+  '#FF3366', // Hot Pink
+  '#00FF66', // Lime Green
+  '#FF9900', // Bright Orange
+  '#B829FF', // Purple
+  '#3366FF', // Electric Blue
+  '#FF2A2A', // Bright Red
 ];
 
 interface MapClientProps {
@@ -29,13 +29,29 @@ interface MapClientProps {
   onVisibleRacesChange: (races: Race[]) => void;
   onDeselect: () => void;
   hoveredPoint: any | null;
+  fetchedRoutes: Record<string, any>;
 }
 
 // Available map styles
 const MAP_STYLES: any[] = [
   { id: 'dark', label: 'Σκούρο', value: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' },
-  { id: 'light', label: 'Φωτεινό', value: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json' },
   { id: 'voyager', label: 'Χάρτης', value: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json' },
+  { 
+    id: 'terrain', 
+    label: 'Τοπογραφικός', 
+    value: {
+      version: 8,
+      sources: {
+        'esri-topo': {
+          type: 'raster',
+          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],
+          tileSize: 256,
+          attribution: 'Tiles &copy; Esri'
+        }
+      },
+      layers: [{ id: 'topo-layer', type: 'raster', source: 'esri-topo' }]
+    }
+  },
   { 
     id: 'satellite',
     label: 'Δορυφόρος', 
@@ -44,21 +60,34 @@ const MAP_STYLES: any[] = [
       sources: {
         'esri-satellite': {
           type: 'raster',
-          tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-          ],
+          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
           tileSize: 256,
           attribution: 'Tiles &copy; Esri'
         }
       },
-      layers: [
-        {
-          id: 'satellite-layer',
+      layers: [{ id: 'satellite-layer', type: 'raster', source: 'esri-satellite' }]
+    }
+  },
+  { 
+    id: 'hybrid',
+    label: 'Υβριδικός', 
+    value: {
+      version: 8,
+      sources: {
+        'esri-satellite': {
           type: 'raster',
-          source: 'esri-satellite',
-          minzoom: 0,
-          maxzoom: 19
+          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+          tileSize: 256
+        },
+        'esri-labels': {
+          type: 'raster',
+          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'],
+          tileSize: 256
         }
+      },
+      layers: [
+        { id: 'satellite-layer', type: 'raster', source: 'esri-satellite' },
+        { id: 'labels-layer', type: 'raster', source: 'esri-labels' }
       ]
     }
   }
@@ -91,7 +120,7 @@ const RaceMarker = React.memo(({ race, isSelected, onClick, offset, lng: propLng
     >
       <div className={`marker-container ${isSelected ? 'selected' : ''}`}>
         <div className={`marker-pin ${isTrail ? 'marker-trail' : 'marker-road'}`}>
-          {isTrail ? <Mountain size={16} /> : <Footprints size={16} />}
+          {isTrail ? <Mountain size={16} /> : <Icon iconNode={sneaker} size={16} />}
         </div>
         <div className="marker-label">
           <div className="label-header">
@@ -238,7 +267,8 @@ export default function MapClient({
   onClusterClick,
   onVisibleRacesChange,
   onDeselect,
-  hoveredPoint
+  hoveredPoint,
+  fetchedRoutes
 }: MapClientProps) {
   const mapRef = useRef<any>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
@@ -249,11 +279,20 @@ export default function MapClient({
     lng: number; 
     lat: number; 
   } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const locatingRef = useRef(false);
+  const userLocationRef = useRef<{ lng: number; lat: number } | null>(null);
+  const selectedRaceRef = useRef<Race | null>(null);
+
+  useEffect(() => {
+    selectedRaceRef.current = selectedRace;
+  }, [selectedRace]);
   
   const INITIAL_VIEW_STATE = {
     longitude: 23.7275,
     latitude: 37.9838,
-    zoom: 5.5,
+    zoom: 5.2,
     pitch: 30,
     bearing: 0
   };
@@ -263,7 +302,7 @@ export default function MapClient({
   const resetView = useCallback(() => {
     mapRef.current?.getMap().flyTo({
       center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
-      zoom: INITIAL_VIEW_STATE.zoom,
+      zoom: 5.2, // Slightly more zoomed out for whole Greece
       pitch: INITIAL_VIEW_STATE.pitch,
       bearing: INITIAL_VIEW_STATE.bearing,
       duration: 1500
@@ -274,7 +313,7 @@ export default function MapClient({
 
   const points = useMemo(() => {
     return races
-      .filter(r => r.location_lat && r.location_lng && r.id !== selectedRace?.id)
+      .filter(r => r.location_lat && r.location_lng)
       .map(race => ({
         type: 'Feature' as const,
         properties: { cluster: false, raceId: race.id, race },
@@ -283,7 +322,7 @@ export default function MapClient({
           coordinates: [race.location_lng!, race.location_lat!]
         }
       }));
-  }, [races, selectedRace?.id]);
+  }, [races]);
 
   const { clusters, supercluster } = useSupercluster({
     points,
@@ -339,14 +378,95 @@ export default function MapClient({
     });
   }, [onRaceSelect]);
 
+
+  const handleLocate = useCallback(() => {
+    if (locatingRef.current) return;
+
+    if (typeof window !== 'undefined' && !window.isSecureContext) {
+      alert('Η γεωτοποθεσία απαιτεί ασφαλή σύνδεση (HTTPS ή localhost). Παρακαλώ ελέγξτε τη διεύθυνση URL.');
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      alert('Η γεωτοποθεσία δεν υποστηρίζεται από τον περιηγητή σας.');
+      return;
+    }
+
+    // If we already have location, fly there and stop
+    if (userLocationRef.current) {
+      mapRef.current?.flyTo({
+        center: [userLocationRef.current.lng, userLocationRef.current.lat],
+        zoom: 12,
+        pitch: 45,
+        duration: 1000
+      });
+      return;
+    }
+
+    locatingRef.current = true;
+    setIsLocating(true);
+    const startTime = Date.now();
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { longitude, latitude } = position.coords;
+        const newLoc = { lng: longitude, lat: latitude };
+        setUserLocation(newLoc);
+        userLocationRef.current = newLoc;
+        setIsLocating(false);
+        locatingRef.current = false;
+        
+        mapRef.current?.flyTo({
+          center: [longitude, latitude],
+          zoom: 12,
+          pitch: 45,
+          duration: 1500
+        });
+      },
+      (error) => {
+        setIsLocating(false);
+        locatingRef.current = false;
+        const duration = Date.now() - startTime;
+        
+        console.error('Geolocation error details:', {
+          code: error.code,
+          message: error.message,
+          duration,
+          isSecure: window.isSecureContext
+        });
+
+        // If the error happened almost instantly (< 250ms), it's an automatic browser block.
+        // In this case, we don't show the alert because the user never even saw a prompt.
+        if (duration < 250 && error.code === error.PERMISSION_DENIED) {
+          return;
+        }
+
+        // Extremely aggressive suppression of denial alerts.
+        // We check both the code and the message string to handle buggy extensions.
+        setTimeout(() => {
+          if (userLocationRef.current) return;
+
+          const isDenied = error.code === error.PERMISSION_DENIED || 
+                          (error.message && error.message.toLowerCase().includes('denied'));
+
+          if (!isDenied) {
+            alert(`Σφάλμα τοποθεσίας: ${error.message}`);
+          }
+        }, 2000);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }, [selectedRace]);
+
+
   const routesToShow = useMemo(() => {
     if (!selectedRace || !subRaces.length) return [];
     
     // Find all sub-races of the selected race that have a route
     const routes = subRaces
-      .filter(sub => (raceRoutes as any)[sub.id])
+      .filter(sub => fetchedRoutes[sub.id])
       .map(sub => {
-        const routeData = (raceRoutes as any)[sub.id];
+        const routeData = fetchedRoutes[sub.id];
         return {
           ...routeData,
           isFocused: selectedSubRaceId === sub.id
@@ -354,7 +474,7 @@ export default function MapClient({
       });
 
     return routes;
-  }, [selectedRace, selectedSubRaceId, subRaces]);
+  }, [selectedRace, selectedSubRaceId, subRaces, fetchedRoutes]);
 
   // Handle focusing on a specific sub-race route
   useEffect(() => {
@@ -375,7 +495,7 @@ export default function MapClient({
   }, [selectedSubRaceId, routesToShow]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+    <div className={`map-wrapper style-${currentStyle.id}`} style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <Map
         ref={mapRef}
         {...viewState}
@@ -398,6 +518,9 @@ export default function MapClient({
         {clusters.map(cluster => {
           const isCluster = cluster.properties.cluster;
           if (isCluster) {
+            // Hide the actual cluster marker if it's currently spiderfied
+            if (spiderfiedCluster && spiderfiedCluster.id === cluster.id) return null;
+            
             return (
               <ClusterMarker 
                 key={`cluster-${cluster.id}`}
@@ -410,18 +533,23 @@ export default function MapClient({
               />
             );
           }
+          
+          // Skip if this is the selected race (rendered separately for consistency)
+          if (selectedRace && cluster.properties.raceId === selectedRace.id) return null;
+
           return (
             <RaceMarker 
               key={`race-${cluster.properties.raceId}`}
               race={cluster.properties.race}
-              isSelected={selectedRace?.id === cluster.properties.raceId}
+              isSelected={false} // Selection handled by standalone marker
               onClick={handleRaceClick}
             />
           );
         })}
 
-        {/* Always render selected race marker outside clusters */}
-        {selectedRace && selectedRace.location_lng && selectedRace.location_lat && (
+        {/* Always render selected race marker outside clusters, unless it's in a spider view */}
+        {selectedRace && selectedRace.location_lng && selectedRace.location_lat && 
+         (!spiderfiedCluster || !spiderfiedCluster.races.some(r => r.id === selectedRace.id)) && (
           <RaceMarker 
             race={selectedRace}
             isSelected={true}
@@ -437,6 +565,8 @@ export default function MapClient({
             style={{ zIndex: 101, pointerEvents: 'none' }}
           >
             <svg width="400" height="400" viewBox="0 0 400 400" style={{ overflow: 'visible' }}>
+              {/* Center anchor for the spider */}
+              <circle cx="200" cy="200" r="5" fill="white" opacity="0.5" />
               {spiderfiedCluster.races.map((race, index) => {
                 const angle = (index / spiderfiedCluster.races.length) * Math.PI * 2;
                 const radius = 60 + (index * 2);
@@ -446,7 +576,7 @@ export default function MapClient({
                   <line 
                     key={`l-${race.id}`} 
                     x1="200" y1="200" x2={x} y2={y} 
-                    stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4 2" 
+                    stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeDasharray="4 2" 
                   />
                 );
               })}
@@ -479,33 +609,86 @@ export default function MapClient({
           const hasSelection = !!selectedSubRaceId;
 
           return (
-            <Source key={`route-${index}`} id={`route-${index}`} type="geojson" data={route.geojson}>
-              <Layer
-                id={`route-line-${index}`}
-                type="line"
-                layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-                paint={{
-                  'line-color': color,
-                  'line-width': isFocused ? 6 : 4,
-                  'line-opacity': isFocused ? 1 : (hasSelection ? 0.15 : 0.8)
-                }}
-              />
-              {isFocused && (
+            <React.Fragment key={`route-group-${index}`}>
+              <Source id={`route-${index}`} type="geojson" data={route.geojson}>
                 <Layer
-                  id={`route-glow-${index}`}
+                  id={`route-line-${index}`}
                   type="line"
                   layout={{ 'line-join': 'round', 'line-cap': 'round' }}
                   paint={{
                     'line-color': color,
-                    'line-width': 12,
-                    'line-opacity': 0.4,
-                    'line-blur': 8
+                    'line-width': isFocused ? 6 : 4,
+                    'line-opacity': isFocused ? 1 : (hasSelection ? 0.15 : 0.8)
                   }}
                 />
+                {isFocused && (
+                  <Layer
+                    id={`route-glow-${index}`}
+                    type="line"
+                    layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+                    paint={{
+                      'line-color': color,
+                      'line-width': 12,
+                      'line-opacity': 0.4,
+                      'line-blur': 8
+                    }}
+                  />
+                )}
+              </Source>
+
+              {/* Route Start/End Markers */}
+              {route.geojson?.geometry?.coordinates?.length > 1 && (
+                <>
+                  <Marker 
+                    longitude={route.geojson.geometry.coordinates[0][0]} 
+                    latitude={route.geojson.geometry.coordinates[0][1]} 
+                    anchor="center"
+                  >
+                    <div className="route-marker-container" style={{ 
+                      opacity: isFocused ? 1 : (hasSelection ? 0.15 : 0.7),
+                      transform: isFocused ? 'scale(1)' : 'scale(0.8)'
+                    }}>
+                      <div className="route-marker-pin route-marker-start">
+                        <Play size={14} fill="currentColor" />
+                      </div>
+                      <div className="route-marker-label">Εκκίνηση</div>
+                    </div>
+                  </Marker>
+
+                  <Marker 
+                    longitude={route.geojson.geometry.coordinates[route.geojson.geometry.coordinates.length - 1][0]} 
+                    latitude={route.geojson.geometry.coordinates[route.geojson.geometry.coordinates.length - 1][1]} 
+                    anchor="center"
+                  >
+                    <div className="route-marker-container" style={{ 
+                      opacity: isFocused ? 1 : (hasSelection ? 0.15 : 0.7),
+                      transform: isFocused ? 'scale(1)' : 'scale(0.8)'
+                    }}>
+                      <div className="route-marker-pin route-marker-end">
+                        <Flag size={14} fill="#FF3366" stroke="white" strokeWidth={1.5} />
+                      </div>
+                      <div className="route-marker-label">Τερματισμός</div>
+                    </div>
+                  </Marker>
+                </>
               )}
-            </Source>
+            </React.Fragment>
           );
         })}
+
+        {/* User Location Blue Dot */}
+        {userLocation && (
+          <Marker
+            longitude={userLocation.lng}
+            latitude={userLocation.lat}
+            anchor="center"
+          >
+            <div className="user-location-marker">
+              <div className="user-location-pulse"></div>
+              <div className="user-location-dot"></div>
+            </div>
+          </Marker>
+        )}
 
         {/* Hover Sync Marker */}
         {hoveredPoint && hoveredPoint.c && (
@@ -522,28 +705,54 @@ export default function MapClient({
         )}
       </Map>
 
-      <div className="glass-panel" style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, padding: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <button onClick={() => setShowStyleMenu(!showStyleMenu)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px' }}>
-          <Layers size={18} />
-        </button>
+      <div className="map-controls-top-right">
+        <div className="map-control-group">
+          <button 
+            className={`map-control-btn ${showStyleMenu ? 'active' : ''}`}
+            onClick={() => setShowStyleMenu(!showStyleMenu)}
+            title="Εναλλαγή Χάρτη"
+          >
+            <Layers size={18} />
+          </button>
+
+          {showStyleMenu && (
+            <div className="style-menu">
+              {MAP_STYLES.map(style => (
+                <button 
+                  key={style.id} 
+                  className={`style-option ${currentStyle.id === style.id ? 'active' : ''}`}
+                  onClick={() => { 
+                    setCurrentStyle(style); 
+                    setShowStyleMenu(false); 
+                  }}
+                >
+                  {style.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="map-control-group">
+          <button 
+            className={`map-control-btn ${isLocating ? 'loading' : ''} ${userLocation ? 'active' : ''}`}
+            onClick={() => handleLocate()}
+            title="Η τοποθεσία μου"
+          >
+            <Navigation size={18} fill={userLocation ? 'currentColor' : 'none'} />
+          </button>
+        </div>
 
         {/* Mobile Reset View Button */}
         {(viewState.zoom > 7 || selectedRace) && (
-          <button 
-            className="mobile-only-flex"
-            onClick={resetView}
-            style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px' }}
-          >
-            <Maximize2 size={18} />
-          </button>
-        )}
-        {showStyleMenu && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px', borderTop: '1px solid var(--glass-border)', paddingTop: '8px' }}>
-            {MAP_STYLES.map(style => (
-              <button key={style.id} onClick={() => { setCurrentStyle(style); setShowStyleMenu(false); }} style={{ background: currentStyle.id === style.id ? 'rgba(255, 255, 255, 0.1)' : 'transparent', border: 'none', color: currentStyle.id === style.id ? 'var(--accent-primary)' : 'var(--text-secondary)', cursor: 'pointer', padding: '8px 12px', borderRadius: '6px', textAlign: 'left', width: '100%', fontSize: '13px' }}>
-                {style.label}
-              </button>
-            ))}
+          <div className="map-control-group mobile-only-flex">
+            <button 
+              className="map-control-btn"
+              onClick={resetView}
+              title="Επαναφορά Προβολής"
+            >
+              <Maximize2 size={18} />
+            </button>
           </div>
         )}
       </div>

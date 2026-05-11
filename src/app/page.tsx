@@ -12,7 +12,7 @@ export default async function Home() {
     // We only fetch races that have coordinates AND have at least one sub-race
     const { data, error } = await supabase
       .from('races')
-      .select('*, sub_races!inner(id)')
+      .select('*, sub_races!inner(id, has_gpx)')
       .not('location_lat', 'is', null)
       .not('location_lng', 'is', null)
       .limit(1000); 
@@ -20,9 +20,24 @@ export default async function Home() {
     if (error) {
       console.error('Error fetching races:', error);
     } else if (data) {
-      // Deduplicate races (Supabase inner join might return multiple rows per race)
-      const uniqueRaces = Array.from(new Map(data.map(item => [item.id, item])).values());
-      races = uniqueRaces as unknown as Race[];
+      // Group by race ID and collect all sub_races to check for GPX
+      const raceMap = new Map<string, any>();
+      
+      (data as any[]).forEach(item => {
+        if (!raceMap.has(item.id)) {
+          raceMap.set(item.id, { ...item, sub_races: [] });
+        }
+        const race = raceMap.get(item.id);
+        // Supabase might return sub_races as a single object or array depending on the join
+        const subRaceData = item.sub_races;
+        if (Array.isArray(subRaceData)) {
+          race.sub_races.push(...subRaceData);
+        } else if (subRaceData) {
+          race.sub_races.push(subRaceData);
+        }
+      });
+
+      races = Array.from(raceMap.values()) as unknown as Race[];
     }
   } catch (err) {
     console.error('Supabase configuration missing or error occurred:', err);

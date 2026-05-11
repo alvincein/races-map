@@ -52,6 +52,7 @@ export interface Database {
           name: string | null
           elevation: number | null
           category: string | null
+          has_gpx: boolean | null
         }
       }
     }

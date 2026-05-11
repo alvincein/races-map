@@ -1,0 +1,123 @@
+.weather-widget {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-widget::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.weather-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.weather-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  color: var(--accent-primary);
+}
+
+.weather-icon.sun { color: #fbbf24; filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4)); }
+.weather-icon.cloud { color: #94a3b8; }
+.weather-icon.fog { color: #94a3b8; }
+.weather-icon.drizzle { color: #60a5fa; }
+.weather-icon.rain { color: #3b82f6; }
+.weather-icon.snow { color: #f8fafc; }
+.weather-icon.lightning { color: #fbbf24; filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4)); }
+
+.weather-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.weather-temp {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.temp-min {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.weather-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.weather-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  opacity: 0.6;
+}
+
+.weather-skeleton {
+  height: 80px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 16px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .weather-widget {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .weather-temp {
+    font-size: 20px;
+  }
+  
+  .weather-desc {
+    font-size: 13px;
+  }
+}

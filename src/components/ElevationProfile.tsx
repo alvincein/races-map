@@ -16,7 +16,7 @@ interface ElevationProfileProps {
 
 export const ElevationProfile: React.FC<ElevationProfileProps> = ({ 
   data, 
-  color = '#3b82f6',
+  color = '#FFE800',
   onHover,
   hoveredPoint 
 }) => {

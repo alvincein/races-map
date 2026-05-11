@@ -1,31 +1,33 @@
 .filter-widget-container {
   position: absolute;
-  top: 20px;
-  right: 80px; /* Next to Map Styles button */
+  top: 136px; /* Below Layers and Location controls */
+  right: 20px;
   z-index: 1050;
 }
 
 .filter-trigger-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   cursor: pointer;
   color: white;
   transition: all 0.3s ease;
   position: relative;
   border: 1px solid var(--glass-border);
+  padding: 0;
 }
 
 .filter-trigger-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
 }
 
 .filter-trigger-btn.has-active {
   border-color: var(--accent-primary);
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(255, 232, 0, 0.1);
 }
 
 .filter-badge {
@@ -40,8 +42,7 @@
 }
 
 .btn-label {
-  font-weight: 600;
-  font-size: 14px;
+  display: none; /* Hide label to fit map control style */
 }
 
 .filter-dropdown-panel {
@@ -49,13 +50,16 @@
   top: calc(100% + 12px);
   right: 0;
   width: 320px;
-  padding: 20px;
-  border-radius: 20px;
+  padding: 24px;
+  background: rgba(18, 18, 22, 0.98); /* Higher contrast */
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
 }
 
 @keyframes slideUp {
@@ -148,6 +152,7 @@
 .option-btn.active {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
+  color: var(--bg-main);
   font-weight: 700;
 }
 
@@ -170,9 +175,9 @@
 }
 
 .month-pill.active {
-  background: white;
-  color: black;
-  border-color: white;
+  background: var(--accent-primary);
+  color: var(--bg-main);
+  border-color: var(--accent-primary);
 }
 
 .panel-footer {
@@ -196,7 +201,7 @@
 .apply-btn {
   flex: 2;
   background: var(--accent-primary);
-  color: white;
+  color: var(--bg-main);
   border: none;
   padding: 10px;
   border-radius: 10px;
@@ -207,9 +212,9 @@
 
 @media (max-width: 768px) {
   .filter-widget-container {
-    top: auto;
-    bottom: 20px;
-    right: 20px;
+    top: 136px;
+    right: 12px;
+    bottom: auto;
     left: auto;
   }
 
@@ -275,4 +280,14 @@
 
 .date-input-group input:focus {
   border-color: var(--accent-primary);
+}
+
+.regions-grid {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+@media (max-width: 400px) {
+  .regions-grid {
+    grid-template-columns: 1fr !important;
+  }
 }

@@ -1,15 +1,22 @@
 :root {
   /* Dark Mode Base Colors */
-  --bg-main: #0a0a0c;
+  --bg-main: #121214;
   --text-primary: #f8f9fa;
   --text-secondary: #a1a1aa;
   
-  /* Accents - Sunset Blaze Palette */
-  --accent-primary: #FF5733;
-  --accent-primary-glow: rgba(255, 87, 51, 0.4);
-  --accent-secondary: #FFC300;
-  --accent-trail: #FFC300;
-  --accent-road: #FF5733;
+  /* Glassmorphism Variables */
+  /* Glassmorphism Variables - High Performance 'Apple' Style Blur */
+  --glass-bg: rgba(18, 18, 20, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(32px) saturate(180%);
+  --glass-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6);
+  
+  /* Accents - Yellow & Dark Grey Theme */
+  --accent-primary: #FFE800;
+  --accent-primary-glow: rgba(255, 232, 0, 0.4);
+  --accent-secondary: #1E3A8A;
+  --accent-trail: #1E3A8A;
+  --accent-road: #FFE800;
 
   --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
@@ -25,7 +32,7 @@ html, body {
   overflow: hidden;
   background-color: var(--bg-main);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter), sans-serif;
   height: 100vh;
   height: 100dvh;
   width: 100vw;
@@ -39,48 +46,66 @@ html, body {
   position: relative;
 }
 
-/* --- Premium Glassmorphism --- */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* On mobile, when elevation widget is active, we can use state to minimize it instead of forcing height 0 */
+@media (max-width: 768px) {
+  .app-layout.has-elevation .sidebar-container {
+    /* height: 0; removed to allow manual toggle */
+  }
+}
+
+/* Scrollbar styling for a premium feel */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glassmorphism utility classes */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(40px) saturate(200%) brightness(1.2) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.2) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   border-radius: 16px;
-}
-
-/* --- Premium Background Mesh --- */
-.mesh-gradient-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #0c0c0e 0%, #050505 100%);
 }
 
-.mesh-blob {
+.glass-panel::before {
+  content: '';
   position: absolute;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.15;
-  animation: blob-move 20s infinite alternate;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  transition: 0.5s;
 }
 
-.blob-1 { background: var(--accent-primary); top: -100px; right: -100px; animation-duration: 25s; }
-.blob-2 { background: var(--accent-secondary); bottom: -150px; left: -150px; animation-duration: 30s; }
-.blob-3 { background: #ff4d00; top: 40%; left: 20%; width: 400px; height: 400px; animation-duration: 20s; }
-
-@keyframes blob-move {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(100px, 50px) scale(1.1); }
+.glass-panel:hover::before {
+  left: 100%;
 }
 
-/* Marker Containers & Pin Styles */
+/* Marker Container */
 .marker-container {
   position: relative;
   display: flex;
@@ -89,10 +114,11 @@ html, body {
   cursor: pointer;
 }
 
+/* Custom Marker CSS */
 .marker-pin {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: 10px; /* Adjusted squircle */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,14 +128,42 @@ html, body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.marker-road { background: linear-gradient(135deg, #FF5733, #E64A19); box-shadow: 0 0 15px rgba(255, 87, 51, 0.5); }
-.marker-trail { background: linear-gradient(135deg, #FFC300, #FFAB00); box-shadow: 0 0 15px rgba(255, 195, 0, 0.5); }
+.marker-road {
+  background: linear-gradient(135deg, var(--accent-road), #ffae00);
+  box-shadow: 0 0 15px rgba(255, 232, 0, 0.5);
+  color: #000 !important;
+}
 
-.marker-container:hover .marker-pin { transform: scale(1.2) rotate(5deg); border-color: #fff; z-index: 10; }
-.marker-container:hover .marker-label { opacity: 1; transform: translateX(-50%) translateY(0); }
-.marker-container.selected .marker-pin { transform: scale(1.4); border-color: #fff; box-shadow: 0 0 25px currentColor; animation: marker-pulse 2s infinite; }
-.marker-container.selected.marker-road .marker-pin { box-shadow: 0 0 25px rgba(255, 87, 51, 0.8); }
-.marker-container.selected.marker-trail .marker-pin { box-shadow: 0 0 25px rgba(255, 195, 0, 0.8); }
+.marker-trail {
+  background: linear-gradient(135deg, var(--accent-trail), #3b82f6);
+  box-shadow: 0 0 15px rgba(30, 58, 138, 0.5);
+}
+
+.marker-container:hover .marker-pin {
+  transform: scale(1.2) rotate(5deg);
+  border-color: #fff;
+  z-index: 10;
+}
+
+.marker-container:hover .marker-label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.marker-container.selected .marker-pin {
+  transform: scale(1.4);
+  border-color: #fff;
+  box-shadow: 0 0 25px currentColor;
+  animation: marker-pulse 2s infinite;
+}
+
+.marker-container.selected.marker-road .marker-pin {
+  box-shadow: 0 0 25px rgba(255, 232, 0, 0.8);
+}
+
+.marker-container.selected.marker-trail .marker-pin {
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+}
 
 @keyframes marker-pulse {
   0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
@@ -122,7 +176,11 @@ html, body {
   bottom: calc(100% + 12px);
   left: 50%;
   transform: translateX(-50%) translateY(10px);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   padding: 12px 16px;
+  border-radius: 12px;
   min-width: 220px;
   max-width: 280px;
   display: flex;
@@ -130,6 +188,7 @@ html, body {
   opacity: 0;
   pointer-events: none;
   transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: var(--glass-shadow);
   z-index: 100;
 }
 
@@ -144,35 +203,95 @@ html, body {
   padding-bottom: 8px;
 }
 
-.label-name { font-weight: 700; font-size: 14px; color: #fff; white-space: normal; line-height: 1.3; }
-.label-km { background: rgba(255, 87, 51, 0.1); color: var(--accent-primary); padding: 3px 6px; border-radius: 6px; font-size: 11px; font-weight: 800; border: 1px solid rgba(255, 87, 51, 0.2); }
+.label-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+}
 
-.label-details { display: flex; flex-direction: column; gap: 6px; width: 100%; }
-.label-detail-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+.label-km {
+  background: rgba(255, 232, 0, 0.2);
+  color: #FFE800;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid rgba(255, 232, 0, 0.3);
+  flex-shrink: 0;
+}
 
-/* Cluster Styling */
-.marker-cluster {
+.label-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.label-detail-item {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: normal;
+}
+
+/* Force hovered markers to the front */
+.maplibregl-marker:hover {
+  z-index: 95 !important;
+}
+
+/* Cluster styling */
+.marker-cluster-container {
+  position: relative;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  /* Ensure the container itself doesn't grow and shift the Marker's center */
+  overflow: visible;
+}
+
+.marker-cluster {
+  position: absolute;
+  top: 0;
+  left: 0;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 2px solid var(--glass-border);
   color: #fff;
-  font-weight: 800;
-  font-size: 14px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
   cursor: pointer;
+  width: 40px;
+  height: 40px;
   transition: var(--transition-smooth);
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  box-shadow: 0 0 20px #0006, inset 0 0 10px #ffffff1a;
+}
+
+/* Darken clusters on light map styles (Topo and Voyager/Map) */
+.style-terrain .marker-cluster,
+.style-voyager .marker-cluster {
+  background: rgba(18, 18, 22, 0.85);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .marker-cluster-container:hover .marker-cluster {
-  border-color: var(--accent-primary);
+  border-color: #fff;
   transform: scale(1.1);
-  box-shadow: 0 0 30px var(--accent-primary-glow);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 
 .cluster-hover-list {
@@ -183,39 +302,462 @@ html, body {
   min-width: 240px;
   max-width: 320px;
   padding: 14px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   opacity: 0;
   pointer-events: auto;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(13, 13, 15, 0.82);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   z-index: 2000;
+  cursor: default;
 }
 
-.marker-cluster-container:hover .cluster-hover-list { opacity: 1; transform: translateX(-50%) translateY(0); }
-.cluster-hover-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-primary); font-weight: 800; margin-bottom: 2px; }
-.cluster-hover-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; transition: all 0.2s; cursor: pointer; }
-.cluster-hover-card:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); transform: translateX(4px); }
+.marker-cluster-container:hover .cluster-hover-list {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
-.hover-list-scroll { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; padding-right: 4px; }
-.hover-list-scroll::-webkit-scrollbar { width: 4px; }
-.hover-list-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-.hover-list-scroll::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 10px; }
+.cluster-hover-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent-primary);
+  font-weight: 800;
+  margin-bottom: 2px;
+}
 
-/* Custom Scrollbars */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+.cluster-hover-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
 
-/* Responsive Media Queries */
+.cluster-hover-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(4px);
+}
+
+.hover-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.hover-card-main .item-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.item-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.item-km {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  background: rgba(255, 232, 0, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.hover-card-arrow {
+  color: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.more-items {
+  font-size: 10px;
+  text-align: center;
+  color: var(--text-secondary);
+  padding-top: 4px;
+  font-style: italic;
+}
+
+/* Hover Sync Marker on Map */
+.hover-sync-marker {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.marker-dot {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border: 2px solid var(--accent-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 232, 0, 0.8);
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 2px solid white;
+  border-radius: 50%;
+  animation: pulseMarker 1.5s ease-out infinite;
+  opacity: 0;
+}
+
+@keyframes pulseMarker {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* User Location Marker */
+.user-location-marker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.user-location-dot {
+  width: 14px;
+  height: 14px;
+  background: #3366FF; /* Electric Blue */
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(51, 102, 255, 0.8), 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.user-location-pulse {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: rgba(51, 102, 255, 0.3);
+  border-radius: 50%;
+  animation: userLocationPulse 2s ease-out infinite;
+}
+
+@keyframes userLocationPulse {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.map-control-btn.loading {
+  animation: btn-spin 1.5s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes btn-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Map Controls */
+.map-controls-top-right {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.map-control-group {
+  position: relative;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--glass-shadow);
+}
+
+.map-control-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.map-control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.map-control-btn.active {
+  color: var(--accent-primary);
+  background: rgba(255, 232, 0, 0.1);
+}
+
+.d3-icon {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -1px;
+}
+
+.style-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--glass-shadow);
+  min-width: 140px;
+  z-index: 100;
+}
+
+.style-option {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: right;
+  font-size: 13px;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.style-option:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.style-option.active {
+  color: var(--accent-primary);
+  background: rgba(255, 232, 0, 0.1);
+}
+
+/* =========================================
+   Mobile Responsive — Global
+   ========================================= */
 @media (max-width: 768px) {
-  .marker-label, .cluster-hover-list { display: none; }
-  .marker-pin { width: 28px; height: 28px; }
-  .marker-cluster { width: 36px; height: 36px; }
-  .maplibregl-ctrl-top-right, .maplibregl-ctrl-bottom-right { display: none !important; }
+  /* Marker labels: hide on mobile, too cluttered */
+  .marker-label {
+    display: none;
+  }
+
+  /* Smaller markers on mobile */
+  .marker-pin {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+
+  .marker-pin svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .marker-container.selected .marker-pin {
+    transform: scale(1.2);
+  }
+
+  /* Cluster markers */
+  .marker-cluster {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .cluster-hover-list {
+    display: none;
+  }
+
+  /* Map controls — move above sidebar */
+  .map-controls-top-right {
+    top: 12px;
+    right: 12px;
+  }
+
+  /* MapLibre built-in controls */
+  .maplibregl-ctrl-bottom-right {
+    bottom: 56vh !important;
+    right: 8px !important;
+  }
+
+  .maplibregl-ctrl-group {
+    border-radius: 10px !important;
+  }
+
+  /* Hide the navigation control zoom buttons on very small screens */
+  .maplibregl-ctrl-zoom-in,
+  .maplibregl-ctrl-zoom-out {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  /* Hover sync marker — slightly smaller */
+  .hover-sync-marker {
+    width: 16px;
+    height: 16px;
+  }
+
+  .marker-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .pulse-ring {
+    width: 24px;
+    height: 24px;
+  }
 }
 
+/* Small phones */
+@media (max-width: 380px) {
+  .marker-pin {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+  }
+
+  .marker-pin svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .marker-cluster {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+}
+
+/* Landscape mobile */
+@media (max-height: 500px) and (max-width: 900px) {
+  .sidebar-container {
+    height: 40vh !important;
+  }
+
+  .elevation-widget {
+    max-height: 35vh;
+  }
+}
+
+
+/* Mobile Expand Button when Sidebar is minimized */
+.mobile-expand-btn {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 28px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, var(--accent-primary) 0%, #E6D100 100%);
+  color: #4b5563;
+  font-weight: 800;
+  font-size: 14px;
+  z-index: 100;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.4),
+    inset 0 2px 2px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  animation: slideUpExpand 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.mobile-expand-btn:active {
+  transform: translateX(-50%) translateY(4px);
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+  .mobile-expand-btn {
+    display: block;
+  }
+}
+
+@keyframes slideUpExpand {
+  from { transform: translate(-50%, 20px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* Hide map controls on mobile since gestures handle zoom/rotate */
+@media (max-width: 768px) {
+  .maplibregl-ctrl-top-right,
+  .maplibregl-ctrl-bottom-right,
+  .maplibregl-ctrl-top-left,
+  .maplibregl-ctrl-bottom-left {
+    display: none !important;
+  }
+}
+
+.mobile-only-flex {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-only-flex {
+    display: flex !important;
+  }
+}
+
+/* Bridge the gap between cluster and hover list */
 .cluster-hover-list::after {
   content: '';
   position: absolute;
@@ -224,4 +766,170 @@ html, body {
   right: 0;
   height: 20px;
   background: transparent;
+}
+
+.hover-list-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px; /* Fits approximately 5 items */
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom scrollbar for hover list */
+.hover-list-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.hover-list-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.hover-list-scroll::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+  border-radius: 10px;
+}
+
+/* --- Premium Background Mesh --- */
+.mesh-gradient-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #121214 0%, #080808 100%);
+}
+
+.mesh-blob {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.15;
+  animation: blob-move 20s infinite alternate;
+}
+
+.blob-1 {
+  background: var(--accent-primary);
+  top: -100px;
+  right: -100px;
+  animation-duration: 25s;
+}
+
+.blob-2 {
+  background: var(--accent-secondary);
+  bottom: -150px;
+  left: -150px;
+  animation-duration: 30s;
+}
+
+.blob-3 {
+  background: #E6D100;
+  top: 40%;
+  left: 20%;
+  width: 400px;
+  height: 400px;
+  animation-duration: 20s;
+}
+
+@keyframes blob-move {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(100px, 50px) scale(1.1); }
+}
+
+/* Shimmering effects are now part of the main glass-panel utility */
+
+/* --- Premium Typography Polish --- */
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+}
+
+.accent-glow {
+  text-shadow: 0 0 20px var(--accent-primary-glow);
+}
+
+/* Route Start/End Markers */
+.route-marker-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.route-marker-pin {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 2px solid #fff;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.route-marker-pin svg {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+.route-marker-container:hover .route-marker-pin {
+  transform: scale(1.2);
+  z-index: 10;
+}
+
+.route-marker-start {
+  background: linear-gradient(135deg, #00FF66, #00CC52);
+}
+
+.route-marker-end {
+  background-color: #ffffff;
+  background-image: 
+    conic-gradient(#000 0.25turn, transparent 0.25turn 0.5turn, #000 0.5turn 0.75turn, transparent 0.75turn);
+  background-size: 14px 14px;
+  border-color: #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.2);
+}
+
+.route-marker-label {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s;
+  box-shadow: var(--glass-shadow);
+}
+
+.route-marker-container:hover .route-marker-label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 768px) {
+  .route-marker-pin {
+    width: 24px;
+    height: 24px;
+  }
+  .route-marker-pin svg {
+    width: 14px;
+    height: 14px;
+  }
 }

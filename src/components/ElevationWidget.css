@@ -11,11 +11,11 @@
   padding: 20px;
   border-radius: 16px;
   animation: widgetSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  background: rgba(13, 17, 23, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 @keyframes widgetSlideUp {
@@ -101,10 +101,16 @@
   display: flex;
   gap: 12px;
   font-size: 11px;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  font-weight: 600;
+  color: #121214;
+  box-shadow: 0 4px 12px rgba(255, 232, 0, 0.4);
   pointer-events: none;
   white-space: nowrap;
   z-index: 10;
+}
+
+.hover-indicator strong {
+  color: inherit;
 }
 
 .h-stat span { opacity: 0.8; }
@@ -127,8 +133,12 @@
   }
 
   .widget-header {
-    margin-bottom: 8px;
+    margin-bottom: 0;
     gap: 8px;
+  }
+
+  .widget-content {
+    display: none;
   }
 
   .widget-title {

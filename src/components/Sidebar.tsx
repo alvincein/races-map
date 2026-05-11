@@ -3,39 +3,43 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Race, SubRace } from '../types/database';
 import { FilterState } from './HomeClient';
-import { 
-  Calendar, 
-  MapPin, 
-  ChevronRight, 
-  Search, 
-  ArrowLeft, 
-  ExternalLink, 
-  Trophy, 
+import {
+  Calendar,
+  MapPin,
+  ChevronRight,
+  Search,
+  ArrowLeft,
+  ExternalLink,
+  Trophy,
   TrendingUp,
   Euro,
   Navigation,
   Route,
   ArrowUpRight,
-  Maximize2
+  Maximize2,
+  Mountain,
+  Icon
 } from 'lucide-react';
-import raceRoutes from '../data/raceRoutes.json';
+import { sneaker } from '@lucide/lab';
 import { ElevationProfile } from './ElevationProfile';
+import { WeatherWidget } from './WeatherWidget';
 import './Sidebar.css';
 
 // Memoized Race Card for performance
-const RaceCard = React.memo(({ race, isSelected, onClick }: { 
-  race: Race, 
-  isSelected: boolean, 
-  onClick: (race: Race) => void 
+const RaceCard = React.memo(({ race, isSelected, onClick }: {
+  race: Race,
+  isSelected: boolean,
+  onClick: (race: Race) => void
 }) => {
   return (
-    <div 
+    <div
       className={`race-card ${isSelected ? 'active' : ''}`}
       onClick={() => onClick(race)}
     >
       <div className="race-card-header">
         <span className={`race-badge ${race.event_type?.toLowerCase() === 'trail' ? 'trail' : 'road'}`}>
-          {race.event_type?.toLowerCase() === 'trail' ? 'Βουνό' : 'Δρόμος'}
+          {race.event_type?.toLowerCase() === 'trail' ? <Mountain size={10} /> : <Icon iconNode={sneaker} size={10} />}
+          {race.event_type?.toLowerCase() === 'trail' ? 'Βουνο' : 'Δρομος'}
         </span>
         {race.dates && race.dates.length > 0 && (
           <span className="race-date">
@@ -65,20 +69,22 @@ interface SidebarProps {
   onBack: () => void;
   isMinimized?: boolean;
   onMinimize?: () => void;
+  fetchedRoutes: Record<string, any>;
 }
 
-export default function Sidebar({ 
-  races, 
+export default function Sidebar({
+  races,
   isFiltered,
-  onRaceClick, 
+  onRaceClick,
   onSubRaceClick,
-  selectedRace, 
+  selectedRace,
   selectedSubRaceId,
-  subRaces, 
+  subRaces,
   isLoadingSubRaces,
   onBack,
   isMinimized,
-  onMinimize
+  onMinimize,
+  fetchedRoutes
 }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -95,7 +101,7 @@ export default function Sidebar({
     if (touchStartY.current === null) return;
     const currentY = e.touches[0].clientY;
     const deltaY = currentY - touchStartY.current;
-    
+
     // Only allow dragging downwards when not minimized
     if (!isMinimized && deltaY > 0) {
       setDragY(deltaY);
@@ -108,23 +114,23 @@ export default function Sidebar({
 
   const handleTouchEnd = () => {
     if (touchStartY.current === null) return;
-    
+
     const threshold = 100; // threshold to trigger minimize/expand
-    
+
     if (!isMinimized && dragY > threshold) {
       onMinimize?.();
     } else if (isMinimized && dragY < -threshold) {
       onMinimize?.();
     }
-    
+
     setDragY(0);
     setIsDragging(false);
     touchStartY.current = null;
   };
 
   const filteredRaces = useMemo(() => {
-    const filtered = races.filter(r => 
-      r.event_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const filtered = races.filter(r =>
+      r.event_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (r.location_place && r.location_place.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
@@ -139,17 +145,17 @@ export default function Sidebar({
   if (selectedRace) {
     const description = selectedRace.description || selectedRace.description_en || 'No description available for this event.';
     const isLongDescription = description.length > 250;
-    const displayedDescription = isDescriptionExpanded || !isLongDescription 
-      ? description 
+    const displayedDescription = isDescriptionExpanded || !isLongDescription
+      ? description
       : description.substring(0, 250) + '...';
 
     return (
-      <div 
+      <div
         className={`sidebar-container glass-panel detail-mode ${isMinimized ? 'minimized' : ''} ${isDragging ? 'is-dragging' : ''}`}
         style={{ transform: dragY ? `translateY(${dragY}px)` : undefined }}
       >
-        <div 
-          className="drag-handle" 
+        <div
+          className="drag-handle"
           onClick={onMinimize}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -164,19 +170,20 @@ export default function Sidebar({
             <span>Πίσω στη λίστα</span>
           </button>
         </div>
-        
+
         <div className="detail-content">
           <div className="detail-hero">
             <span className={`race-badge ${selectedRace.event_type?.toLowerCase() === 'trail' ? 'trail' : 'road'}`}>
-              {selectedRace.event_type?.toLowerCase() === 'trail' ? 'Βουνό' : 'Δρόμος'}
+              {selectedRace.event_type?.toLowerCase() === 'trail' ? <Mountain size={12} /> : <Icon iconNode={sneaker} size={12} />}
+              {selectedRace.event_type?.toLowerCase() === 'trail' ? 'Βουνο' : 'Δρομος'}
             </span>
             <h1>{selectedRace.event_name}</h1>
-            
+
             <div className="detail-meta">
               <div className="meta-item">
                 <Calendar size={16} />
                 <span>
-                  {selectedRace.dates && selectedRace.dates.length > 0 
+                  {selectedRace.dates && selectedRace.dates.length > 0
                     ? new Date(selectedRace.dates[0]).toLocaleDateString('el-GR', { day: 'numeric', month: 'long', year: 'numeric' })
                     : 'Δεν έχει οριστεί'}
                 </span>
@@ -192,6 +199,12 @@ export default function Sidebar({
                 </div>
               )}
             </div>
+
+            <WeatherWidget 
+              lat={selectedRace.location_lat} 
+              lng={selectedRace.location_lng} 
+              date={selectedRace.dates && selectedRace.dates.length > 0 ? selectedRace.dates[0] : null} 
+            />
           </div>
 
           <div className="detail-section">
@@ -199,7 +212,7 @@ export default function Sidebar({
             <div className="full-description">
               <p>{displayedDescription}</p>
               {isLongDescription && (
-                <button 
+                <button
                   className="text-toggle-btn"
                   onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                 >
@@ -216,7 +229,7 @@ export default function Sidebar({
             ) : subRaces.length > 0 ? (
               <div className="sub-races-list">
                 {subRaces.map(sub => {
-                  const routeData = (raceRoutes as any)[sub.id];
+                  const routeData = fetchedRoutes[sub.id];
                   const hasRoute = !!routeData;
                   const isSelected = selectedSubRaceId === sub.id;
 
@@ -232,8 +245,8 @@ export default function Sidebar({
                   };
 
                   return (
-                    <div 
-                      key={sub.id} 
+                    <div
+                      key={sub.id}
                       className={`sub-race-card ${hasRoute ? 'has-route' : ''} ${isSelected ? 'selected' : ''}`}
                       onClick={() => hasRoute && onSubRaceClick(sub.id)}
                     >
@@ -260,16 +273,18 @@ export default function Sidebar({
                         <div className="stat-box highlight">
                           <span className="stat-label">Απόστ.</span>
                           <span className="stat-value">
-                            {routeData ? `${(routeData.stats.distance / 1000).toFixed(1)}km` : (sub.distance ? `${sub.distance / 1000}km` : '?')}
+                            {sub.distance ? `${sub.distance / 1000}km` : (routeData ? `${(routeData.stats.distance / 1000).toFixed(1)}km` : '?')}
                           </span>
                         </div>
-                        <div className="stat-box">
-                          <span className="stat-label">υψομ.</span>
-                          <span className="stat-value">
-                            {routeData ? `+${routeData.stats.gain}m` : (sub.elevation ? `+${sub.elevation}m` : '-')}
-                          </span>
-                        </div>
-                        {sub.price && (
+                        {(sub.elevation !== null && sub.elevation !== undefined) || routeData ? (
+                          <div className="stat-box">
+                            <span className="stat-label">υψομ.</span>
+                            <span className="stat-value">
+                              {sub.elevation !== null && sub.elevation !== undefined ? `+${Math.round(sub.elevation)}m` : (routeData ? `+${Math.round(routeData.stats.gain)}m` : '-')}
+                            </span>
+                          </div>
+                        ) : null}
+                        {!!sub.price && (
                           <div className="stat-box">
                             <span className="stat-label">Τιμή</span>
                             <span className="stat-value">{sub.price}€</span>
@@ -285,17 +300,17 @@ export default function Sidebar({
               <p className="no-subraces">Δεν έχουν καταχωρηθεί συγκεκριμένες αποστάσεις.</p>
             )}
           </div>
+        </div>
 
-          <div className="detail-actions">
-            <a 
-              href={selectedRace.event_url || selectedRace.scraped_url || '#'} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="primary-btn"
-            >
-              Επίσημη Ιστοσελίδα <ExternalLink size={18} />
-            </a>
-          </div>
+        <div className="detail-actions">
+          <a
+            href={selectedRace.event_url || selectedRace.scraped_url || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="primary-btn"
+          >
+            Επίσημη Ιστοσελίδα <ExternalLink size={18} />
+          </a>
         </div>
       </div>
     );
@@ -303,12 +318,12 @@ export default function Sidebar({
 
   // List View
   return (
-    <div 
+    <div
       className={`sidebar-container glass-panel ${isMinimized ? 'minimized' : ''} ${isDragging ? 'is-dragging' : ''}`}
       style={{ transform: dragY ? `translateY(${dragY}px)` : undefined }}
     >
-      <div 
-        className="drag-handle" 
+      <div
+        className="drag-handle"
         onClick={onMinimize}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -323,29 +338,29 @@ export default function Sidebar({
         ) : (
           <h1>Αγώνες στην Ελλάδα</h1>
         )}
-        
+
         {isFiltered && <h2 className="filter-title">Αγώνες σε αυτή την τοποθεσία</h2>}
 
         <div className="search-row">
           <div className="search-box">
             <Search size={18} className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="Αναζήτηση αγώνων..." 
+            <input
+              type="text"
+              placeholder="Αναζήτηση αγώνων..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
       </div>
-      
+
       <div className="races-list">
         {filteredRaces.map(race => (
-          <RaceCard 
-            key={race.id} 
-            race={race} 
-            isSelected={false} 
-            onClick={onRaceClick} 
+          <RaceCard
+            key={race.id}
+            race={race}
+            isSelected={false}
+            onClick={onRaceClick}
           />
         ))}
         {filteredRaces.length === 0 && (

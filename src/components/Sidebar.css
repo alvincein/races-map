@@ -9,6 +9,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: rgba(13, 13, 15, 0.85);
+  backdrop-filter: blur(48px) saturate(180%);
+  -webkit-backdrop-filter: blur(48px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
 }
 
 .sidebar-header {
@@ -201,6 +207,7 @@
 .option-btn.active {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
+  color: var(--bg-main);
   font-weight: 700;
 }
 
@@ -228,9 +235,9 @@
 }
 
 .month-btn.active {
-  background: #fff;
-  color: #000;
-  border-color: #fff;
+  background: var(--accent-primary);
+  color: var(--bg-main);
+  border-color: var(--accent-primary);
 }
 
 .clear-filters-btn {
@@ -289,7 +296,7 @@
 }
 
 .race-card.active {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(255, 232, 0, 0.1);
   border-color: var(--accent-primary);
   box-shadow: 0 0 20px var(--accent-primary-glow);
 }
@@ -301,6 +308,9 @@
 }
 
 .race-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 10px;
   text-transform: uppercase;
   font-weight: 800;
@@ -310,15 +320,15 @@
 }
 
 .race-badge.road {
-  background: rgba(255, 87, 51, 0.15);
+  background: rgba(255, 232, 0, 0.15);
   color: var(--accent-road);
-  border: 1px solid rgba(255, 87, 51, 0.2);
+  border: 1px solid rgba(255, 232, 0, 0.2);
 }
 
 .race-badge.trail {
-  background: rgba(255, 195, 0, 0.15);
-  color: var(--accent-trail);
-  border: 1px solid rgba(255, 195, 0, 0.2);
+  background: rgba(30, 58, 138, 0.15);
+  color: #60a5fa; /* Lighter blue for readability */
+  border: 1px solid rgba(30, 58, 138, 0.3);
 }
 
 .race-date {
@@ -349,7 +359,7 @@
 .detail-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 24px 24px 16px 24px;
 }
 
 .detail-hero h1 {
@@ -375,6 +385,13 @@
   font-size: 14px;
 }
 
+.detail-section h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
 .full-description {
   background: rgba(255, 255, 255, 0.03);
   padding: 16px;
@@ -386,11 +403,25 @@
   margin-bottom: 24px;
 }
 
+.detail-actions {
+  padding: 16px 24px;
+  border-top: 1px solid var(--glass-border);
+  background: rgba(13, 13, 15, 0.4);
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
 .sub-races-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 16px;
+}
+
+.no-subraces {
+  margin-bottom: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .sub-race-card {
@@ -404,20 +435,20 @@
 
 .sub-race-card.has-route {
   cursor: pointer;
-  border-left-color: rgba(59, 130, 246, 0.5);
+  border-left-color: rgba(255, 232, 0, 0.5);
 }
 
 .sub-race-card.has-route:hover {
-  background: rgba(59, 130, 246, 0.08);
+  background: rgba(255, 232, 0, 0.08);
   border-left-color: var(--accent-primary);
   transform: translateX(4px);
 }
 
 .sub-race-card.selected {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(255, 232, 0, 0.15);
   border-color: var(--accent-primary);
   border-left-color: var(--accent-primary);
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 20px rgba(255, 232, 0, 0.2);
 }
 
 .sub-race-header {
@@ -441,10 +472,10 @@
   font-weight: 700;
   text-transform: uppercase;
   color: var(--accent-primary);
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(255, 232, 0, 0.1);
   padding: 3px 8px;
   border-radius: 20px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(255, 232, 0, 0.2);
 }
 
 .sub-race-stats {
@@ -482,7 +513,7 @@
 
 .primary-btn {
   background: var(--accent-primary);
-  color: #fff;
+  color: var(--bg-main);
   padding: 16px;
   border-radius: 12px;
   font-weight: 700;
@@ -497,7 +528,7 @@
 }
 
 .primary-btn:hover {
-  background: #2563eb;
+  background: #FFD700;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px var(--accent-primary-glow);
 }
@@ -544,7 +575,7 @@
     right: 0;
     width: 100vw;
     max-width: 100vw;
-    height: 55vh;
+    height: 70vh;
     border-radius: 20px 20px 0 0;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -555,12 +586,13 @@
   }
 
   .sidebar-container.minimized {
-    height: 40px !important;
-    overflow: hidden;
+    transform: translateY(calc(100% + 20px)) !important;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .sidebar-container.detail-mode {
-    height: 60vh;
+    height: 75vh;
   }
 
   /* Drag handle area */
@@ -822,10 +854,10 @@
 }
 
 .icon-up { color: #10b981; }
-.icon-avg { color: #3b82f6; }
+.icon-avg { color: var(--accent-primary); }
 
 .stat-box.highlight .stat-value {
-  color: #3b82f6;
+  color: var(--accent-primary);
   font-weight: 700;
 }
 
