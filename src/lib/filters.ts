@@ -32,7 +32,7 @@ function computeDateRange(filters: FilterState, now: Date): DateRange | null {
   return { start: now, end };
 }
 
-export function nextRaceDate(race: Race, now: Date): Date | null {
+export function nextRaceDate(race: Race, _now: Date): Date | null {
   if (!race.dates || race.dates.length === 0) return null;
   // dates[] is assumed chronologically ordered upstream; the consumer convention
   // across the app treats dates[0] as the next occurrence.

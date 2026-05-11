@@ -10,25 +10,26 @@ interface UseRouteIndexResult {
   isLoading: boolean;
 }
 
+const EMPTY: RouteIndex = {};
+
 /**
- * Loads available GPX routes for a list of sub-races, in parallel.
- *
- * Resets when the sub-race set changes (e.g. selecting a new parent race).
- * Sub-races without a stored route fail silently — they simply won't appear
- * in the returned `routes` index. Callers should treat absence as "no route".
+ * Loads available GPX routes for a list of sub-races, in parallel. Resets when
+ * the sub-race set changes. Sub-races without a stored route fail silently and
+ * simply don't appear in the returned index.
  */
 export function useRouteIndex(subRaces: SubRace[]): UseRouteIndexResult {
-  const [routes, setRoutes] = useState<RouteIndex>({});
+  const [routes, setRoutes] = useState<RouteIndex>(EMPTY);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (subRaces.length === 0) {
-      setRoutes({});
+      setRoutes(EMPTY);
+      setIsLoading(false);
       return;
     }
     let cancelled = false;
     setIsLoading(true);
-    setRoutes({});
+    setRoutes(EMPTY);
 
     Promise.all(
       subRaces.map(async sub => {
@@ -42,9 +43,7 @@ export function useRouteIndex(subRaces: SubRace[]): UseRouteIndexResult {
     ).then(entries => {
       if (cancelled) return;
       const next: RouteIndex = {};
-      for (const entry of entries) {
-        if (entry) next[entry[0]] = entry[1];
-      }
+      for (const entry of entries) if (entry) next[entry[0]] = entry[1];
       setRoutes(next);
       setIsLoading(false);
     });

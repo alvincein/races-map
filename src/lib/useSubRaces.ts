@@ -20,6 +20,7 @@ export function useSubRaces(raceId: string | null): UseSubRacesResult {
   useEffect(() => {
     if (!raceId) {
       setSubRaces([]);
+      setIsLoading(false);
       return;
     }
     let cancelled = false;
