@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { Marker } from 'react-map-gl/maplibre';
 import { Calendar, ChevronRight } from 'lucide-react';
 import type Supercluster from 'supercluster';
-import type { Race } from '../../types/database';
+import type { Race, RaceWithSubRaces } from '../../types/database';
 import type { ClusterFeature, RacePointFeature, RacePointProps } from './types';
 
 interface ClusterMarkerProps {
@@ -12,8 +12,8 @@ interface ClusterMarkerProps {
   supercluster: Supercluster<RacePointProps> | null;
   viewStateZoom: number;
   onZoom: (lng: number, lat: number, zoom: number) => void;
-  onSpiderfy: (id: number, races: Race[], lng: number, lat: number) => void;
-  onRaceClick: (race: Race, lng: number, lat: number) => void;
+  onSpiderfy: (id: number, races: RaceWithSubRaces[], lng: number, lat: number) => void;
+  onRaceClick: (race: RaceWithSubRaces, lng: number, lat: number) => void;
 }
 
 const HOVER_LEAVES_LIMIT = 10;

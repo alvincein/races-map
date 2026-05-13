@@ -11,8 +11,8 @@ export interface FilterState {
   regions: string[];
   hasGpxOnly: boolean;
   favoritesOnly: boolean;
-  customDateStart?: string;
-  customDateEnd?: string;
+  customDateStart?: string | null;
+  customDateEnd?: string | null;
 }
 
 export const DEFAULT_FILTERS: FilterState = {

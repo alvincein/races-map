@@ -4,12 +4,13 @@ import React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
 import { Mountain, Calendar, MapPin, Icon, Bookmark } from 'lucide-react';
 import { sneaker } from '@lucide/lab';
+import { RaceWithSubRaces } from '../../types/database';
 import type { Race } from '../../types/database';
 
 interface RaceMarkerProps {
-  race: Race;
+  race: RaceWithSubRaces;
   isSelected: boolean;
-  onClick: (race: Race, lng: number, lat: number) => void;
+  onClick: (race: RaceWithSubRaces, lng: number, lat: number) => void;
   offset?: [number, number];
   /** When part of a spiderfied cluster, render at the cluster center, not the race's own coords. */
   lng?: number;

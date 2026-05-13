@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { Race } from '../types/database';
+import { Race, RaceWithSubRaces } from '../types/database';
 import { supabase } from '../lib/supabase';
 import { fetchRacesWithSubRaces } from '../lib/races';
 import { FilterState, DEFAULT_FILTERS } from '../types/filters';
@@ -17,16 +17,16 @@ import { ElevationWidget } from './ElevationWidget';
 import { FilterWidget } from './FilterWidget';
 
 interface HomeClientProps {
-  initialRaces: Race[];
+  initialRaces: RaceWithSubRaces[];
 }
 
 export default function HomeClient({ initialRaces }: HomeClientProps) {
-  const [races, setRaces] = useState<Race[]>(initialRaces);
-  const [selectedRace, setSelectedRace] = useState<Race | null>(null);
+  const [races, setRaces] = useState<RaceWithSubRaces[]>(initialRaces);
+  const [selectedRace, setSelectedRace] = useState<RaceWithSubRaces | null>(null);
   const [selectedSubRaceId, setSelectedSubRaceId] = useState<string | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<RoutePoint | null>(null);
-  const [focusedRaces, setFocusedRaces] = useState<Race[] | null>(null);
-  const [visibleRaces, setVisibleRaces] = useState<Race[]>(initialRaces);
+  const [focusedRaces, setFocusedRaces] = useState<RaceWithSubRaces[] | null>(null);
+  const [visibleRaces, setVisibleRaces] = useState<RaceWithSubRaces[]>(initialRaces);
   const [sidebarState, setSidebarState] = useState<'minimized' | 'half' | 'full'>('minimized');
   const [isListRefreshing, setIsListRefreshing] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
@@ -44,7 +44,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
         e.preventDefault();
         fetchRacesWithSubRaces(supabase).then(rows => {
-          if (rows.length > 0) setRaces(rows as unknown as Race[]);
+          if (rows.length > 0) setRaces(rows);
         });
       }
     };
@@ -55,7 +55,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
   const filteredByControls = useMemo(() => applyFilters(races, filters, new Date(), favorites), [races, filters, favorites]);
 
 
-  const handleRaceSelect = (race: Race) => {
+  const handleRaceSelect = (race: RaceWithSubRaces) => {
     setSelectedRace(race);
     setSelectedSubRaceId(null);
     setSidebarState('half');
@@ -67,7 +67,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
     if (isSelecting) setSidebarState('minimized');
   };
 
-  const handleClusterClick = (racesInCluster: Race[]) => {
+  const handleClusterClick = (racesInCluster: RaceWithSubRaces[]) => {
     setFocusedRaces(racesInCluster);
     setSelectedRace(null);
   };

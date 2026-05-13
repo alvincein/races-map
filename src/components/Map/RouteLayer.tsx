@@ -6,7 +6,7 @@ import { Play, Flag } from 'lucide-react';
 import type { RouteData } from '../../types/routes';
 
 interface RouteLayerProps {
-  route: RouteData & { aid_stations?: any[] };
+  route: RouteData & { aid_stations?: any };
   index: number;
   color: string;
   isFocused: boolean;

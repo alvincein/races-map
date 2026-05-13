@@ -8,7 +8,7 @@ import './ElevationWidget.css';
 interface ElevationWidgetProps {
   routeData: RouteData;
   /** When the sub-race has its own official distance/elevation, prefer those over GPX-derived stats. */
-  officialStats: (Pick<SubRace, 'distance' | 'elevation'> & { aid_stations?: any[] }) | null;
+  officialStats: (Pick<SubRace, 'distance' | 'elevation' | 'aid_stations'>) | null;
   hoveredPoint: RoutePoint | null;
   onHover: (point: RoutePoint | null) => void;
 
@@ -68,7 +68,7 @@ export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
           data={routeData.profile} 
           onHover={onHover} 
           hoveredPoint={hoveredPoint}
-          aidStations={officialStats?.aid_stations}
+          aidStations={officialStats?.aid_stations as any[]}
         />
         
         {hoveredPoint && (

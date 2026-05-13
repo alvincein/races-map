@@ -5,7 +5,7 @@ import { Maximize2 } from 'lucide-react';
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
 import useSupercluster from 'use-supercluster';
-import { Race, SubRace } from '../types/database';
+import { Race, SubRace, RaceWithSubRaces } from '../types/database';
 import type { RouteData, RouteIndex, RoutePoint } from '../types/routes';
 import { RaceMarker } from './Map/RaceMarker';
 import { ClusterMarker } from './Map/ClusterMarker';
@@ -17,7 +17,7 @@ import type { ClusterFeature, RacePointFeature, RacePointProps, SpiderfiedCluste
 import { useGeolocation } from './Map/useGeolocation';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { FilterWidget } from './FilterWidget';
-import { FilterState } from './HomeClient';
+import { FilterState } from '../types/filters';
 
 const INITIAL_VIEW_STATE = {
   longitude: 23.7275,
@@ -32,16 +32,16 @@ const CLUSTER_RADIUS = 50;
 const CLUSTER_MAX_ZOOM = 20;
 
 interface MapClientProps {
-  races: Race[];
-  selectedRace: Race | null;
+  races: RaceWithSubRaces[];
+  selectedRace: RaceWithSubRaces | null;
   selectedSubRaceId: string | null;
   subRaces: SubRace[];
-  onRaceSelect: (race: Race) => void;
-  onClusterClick: (races: Race[]) => void;
-  onVisibleRacesChange: (races: Race[]) => void;
-  onDeselect: () => void;
-  hoveredPoint: RoutePoint | null;
   fetchedRoutes: RouteIndex;
+  hoveredPoint: RoutePoint | null;
+  onRaceSelect: (race: RaceWithSubRaces) => void;
+  onClusterClick: (races: RaceWithSubRaces[]) => void;
+  onVisibleRacesChange: (races: RaceWithSubRaces[]) => void;
+  onDeselect: () => void;
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onFilterToggle?: (open: boolean) => void;
@@ -100,14 +100,14 @@ export default function MapClient({
   }, []);
 
   const points = useMemo<RacePointFeature[]>(() => {
-    return races
-      .filter((r): r is Race & { location_lat: number; location_lng: number } =>
+    return (races as RaceWithSubRaces[])
+      .filter((r): r is RaceWithSubRaces & { location_lat: number; location_lng: number } =>
         r.location_lat != null && r.location_lng != null,
       )
       .map(race => ({
         type: 'Feature',
         properties: { cluster: false, raceId: race.id, race },
-        geometry: { type: 'Point', coordinates: [race.location_lng, race.location_lat] },
+        geometry: { type: 'Point', coordinates: [race.location_lng, race.location_lat] as [number, number] },
       }));
   }, [races]);
 
@@ -153,7 +153,7 @@ export default function MapClient({
   }, []);
 
   const handleSpiderfy = useCallback(
-    (id: number, clusterRaces: Race[], lng: number, lat: number) => {
+    (id: number, clusterRaces: RaceWithSubRaces[], lng: number, lat: number) => {
       setSpiderfiedCluster({ id, races: clusterRaces, lng, lat });
       onClusterClick(clusterRaces);
     },
@@ -161,7 +161,7 @@ export default function MapClient({
   );
 
   const handleRaceClick = useCallback(
-    (race: Race) => {
+    (race: RaceWithSubRaces) => {
       onRaceSelect(race);
     },
     [onRaceSelect],

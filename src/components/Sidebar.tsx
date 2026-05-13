@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import type { Race, SubRace } from '../types/database';
+import type { Race, SubRace, RaceWithSubRaces } from '../types/database';
 import type { RouteIndex } from '../types/routes';
 import { useBottomSheetDrag } from './Sidebar/useBottomSheetDrag';
 import { RaceList } from './Sidebar/RaceList';
@@ -9,11 +9,11 @@ import { RaceDetail } from './Sidebar/RaceDetail';
 import './Sidebar.css';
 
 interface SidebarProps {
-  races: Race[];
+  races: RaceWithSubRaces[];
   isFiltered: boolean;
-  onRaceClick: (race: Race) => void;
+  onRaceClick: (race: RaceWithSubRaces) => void;
   onSubRaceClick: (subRaceId: string) => void;
-  selectedRace: Race | null;
+  selectedRace: RaceWithSubRaces | null;
   selectedSubRaceId: string | null;
   subRaces: SubRace[];
   isLoadingSubRaces: boolean;

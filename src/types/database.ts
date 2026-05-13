@@ -70,3 +70,7 @@ export interface Database {
 // Helper types
 export type Race = Database['public']['Tables']['races']['Row']
 export type SubRace = Database['public']['Tables']['sub_races']['Row']
+
+export type RaceWithSubRaces = Race & {
+  sub_races: Pick<SubRace, 'id' | 'has_gpx' | 'distance'>[];
+};

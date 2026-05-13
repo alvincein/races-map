@@ -2,14 +2,14 @@
 
 import React, { useMemo, useState } from 'react';
 import { ArrowLeft, Search, Loader2, Bookmark } from 'lucide-react';
-import type { Race } from '../../types/database';
+import type { Race, RaceWithSubRaces } from '../../types/database';
 import { RaceCard } from './RaceCard';
 
 interface RaceListProps {
-  races: Race[];
+  races: RaceWithSubRaces[];
   isFiltered: boolean;
   isRefreshing: boolean;
-  onRaceClick: (race: Race) => void;
+  onRaceClick: (race: RaceWithSubRaces) => void;
   onBack: () => void;
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;

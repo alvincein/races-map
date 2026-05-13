@@ -1,11 +1,11 @@
 import type Supercluster from 'supercluster';
 import type { StyleSpecification } from 'maplibre-gl';
-import type { Race } from '../../types/database';
+import type { Race, RaceWithSubRaces } from '../../types/database';
 
 export interface RacePointProps {
   cluster: false;
   raceId: string;
-  race: Race;
+  race: RaceWithSubRaces;
 }
 
 export type ClusterFeature = Supercluster.ClusterFeature<Supercluster.AnyProps>;
@@ -19,7 +19,7 @@ export interface MapStyle {
 
 export interface SpiderfiedClusterState {
   id: number;
-  races: Race[];
+  races: RaceWithSubRaces[];
   lng: number;
   lat: number;
 }

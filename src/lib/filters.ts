@@ -39,7 +39,7 @@ export function nextRaceDate(race: Race, _now: Date): Date | null {
   return new Date(race.dates[0]);
 }
 
-export function applyFilters(races: Race[], filters: FilterState, now: Date = new Date(), favorites: string[] = []): Race[] {
+export function applyFilters<T extends Race>(races: T[], filters: FilterState, now: Date = new Date(), favorites: string[] = []): T[] {
   const dateRange = computeDateRange(filters, now);
   return races.filter(race => {
     if (filters.favoritesOnly && !favorites.includes(race.id)) return false;

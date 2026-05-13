@@ -6,7 +6,7 @@ import { MAP_STYLES } from './mapStyles';
 import type { MapStyle } from './types';
 
 import { FilterWidget } from '../FilterWidget';
-import type { FilterState } from '../HomeClient';
+import type { FilterState } from '../../types/filters';
 
 interface MapControlsProps {
   currentStyle: MapStyle;

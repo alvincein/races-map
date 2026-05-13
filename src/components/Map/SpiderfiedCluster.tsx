@@ -2,15 +2,15 @@
 
 import React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
-import type { Race } from '../../types/database';
+import type { Race, RaceWithSubRaces } from '../../types/database';
 import { RaceMarker } from './RaceMarker';
 
 interface SpiderfiedClusterProps {
   longitude: number;
   latitude: number;
-  races: Race[];
+  races: RaceWithSubRaces[];
   selectedRaceId: string | null;
-  onRaceClick: (race: Race, lng: number, lat: number) => void;
+  onRaceClick: (race: RaceWithSubRaces, lng: number, lat: number) => void;
   isFavorite: (id: string) => boolean;
 }
 

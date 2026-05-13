@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Bookmark } from 'lucide-react';
-import type { Race, SubRace } from '../../types/database';
+import type { Race, SubRace, RaceWithSubRaces } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
 import { WeatherWidget } from '../WeatherWidget';
 import { RaceTypeBadge } from './raceLabels';
@@ -11,13 +11,13 @@ import { SubRaceCard } from './SubRaceCard';
 const DESCRIPTION_TRUNCATE_LENGTH = 250;
 
 interface RaceDetailProps {
-  race: Race;
+  race: RaceWithSubRaces;
   subRaces: SubRace[];
   selectedSubRaceId: string | null;
-  fetchedRoutes: RouteIndex;
   isLoadingSubRaces: boolean;
   onSubRaceClick: (subRaceId: string) => void;
   onBack: () => void;
+  fetchedRoutes: RouteIndex;
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
 }

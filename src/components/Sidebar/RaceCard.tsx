@@ -2,13 +2,13 @@
 
 import React from 'react';
 import { Calendar, MapPin, Bookmark } from 'lucide-react';
-import type { Race } from '../../types/database';
+import { RaceWithSubRaces } from '../../types/database';
 import { RaceTypeBadge } from './raceLabels';
 
 interface RaceCardProps {
-  race: Race;
+  race: RaceWithSubRaces;
   isSelected: boolean;
-  onClick: (race: Race) => void;
+  onClick: (race: RaceWithSubRaces) => void;
   onToggleFavorite: (id: string) => void;
   isFavorite: boolean;
 }

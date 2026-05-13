@@ -1,9 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { Database, Race, SubRace } from '../types/database';
-
-export type RaceWithSubRaces = Race & {
-  sub_races: Pick<SubRace, 'id' | 'has_gpx' | 'distance'>[];
-};
+import { Database, Race, SubRace, RaceWithSubRaces } from '../types/database';
 
 interface SubRaceJoin {
   id: string;
