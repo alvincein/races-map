@@ -27,7 +27,7 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 };
 
-const VIEWPORT_DEBOUNCE_MS = 100;
+const VIEWPORT_DEBOUNCE_MS = 150;
 const CLUSTER_RADIUS = 50;
 const CLUSTER_MAX_ZOOM = 20;
 
@@ -69,12 +69,20 @@ export default function MapClient({
   const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
   const [spiderfiedCluster, setSpiderfiedCluster] = useState<SpiderfiedClusterState | null>(null);
-  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
+  // Only track the integer zoom level for cluster recalculation — avoids
+  // re-rendering on every fractional zoom change during pinch/scroll.
+  const [clusterZoom, setClusterZoom] = useState(Math.floor(INITIAL_VIEW_STATE.zoom));
   const [bounds, setBounds] = useState<[number, number, number, number] | undefined>(undefined);
+  // Track zoom for the "reset view" button visibility without triggering
+  // cluster recalculations.
+  const [displayZoom, setDisplayZoom] = useState(INITIAL_VIEW_STATE.zoom);
   const { userLocation, isLocating, locateAndFly } = useGeolocation();
 
   const [showStyleMenu, setShowStyleMenu] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+
+  // RAF-based throttle ref so we don't schedule more than one frame at a time.
+  const rafRef = useRef<number | null>(null);
 
   const toggleStyleMenu = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -114,12 +122,16 @@ export default function MapClient({
   const { clusters, supercluster } = useSupercluster<RacePointProps>({
     points,
     bounds,
-    zoom: Math.floor(viewState.zoom),
+    zoom: clusterZoom,
     options: { radius: CLUSTER_RADIUS, maxZoom: CLUSTER_MAX_ZOOM },
   });
 
-  const updateBounds = useCallback(() => {
-    const mapBounds = mapRef.current?.getMap().getBounds();
+  // Sync bounds + cluster zoom from the native map state. Called on moveEnd
+  // and on load — never on every frame.
+  const syncMapState = useCallback(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    const mapBounds = map.getBounds();
     if (mapBounds) {
       setBounds([
         mapBounds.getWest(),
@@ -128,6 +140,9 @@ export default function MapClient({
         mapBounds.getNorth(),
       ]);
     }
+    const z = Math.floor(map.getZoom());
+    setClusterZoom(prev => (prev !== z ? z : prev));
+    setDisplayZoom(map.getZoom());
   }, []);
 
   useEffect(() => {
@@ -178,6 +193,13 @@ export default function MapClient({
       }));
   }, [selectedRace, selectedSubRaceId, subRaces, fetchedRoutes]);
 
+  // Cancel any pending RAF on unmount.
+  useEffect(() => {
+    return () => {
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
   // Navigate to race on select
   useEffect(() => {
     if (selectedRace?.location_lng != null && selectedRace?.location_lat != null) {
@@ -215,17 +237,28 @@ export default function MapClient({
       <Map
         ref={mapRef}
         initialViewState={INITIAL_VIEW_STATE}
-        onMove={evt => {
-          setViewState(evt.viewState);
+        onMoveStart={() => {
           onRefreshingChange?.(true);
         }}
+        onMove={() => {
+          // Throttle zoom reads to one per animation frame so we keep the
+          // "reset view" button responsive without triggering React re-renders
+          // on every single map frame.
+          if (rafRef.current == null) {
+            rafRef.current = requestAnimationFrame(() => {
+              rafRef.current = null;
+              const z = mapRef.current?.getMap().getZoom();
+              if (z != null) setDisplayZoom(z);
+            });
+          }
+        }}
         onMoveEnd={() => {
-          updateBounds();
+          syncMapState();
         }}
         mapStyle={currentStyle.value}
         dragRotate
         onLoad={() => {
-          updateBounds();
+          syncMapState();
         }}
         onClick={() => {
           if (spiderfiedCluster) setSpiderfiedCluster(null);
@@ -246,7 +279,7 @@ export default function MapClient({
                 key={`cluster-${clusterFeature.id}`}
                 cluster={clusterFeature}
                 supercluster={supercluster ?? null}
-                viewStateZoom={Math.floor(viewState.zoom)}
+                viewStateZoom={clusterZoom}
                 onZoom={handleClusterZoom}
                 onSpiderfy={handleSpiderfy}
                 onRaceClick={handleRaceClick}
@@ -333,7 +366,7 @@ export default function MapClient({
         onToggleFilterMenu={toggleFilterMenu}
       />
 
-      {viewState.zoom > 7.5 && (
+      {displayZoom > 7.5 && (
         <button className="reset-zoom-floating glass-panel" onClick={resetView}>
           <Maximize2 size={16} />
           <span>Επαναφορά Χάρτη</span>

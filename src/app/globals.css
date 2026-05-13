@@ -85,7 +85,10 @@ a {
   overflow: hidden;
 }
 
-.glass-panel::before {
+/* Shimmer hover effect — only on non-map panels to avoid perf cost during
+   continuous map compositing. Map markers and overlays opt-out via a parent
+   class. */
+.glass-panel:not(.no-shimmer)::before {
   content: '';
   position: absolute;
   top: 0;
@@ -101,7 +104,7 @@ a {
   transition: 0.5s;
 }
 
-.glass-panel:hover::before {
+.glass-panel:not(.no-shimmer):hover::before {
   left: 100%;
 }
 
@@ -112,6 +115,9 @@ a {
   flex-direction: column;
   align-items: center;
   cursor: pointer;
+  /* Promote to own GPU layer so map panning doesn't trigger repaints */
+  will-change: transform;
+  contain: layout style paint;
 }
 
 /* Custom Marker CSS */
@@ -124,7 +130,9 @@ a {
   justify-content: center;
   border: 1.5px solid rgba(255, 255, 255, 0.4);
   color: #fff;
-  transition: var(--transition-smooth);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -220,7 +228,10 @@ a {
   left: 50%;
   transform: translateX(-50%) translateY(10px);
   background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
+  /* Use a lighter blur for marker labels — they appear/disappear quickly and
+     the full 32px blur is expensive for the GPU compositor. */
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid var(--glass-border);
   padding: 12px 16px;
   border-radius: 12px;
@@ -230,7 +241,8 @@ a {
   flex-direction: column;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: opacity 0.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+              transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: var(--glass-shadow);
   z-index: 100;
 }
@@ -285,6 +297,14 @@ a {
   white-space: normal;
 }
 
+/* Promote every MapLibre marker to its own compositing layer.
+   During pan/zoom the browser can move these on the GPU without
+   re-laying-out or re-painting their DOM children. */
+.maplibregl-marker {
+  will-change: transform;
+  contain: layout style paint;
+}
+
 /* Force hovered markers to the front */
 .maplibregl-marker:hover {
   z-index: 95 !important;
@@ -297,22 +317,24 @@ a {
   height: 40px;
   /* Ensure the container itself doesn't grow and shift the Marker's center */
   overflow: visible;
+  will-change: transform;
+  contain: layout style paint;
 }
 
 .marker-cluster {
   position: absolute;
   top: 0;
   left: 0;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
   border: 2px solid var(--glass-border);
   color: #fff;
   cursor: pointer;
   width: 40px;
   height: 40px;
-  transition: var(--transition-smooth);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              background 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   z-index: 2;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(30, 30, 34, 0.85);
   border-radius: 50%;
   justify-content: center;
   align-items: center;
