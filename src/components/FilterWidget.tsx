@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SlidersHorizontal, X, Calendar, MapPin, Trophy, Navigation } from 'lucide-react';
 import { FilterState, DEFAULT_FILTERS, DistanceBucket } from '../types/filters';
 import './FilterWidget.css';
+import { RangeCalendar } from './Calendar/RangeCalendar';
 
 interface FilterWidgetProps {
   filters: FilterState;
@@ -11,11 +12,10 @@ interface FilterWidgetProps {
 }
 
 export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, isOpen, onToggle }) => {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [showAllRegions, setShowAllRegions] = useState(false);
 
-  const months = [
-    'Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιούν',
-    'Ιούλ', 'Αύγ', 'Σεπ', 'Οκτ', 'Νοέ', 'Δεκ'
-  ];
+
 
   const distanceRanges: { id: DistanceBucket; label: string }[] = [
     { id: '5k', label: '5χλμ - 10χλμ' },
@@ -41,6 +41,20 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
     { id: 'Voreio Aigaio', label: 'Βόρειο Αιγαίο' },
   ];
 
+  const sortedRegions = React.useMemo(() => {
+    return [...REGIONS].sort((a, b) => {
+      const aSelected = filters.regions.includes(a.id);
+      const bSelected = filters.regions.includes(b.id);
+      if (aSelected && !bSelected) return -1;
+      if (!aSelected && bSelected) return 1;
+      return 0;
+    });
+  }, [filters.regions]);
+
+  const visibleRegions = showAllRegions
+    ? sortedRegions
+    : sortedRegions.filter((r, idx) => idx < 4 || filters.regions.includes(r.id));
+
   const toggleDistance = (id: DistanceBucket) => {
     const newDistances = filters.distanceRange.includes(id)
       ? filters.distanceRange.filter(d => d !== id)
@@ -48,15 +62,9 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
     onChange({ ...filters, distanceRange: newDistances });
   };
 
-  const toggleMonth = (index: number) => {
-    const newMonths = filters.months.includes(index)
-      ? filters.months.filter(m => m !== index)
-      : [...filters.months, index];
-    onChange({ ...filters, months: newMonths });
-  };
+
 
   const hasActiveFilters = filters.distanceRange.length > 0 ||
-    filters.months.length > 0 ||
     filters.type !== 'all' ||
     filters.dateRange !== 'all' ||
     filters.regions.length > 0 ||
@@ -111,43 +119,32 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
                   <div className="switch-knob"></div>
                 </button>
               </div>
-              <div className="filter-options-grid three-cols">
-                <button
-                  className={`option-btn small ${filters.dateRange === 'all' ? 'active' : ''}`}
-                  onClick={() => onChange({ ...filters, dateRange: 'all' })}
-                >Όλοι</button>
-                <button
-                  className={`option-btn small ${filters.dateRange === '3months' ? 'active' : ''}`}
-                  onClick={() => onChange({ ...filters, dateRange: '3months' })}
-                >3 Μήνες</button>
-                <button
-                  className={`option-btn small ${filters.dateRange === '6months' ? 'active' : ''}`}
-                  onClick={() => onChange({ ...filters, dateRange: '6months' })}
-                >6 Μήνες</button>
-                <button
-                  className={`option-btn small ${filters.dateRange === 'custom' ? 'active' : ''}`}
-                  onClick={() => onChange({ ...filters, dateRange: 'custom' })}
-                >Εύρος</button>
+              <div className={`airbnb-date-container ${isCalendarOpen ? 'active' : ''}`} onClick={() => setIsCalendarOpen(!isCalendarOpen)}>
+                  <div className="date-field">
+                    <label>ΑΠΟ</label>
+                    <div className="date-display-val">
+                      {filters.customDateStart ? new Date(filters.customDateStart).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Επιλογή'}
+                    </div>
+                  </div>
+                  <div className="date-divider"></div>
+                  <div className="date-field">
+                    <label>ΕΩΣ</label>
+                    <div className="date-display-val">
+                      {filters.customDateEnd ? new Date(filters.customDateEnd).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Επιλογή'}
+                    </div>
+                  </div>
               </div>
 
-              {filters.dateRange === 'custom' && (
-                <div className="custom-date-inputs animation-slide-down">
-                  <div className="date-input-group">
-                    <span>Από:</span>
-                    <input
-                      type="date"
-                      value={filters.customDateStart || ''}
-                      onChange={(e) => onChange({ ...filters, customDateStart: e.target.value })}
-                    />
-                  </div>
-                  <div className="date-input-group">
-                    <span>Έως:</span>
-                    <input
-                      type="date"
-                      value={filters.customDateEnd || ''}
-                      onChange={(e) => onChange({ ...filters, customDateEnd: e.target.value })}
-                    />
-                  </div>
+              {isCalendarOpen && (
+                <div className="calendar-popover animation-slide-down">
+                  <RangeCalendar
+                    startDate={filters.customDateStart || null}
+                    endDate={filters.customDateEnd || null}
+                    onChange={(start, end) => {
+                      onChange({ ...filters, customDateStart: start, customDateEnd: end, dateRange: 'custom' });
+                      if (start && end) setIsCalendarOpen(false);
+                    }}
+                  />
                 </div>
               )}
             </div>
@@ -175,27 +172,6 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
 
             <div className="filter-section">
               <div className="section-header">
-                <MapPin size={14} />
-                <label>Περιφερεια</label>
-              </div>
-              <div className="filter-options-grid regions-grid">
-                {REGIONS.map(region => (
-                  <button
-                    key={region.id}
-                    className={`option-btn small ${filters.regions.includes(region.id) ? 'active' : ''}`}
-                    onClick={() => {
-                      const newRegions = filters.regions.includes(region.id)
-                        ? filters.regions.filter(r => r !== region.id)
-                        : [...filters.regions, region.id];
-                      onChange({ ...filters, regions: newRegions });
-                    }}
-                  >{region.label}</button>
-                ))}
-              </div>
-            </div>
-
-            <div className="filter-section">
-              <div className="section-header">
                 <Trophy size={14} />
                 <label>Αποστάσεις</label>
               </div>
@@ -212,19 +188,34 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
 
             <div className="filter-section">
               <div className="section-header">
-                <Calendar size={14} />
-                <label>Μηνες Διεξαγωγης</label>
+                <MapPin size={14} />
+                <label>Περιφερεια</label>
               </div>
-              <div className="months-grid">
-                {months.map((m, i) => (
+              <div className="filter-options-grid regions-grid">
+                {visibleRegions.map(region => (
                   <button
-                    key={m}
-                    className={`month-pill ${filters.months.includes(i) ? 'active' : ''}`}
-                    onClick={() => toggleMonth(i)}
-                  >{m}</button>
+                    key={region.id}
+                    className={`option-btn small ${filters.regions.includes(region.id) ? 'active' : ''}`}
+                    onClick={() => {
+                      const newRegions = filters.regions.includes(region.id)
+                        ? filters.regions.filter(r => r !== region.id)
+                        : [...filters.regions, region.id];
+                      onChange({ ...filters, regions: newRegions });
+                    }}
+                  >{region.label}</button>
                 ))}
               </div>
+              {REGIONS.length > 4 && (
+                <button 
+                  className="show-more-btn" 
+                  onClick={() => setShowAllRegions(!showAllRegions)}
+                >
+                  {showAllRegions ? 'Λιγότερα' : `Περισσότερα (${REGIONS.length - 4})`}
+                </button>
+              )}
             </div>
+
+
           </div>
 
           <div className="panel-footer">

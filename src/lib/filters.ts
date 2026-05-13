@@ -50,11 +50,6 @@ export function applyFilters(races: Race[], filters: FilterState, now: Date = ne
 
     const raceDate = nextRaceDate(race, now);
 
-    if (filters.months.length > 0) {
-      if (!raceDate) return false;
-      if (!filters.months.includes(raceDate.getMonth())) return false;
-    }
-
     if (filters.regions.length > 0) {
       if (!race.location_region || !filters.regions.includes(race.location_region)) return false;
     }

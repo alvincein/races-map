@@ -5,27 +5,45 @@ import { Layers, Maximize2, Navigation } from 'lucide-react';
 import { MAP_STYLES } from './mapStyles';
 import type { MapStyle } from './types';
 
+import { FilterWidget } from '../FilterWidget';
+import type { FilterState } from '../HomeClient';
+
 interface MapControlsProps {
   currentStyle: MapStyle;
   onStyleChange: (style: MapStyle) => void;
+  showStyleMenu: boolean;
+  onToggleStyleMenu: (e: React.MouseEvent) => void;
   isLocating: boolean;
   hasUserLocation: boolean;
-  onLocateClick: () => void;
-  showResetView: boolean;
+  onLocate: () => void;
   onResetView: () => void;
+  // Filter props
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
+  showFilterMenu: boolean;
+  onToggleFilterMenu: (open: boolean) => void;
 }
 
-export function MapControls({
-  currentStyle, onStyleChange, isLocating, hasUserLocation, onLocateClick, showResetView, onResetView,
+export const MapControls = React.memo(function MapControls({
+  currentStyle,
+  onStyleChange,
+  showStyleMenu,
+  onToggleStyleMenu,
+  isLocating,
+  hasUserLocation,
+  onLocate,
+  onResetView,
+  filters,
+  onFiltersChange,
+  showFilterMenu,
+  onToggleFilterMenu,
 }: MapControlsProps) {
-  const [showStyleMenu, setShowStyleMenu] = useState(false);
-
   return (
     <div className="map-controls-top-right">
       <div className="map-control-group">
         <button
           className={`map-control-btn ${showStyleMenu ? 'active' : ''}`}
-          onClick={() => setShowStyleMenu(!showStyleMenu)}
+          onClick={onToggleStyleMenu}
           title="Εναλλαγή Χάρτη"
         >
           <Layers size={18} />
@@ -36,7 +54,9 @@ export function MapControls({
               <button
                 key={style.id}
                 className={`style-option ${currentStyle.id === style.id ? 'active' : ''}`}
-                onClick={() => { onStyleChange(style); setShowStyleMenu(false); }}
+                onClick={() => {
+                  onStyleChange(style);
+                }}
               >
                 {style.label}
               </button>
@@ -48,20 +68,19 @@ export function MapControls({
       <div className="map-control-group">
         <button
           className={`map-control-btn ${isLocating ? 'loading' : ''} ${hasUserLocation ? 'active' : ''}`}
-          onClick={onLocateClick}
+          onClick={onLocate}
           title="Η τοποθεσία μου"
         >
           <Navigation size={18} fill={hasUserLocation ? 'currentColor' : 'none'} />
         </button>
       </div>
 
-      {showResetView && (
-        <div className="map-control-group mobile-only-flex">
-          <button className="map-control-btn" onClick={onResetView} title="Επαναφορά Προβολής">
-            <Maximize2 size={18} />
-          </button>
-        </div>
-      )}
+      <FilterWidget
+        filters={filters}
+        onChange={onFiltersChange}
+        isOpen={showFilterMenu}
+        onToggle={onToggleFilterMenu}
+      />
     </div>
   );
-}
+});

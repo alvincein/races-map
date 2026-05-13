@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
+import { Maximize2 } from 'lucide-react';
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
 import useSupercluster from 'use-supercluster';
@@ -26,7 +27,7 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 };
 
-const VIEWPORT_DEBOUNCE_MS = 400;
+const VIEWPORT_DEBOUNCE_MS = 100;
 const CLUSTER_RADIUS = 50;
 const CLUSTER_MAX_ZOOM = 20;
 
@@ -43,6 +44,8 @@ interface MapClientProps {
   fetchedRoutes: RouteIndex;
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
+  onFilterToggle?: (open: boolean) => void;
+  onRefreshingChange?: (refreshing: boolean) => void;
 }
 
 export default function MapClient({
@@ -58,6 +61,8 @@ export default function MapClient({
   fetchedRoutes,
   filters,
   onFiltersChange,
+  onFilterToggle,
+  onRefreshingChange,
 }: MapClientProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
@@ -79,7 +84,8 @@ export default function MapClient({
   const toggleFilterMenu = useCallback((open: boolean) => {
     setShowFilterMenu(open);
     if (open) setShowStyleMenu(false);
-  }, []);
+    onFilterToggle?.(open);
+  }, [onFilterToggle]);
 
   const resetView = useCallback(() => {
     mapRef.current?.flyTo({
@@ -89,7 +95,6 @@ export default function MapClient({
       bearing: INITIAL_VIEW_STATE.bearing,
       duration: 1500,
     });
-    setViewState(INITIAL_VIEW_STATE);
   }, []);
 
   const points = useMemo<RacePointFeature[]>(() => {
@@ -125,6 +130,7 @@ export default function MapClient({
 
   useEffect(() => {
     if (!bounds) return;
+    onRefreshingChange?.(true);
     const timer = setTimeout(() => {
       const filtered = races.filter(race =>
         race.location_lng != null &&
@@ -135,9 +141,10 @@ export default function MapClient({
         race.location_lat <= bounds[3],
       );
       onVisibleRacesChange(filtered);
+      onRefreshingChange?.(false);
     }, VIEWPORT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [bounds, races, onVisibleRacesChange]);
+  }, [bounds, races, onVisibleRacesChange, onRefreshingChange]);
 
   const handleClusterZoom = useCallback((lng: number, lat: number, zoom: number) => {
     mapRef.current?.flyTo({ center: [lng, lat], zoom, duration: 500 });
@@ -152,10 +159,8 @@ export default function MapClient({
   );
 
   const handleRaceClick = useCallback(
-    (race: Race, lng: number, lat: number) => {
+    (race: Race) => {
       onRaceSelect(race);
-      mapRef.current?.flyTo({ center: [lng, lat], zoom: 12, pitch: 45, duration: 1000 });
-      setViewState(prev => ({ ...prev, zoom: 12, longitude: lng, latitude: lat }));
     },
     [onRaceSelect],
   );
@@ -170,6 +175,18 @@ export default function MapClient({
         aid_stations: sub.aid_stations,
       }));
   }, [selectedRace, selectedSubRaceId, subRaces, fetchedRoutes]);
+
+  // Navigate to race on select
+  useEffect(() => {
+    if (selectedRace?.location_lng != null && selectedRace?.location_lat != null) {
+      mapRef.current?.flyTo({
+        center: [selectedRace.location_lng, selectedRace.location_lat],
+        zoom: 12,
+        pitch: 45,
+        duration: 1000,
+      });
+    }
+  }, [selectedRace]);
 
   // Fit the focused sub-race's route into view whenever the focused id changes.
   useEffect(() => {
@@ -195,14 +212,21 @@ export default function MapClient({
     >
       <Map
         ref={mapRef}
-        {...viewState}
-        onMove={evt => setViewState(evt.viewState)}
-        onLoad={updateBounds}
-        onMoveEnd={updateBounds}
+        initialViewState={INITIAL_VIEW_STATE}
+        onMove={evt => {
+          setViewState(evt.viewState);
+          onRefreshingChange?.(true);
+        }}
+        onMoveEnd={() => {
+          updateBounds();
+        }}
         mapStyle={currentStyle.value}
         dragRotate
         onClick={() => {
           if (spiderfiedCluster) setSpiderfiedCluster(null);
+          setShowStyleMenu(false);
+          setShowFilterMenu(false);
+          onFilterToggle?.(false);
           onDeselect();
         }}
       >
@@ -217,7 +241,7 @@ export default function MapClient({
                 key={`cluster-${clusterFeature.id}`}
                 cluster={clusterFeature}
                 supercluster={supercluster ?? null}
-                viewStateZoom={viewState.zoom}
+                viewStateZoom={Math.floor(viewState.zoom)}
                 onZoom={handleClusterZoom}
                 onSpiderfy={handleSpiderfy}
                 onRaceClick={handleRaceClick}
@@ -287,17 +311,22 @@ export default function MapClient({
         onStyleChange={setCurrentStyle}
         showStyleMenu={showStyleMenu}
         onToggleStyleMenu={toggleStyleMenu}
-        onResetView={resetView}
-        onLocate={locateAndFly}
         isLocating={isLocating}
-      />
-
-      <FilterWidget
+        hasUserLocation={!!userLocation}
+        onLocate={() => locateAndFly(mapRef)}
+        onResetView={resetView}
         filters={filters}
         onFiltersChange={onFiltersChange}
-        isOpen={showFilterMenu}
-        onToggle={toggleFilterMenu}
+        showFilterMenu={showFilterMenu}
+        onToggleFilterMenu={toggleFilterMenu}
       />
+
+      {viewState.zoom > 7.5 && (
+        <button className="reset-zoom-floating glass-panel" onClick={resetView}>
+          <Maximize2 size={16} />
+          <span>Επαναφορά Χάρτη</span>
+        </button>
+      )}
     </div>
   );
 }

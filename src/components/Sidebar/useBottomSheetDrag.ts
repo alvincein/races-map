@@ -2,15 +2,16 @@
 
 import { useRef, useState, useCallback } from 'react';
 
-const TOGGLE_THRESHOLD_PX = 100;
+const TOGGLE_THRESHOLD_PX = 60;
+
+type SheetState = 'minimized' | 'half' | 'full';
 
 interface UseBottomSheetDragOptions {
-  isMinimized: boolean;
-  onToggle: () => void;
+  state: SheetState;
+  onStateChange: (state: SheetState) => void;
 }
 
 interface BottomSheetDragHandlers {
-  /** Pixel offset to apply to the sheet while the user is mid-drag. */
   dragY: number;
   isDragging: boolean;
   onTouchStart: (e: React.TouchEvent) => void;
@@ -18,13 +19,7 @@ interface BottomSheetDragHandlers {
   onTouchEnd: () => void;
 }
 
-/**
- * Drag-handle behaviour for the mobile bottom-sheet:
- *  - drag down to minimize when expanded
- *  - drag up to expand when minimized
- *  - any drag shorter than the threshold snaps back
- */
-export function useBottomSheetDrag({ isMinimized, onToggle }: UseBottomSheetDragOptions): BottomSheetDragHandlers {
+export function useBottomSheetDrag({ state, onStateChange }: UseBottomSheetDragOptions): BottomSheetDragHandlers {
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const touchStartY = useRef<number | null>(null);
@@ -37,18 +32,30 @@ export function useBottomSheetDrag({ isMinimized, onToggle }: UseBottomSheetDrag
   const onTouchMove = useCallback((e: React.TouchEvent) => {
     if (touchStartY.current === null) return;
     const deltaY = e.touches[0].clientY - touchStartY.current;
-    if (!isMinimized && deltaY > 0) setDragY(deltaY);
-    else if (isMinimized && deltaY < 0) setDragY(deltaY);
-  }, [isMinimized]);
+    
+    // Prevent dragging up from full or down from minimized if it's already there
+    // But allow some "resistance" or just allow it and let snap handle it
+    setDragY(deltaY);
+  }, []);
 
   const onTouchEnd = useCallback(() => {
     if (touchStartY.current === null) return;
-    if (!isMinimized && dragY > TOGGLE_THRESHOLD_PX) onToggle();
-    else if (isMinimized && dragY < -TOGGLE_THRESHOLD_PX) onToggle();
+    
+    const absY = Math.abs(dragY);
+    if (absY > TOGGLE_THRESHOLD_PX) {
+      if (dragY < 0) { // Dragged UP
+        if (state === 'minimized') onStateChange('half');
+        else if (state === 'half') onStateChange('full');
+      } else { // Dragged DOWN
+        if (state === 'full') onStateChange('half');
+        else if (state === 'half') onStateChange('minimized');
+      }
+    }
+
     setDragY(0);
     setIsDragging(false);
     touchStartY.current = null;
-  }, [isMinimized, dragY, onToggle]);
+  }, [state, dragY, onStateChange]);
 
   return { dragY, isDragging, onTouchStart, onTouchMove, onTouchEnd };
 }

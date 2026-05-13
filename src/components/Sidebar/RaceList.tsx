@@ -1,18 +1,19 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Loader2 } from 'lucide-react';
 import type { Race } from '../../types/database';
 import { RaceCard } from './RaceCard';
 
 interface RaceListProps {
   races: Race[];
   isFiltered: boolean;
+  isRefreshing: boolean;
   onRaceClick: (race: Race) => void;
   onBack: () => void;
 }
 
-export function RaceList({ races, isFiltered, onRaceClick, onBack }: RaceListProps) {
+export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack }: RaceListProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredRaces = useMemo(() => {
@@ -35,9 +36,13 @@ export function RaceList({ races, isFiltered, onRaceClick, onBack }: RaceListPro
           <button className="back-btn" onClick={onBack}>
             <ArrowLeft size={16} />
             <span>Εμφάνιση όλων των αγώνων</span>
+            {isRefreshing && <Loader2 size={14} className="animate-spin" style={{ marginLeft: '8px', opacity: 0.7 }} />}
           </button>
         ) : (
-          <h1>Αγώνες στην Ελλάδα</h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <h1>Αγώνες στην Ελλάδα</h1>
+            {isRefreshing && <Loader2 size={18} className="animate-spin" style={{ opacity: 0.5 }} />}
+          </div>
         )}
 
         {isFiltered && <h2 className="filter-title">Αγώνες σε αυτή την τοποθεσία</h2>}

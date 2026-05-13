@@ -300,18 +300,23 @@
 
 .sub-race-stats {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .stat-box {
-  flex: 1;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 8px;
+  flex: 1 1 calc(25% - 8px); /* Try to fit 4, but grow to fill */
+  min-width: 70px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 6px 8px;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  transition: all 0.2s ease;
 }
 
 .stat-label {
@@ -441,6 +446,17 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+.animation-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+}
+
+.sidebar-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 @media (max-width: 768px) {
   .sidebar-container {
     top: auto;
@@ -451,28 +467,41 @@
     max-width: 100vw;
     height: 70vh;
     border-radius: 20px 20px 0 0;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.25s ease;
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    overflow: hidden;
+    z-index: 2500;
   }
 
-  .sidebar-container.is-dragging {
-    transition: none !important;
+  .sidebar-content-scroll {
+    padding-top: 32px;
   }
 
-  .sidebar-container.minimized {
+  .sidebar-container.state-minimized {
     transform: translateY(calc(100% + 20px)) !important;
     opacity: 0;
     pointer-events: none;
   }
 
-  .sidebar-container.detail-mode {
+  .sidebar-container.state-half {
+    height: 70vh;
+    transform: translateY(0) !important;
+  }
+
+  .sidebar-container.state-full {
+    height: 100vh;
+    transform: translateY(0) !important;
+    border-radius: 0;
+  }
+
+  .sidebar-container.detail-mode.state-half {
     height: 75vh;
   }
 
   /* Drag handle area */
   .drag-handle {
     width: 100%;
-    height: 40px;
+    height: 32px;
     position: absolute;
     top: 0;
     left: 0;
@@ -481,6 +510,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px 20px 0 0;
   }
 
   /* Handle line indicator */
@@ -491,6 +524,30 @@
     height: 4px;
     background: rgba(255, 255, 255, 0.4);
     border-radius: 4px;
+  }
+
+  .back-btn {
+    width: 100%;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    justify-content: center;
+    font-size: 16px;
+    margin-bottom: 24px;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  .back-btn:active {
+    transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .back-btn svg {
+    width: 20px;
+    height: 20px;
   }
 
   .sidebar-header {

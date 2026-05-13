@@ -2,12 +2,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { Database, Race, SubRace } from '../types/database';
 
 export type RaceWithSubRaces = Race & {
-  sub_races: Pick<SubRace, 'id' | 'has_gpx'>[];
+  sub_races: Pick<SubRace, 'id' | 'has_gpx' | 'distance'>[];
 };
 
 interface SubRaceJoin {
   id: string;
   has_gpx: boolean | null;
+  distance: number | null;
 }
 
 interface RawRaceRow {
@@ -32,7 +33,7 @@ export async function fetchRacesWithSubRaces(
   try {
     const { data, error } = await supabase
       .from('races')
-      .select('*, sub_races!inner(id, has_gpx)')
+      .select('*, sub_races!inner(id, has_gpx, distance)')
       .not('location_lat', 'is', null)
       .not('location_lng', 'is', null)
       .limit(1000);

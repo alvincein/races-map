@@ -13,7 +13,13 @@ interface RouteLayerProps {
   hasFocus: boolean;
 }
 
-export function RouteLayer({ route, index, color, isFocused, hasFocus }: RouteLayerProps) {
+export const RouteLayer = React.memo(function RouteLayer({ 
+  route, 
+  index, 
+  color, 
+  isFocused, 
+  hasFocus 
+}: RouteLayerProps) {
   const coords = route.geojson.geometry.coordinates;
   // While a sub-race is focused, dim the others heavily so the focus is unmistakable.
   const opacity = isFocused ? 1 : (hasFocus ? 0.15 : 0.8);
@@ -118,5 +124,5 @@ export function RouteLayer({ route, index, color, isFocused, hasFocus }: RouteLa
       )}
     </>
   );
-}
+});
 

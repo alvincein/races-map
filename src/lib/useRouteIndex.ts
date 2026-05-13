@@ -33,6 +33,7 @@ export function useRouteIndex(subRaces: SubRace[]): UseRouteIndexResult {
 
     Promise.all(
       subRaces.map(async sub => {
+        if (!sub.has_gpx) return null;
         try {
           const route = await fetchRaceRoute(sub.id);
           return [sub.id, route] as const;

@@ -9,6 +9,7 @@ import { applyFilters } from '../lib/filters';
 import type { RoutePoint } from '../types/routes';
 import { useSubRaces } from '../lib/useSubRaces';
 import { useRouteIndex } from '../lib/useRouteIndex';
+import { List, Loader2 } from 'lucide-react';
 import MapClient from './MapClient';
 import Sidebar from './Sidebar';
 import { ElevationWidget } from './ElevationWidget';
@@ -25,7 +26,8 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
   const [hoveredPoint, setHoveredPoint] = useState<RoutePoint | null>(null);
   const [focusedRaces, setFocusedRaces] = useState<Race[] | null>(null);
   const [visibleRaces, setVisibleRaces] = useState<Race[]>(initialRaces);
-  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+  const [sidebarState, setSidebarState] = useState<'minimized' | 'half' | 'full'>('minimized');
+  const [isListRefreshing, setIsListRefreshing] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
   const { subRaces, isLoading: isLoadingSubRaces } = useSubRaces(selectedRace?.id ?? null);
@@ -54,13 +56,13 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
   const handleRaceSelect = (race: Race) => {
     setSelectedRace(race);
     setSelectedSubRaceId(null);
-    setIsSidebarMinimized(false);
+    setSidebarState('half');
   };
 
   const handleSubRaceSelect = (subRaceId: string) => {
     const isSelecting = subRaceId !== selectedSubRaceId;
     setSelectedSubRaceId(isSelecting ? subRaceId : null);
-    if (isSelecting) setIsSidebarMinimized(true);
+    if (isSelecting) setSidebarState('minimized');
   };
 
   const handleClusterClick = (racesInCluster: Race[]) => {
@@ -72,7 +74,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
     setSelectedRace(null);
     setSelectedSubRaceId(null);
     setFocusedRaces(null);
-    setIsSidebarMinimized(true);
+    setSidebarState('minimized');
   };
 
   const hasElevation = !!(selectedSubRaceId && fetchedRoutes[selectedSubRaceId]);
@@ -95,9 +97,15 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
         onDeselect={handleDeselect}
         filters={filters}
         onFiltersChange={setFilters}
+        onFilterToggle={(open) => {
+          if (open) setSidebarState('minimized');
+          else setSidebarState('half');
+        }}
+        onRefreshingChange={setIsListRefreshing}
       />
       <Sidebar
         races={sidebarRaces}
+        isRefreshing={isListRefreshing}
         isFiltered={focusedRaces !== null}
         selectedRace={selectedRace}
         selectedSubRaceId={selectedSubRaceId}
@@ -106,20 +114,30 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
         isLoadingSubRaces={isLoadingSubRaces}
         onRaceClick={handleRaceSelect}
         onSubRaceClick={handleSubRaceSelect}
-        onBack={handleDeselect}
-        isMinimized={isSidebarMinimized}
-        onMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
+        onBack={() => {
+          setSelectedRace(null);
+          setSelectedSubRaceId(null);
+          setFocusedRaces(null);
+          setSidebarState('half');
+        }}
+        sidebarState={sidebarState}
+        onStateChange={setSidebarState}
       />
 
-      <FilterWidget filters={filters} onChange={setFilters} />
 
 
-      {isSidebarMinimized && (
+
+      {sidebarState === 'minimized' && (
         <button
           className="mobile-expand-btn glass-panel"
-          onClick={() => setIsSidebarMinimized(false)}
+          onClick={() => setSidebarState('half')}
         >
-          Εμφάνιση Λίστας
+          {isListRefreshing ? (
+            <Loader2 size={18} className="animate-spin" style={{ color: 'var(--accent-primary)' }} />
+          ) : (
+            <List size={18} />
+          )}
+          <span>Λίστα Αγώνων ({sidebarRaces.length})</span>
         </button>
       )}
 

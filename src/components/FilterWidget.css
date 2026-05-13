@@ -223,59 +223,116 @@
     height: 48px;
     padding: 0;
     justify-content: center;
-    border-radius: 50%;
+    border-radius: 12px;
   }
 
   .filter-dropdown-panel {
     position: fixed;
-    top: auto;
-    bottom: 80px;
-    left: 20px;
-    right: 20px;
+    top: 20px;
+    bottom: 20px;
+    left: 10px;
+    right: 10px;
     width: auto;
-    max-height: 70vh;
+    max-height: none;
+    border-radius: 28px;
+    z-index: 2100;
+  }
+
+  .panel-content {
+    max-height: none;
+    flex: 1;
+    overflow-y: auto;
   }
 }
 
-.custom-date-inputs {
+.show-more-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 2px 8px;
+  cursor: pointer;
+  width: fit-content;
+  margin: 0 auto;
+  display: block;
+  opacity: 0.6;
+  transition: all 0.2s;
+}
+
+.show-more-btn:hover {
+  opacity: 1;
+  color: var(--accent-primary);
+}
+
+.airbnb-date-container {
+  display: flex;
+  align-items: stretch;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  margin-top: 4px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.airbnb-date-container:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.airbnb-date-container.active {
+  border-color: var(--accent-primary);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(255, 232, 0, 0.1);
+}
+
+.calendar-popover {
+  margin-top: 12px;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.date-field {
+  flex: 1;
+  padding: 8px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  border: 1px solid var(--glass-border);
+  gap: 2px;
 }
 
-.date-input-group {
+.date-field label {
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.date-field input, .date-display-val {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  width: 100%;
+  color-scheme: dark;
+  cursor: pointer;
+}
+
+.date-display-val {
+  height: 19px; /* Match input height */
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
 }
 
-.date-input-group span {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  min-width: 30px;
-}
-
-.date-input-group input {
-  flex: 1;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--glass-border);
-  color: white;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  outline: none;
-  color-scheme: dark; /* Makes the date picker icon white in some browsers */
-}
-
-.date-input-group input:focus {
-  border-color: var(--accent-primary);
+.date-divider {
+  width: 1px;
+  background: var(--glass-border);
+  margin: 8px 0;
 }
 
 .regions-grid {
@@ -286,4 +343,46 @@
   .regions-grid {
     grid-template-columns: 1fr !important;
   }
+}
+
+/* Toggle Switches */
+.toggle-switch {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+  overflow: hidden;
+}
+
+.toggle-switch.active {
+  background: rgba(255, 232, 0, 0.15);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px rgba(255, 232, 0, 0.1);
+}
+
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch.active .switch-knob {
+  left: 22px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary-glow);
+}
+
+.toggle-switch:hover .switch-knob {
+  transform: scale(1.1);
 }

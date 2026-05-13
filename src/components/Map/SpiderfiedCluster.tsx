@@ -22,7 +22,7 @@ function spokePosition(index: number, total: number) {
   return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
 }
 
-export function SpiderfiedCluster({
+export const SpiderfiedCluster = React.memo(function SpiderfiedCluster({
   longitude, latitude, races, selectedRaceId, onRaceClick,
 }: SpiderfiedClusterProps) {
   return (
@@ -31,7 +31,7 @@ export function SpiderfiedCluster({
         longitude={longitude}
         latitude={latitude}
         anchor="center"
-        style={{ zIndex: 101, pointerEvents: 'none' }}
+        style={{ zIndex: 0, pointerEvents: 'none' }}
       >
         <svg width="400" height="400" viewBox="0 0 400 400" style={{ overflow: 'visible' }}>
           <circle cx="200" cy="200" r="5" fill="white" opacity="0.5" />
@@ -69,4 +69,4 @@ export function SpiderfiedCluster({
       })}
     </>
   );
-}
+});

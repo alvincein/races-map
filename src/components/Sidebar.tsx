@@ -18,8 +18,9 @@ interface SidebarProps {
   subRaces: SubRace[];
   isLoadingSubRaces: boolean;
   onBack: () => void;
-  isMinimized?: boolean;
-  onMinimize?: () => void;
+  sidebarState: 'minimized' | 'half' | 'full';
+  isRefreshing: boolean;
+  onStateChange: (state: 'minimized' | 'half' | 'full') => void;
   fetchedRoutes: RouteIndex;
 }
 
@@ -33,54 +34,69 @@ export default function Sidebar({
   subRaces,
   isLoadingSubRaces,
   onBack,
-  isMinimized = false,
-  onMinimize,
+  sidebarState,
+  onStateChange,
   fetchedRoutes,
+  isRefreshing,
 }: SidebarProps) {
   const drag = useBottomSheetDrag({
-    isMinimized,
-    onToggle: () => onMinimize?.(),
+    state: sidebarState,
+    onStateChange,
   });
 
   const containerClassName = [
     'sidebar-container',
     'glass-panel',
     selectedRace ? 'detail-mode' : '',
-    isMinimized ? 'minimized' : '',
+    `state-${sidebarState}`,
     drag.isDragging ? 'is-dragging' : '',
   ].filter(Boolean).join(' ');
 
   return (
     <div
       className={containerClassName}
-      style={{ transform: drag.dragY ? `translateY(${drag.dragY}px)` : undefined }}
+      style={{ 
+        transform: drag.dragY ? `translateY(${drag.dragY}px)` : undefined,
+        height: sidebarState === 'full' ? '100vh' : undefined
+      }}
     >
       <div
         className="drag-handle"
-        onClick={onMinimize}
+        onClick={() => {
+          if (sidebarState === 'minimized') onStateChange('half');
+          else if (sidebarState === 'half') onStateChange('full');
+          else onStateChange('half');
+        }}
         onTouchStart={drag.onTouchStart}
         onTouchMove={drag.onTouchMove}
         onTouchEnd={drag.onTouchEnd}
       />
 
-      {selectedRace ? (
-        <RaceDetail
-          race={selectedRace}
-          subRaces={subRaces}
-          selectedSubRaceId={selectedSubRaceId}
-          fetchedRoutes={fetchedRoutes}
-          isLoadingSubRaces={isLoadingSubRaces}
-          onSubRaceClick={onSubRaceClick}
-          onBack={onBack}
-        />
-      ) : (
-        <RaceList
-          races={races}
-          isFiltered={isFiltered}
-          onRaceClick={onRaceClick}
-          onBack={onBack}
-        />
-      )}
+      <div className="sidebar-content-scroll">
+        {selectedRace ? (
+          <div key="detail" className="animation-fade-in">
+            <RaceDetail
+              race={selectedRace}
+              subRaces={subRaces}
+              selectedSubRaceId={selectedSubRaceId}
+              fetchedRoutes={fetchedRoutes}
+              isLoadingSubRaces={isLoadingSubRaces}
+              onSubRaceClick={onSubRaceClick}
+              onBack={onBack}
+            />
+          </div>
+        ) : (
+          <div key="list" className="animation-fade-in">
+            <RaceList
+              races={races}
+              isFiltered={isFiltered}
+              isRefreshing={isRefreshing}
+              onRaceClick={onRaceClick}
+              onBack={onBack}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
