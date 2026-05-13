@@ -117,7 +117,7 @@ a {
   cursor: pointer;
   /* Promote to own GPU layer so map panning doesn't trigger repaints */
   will-change: transform;
-  contain: layout style paint;
+  contain: layout style;
 }
 
 /* Custom Marker CSS */
@@ -302,7 +302,7 @@ a {
    re-laying-out or re-painting their DOM children. */
 .maplibregl-marker {
   will-change: transform;
-  contain: layout style paint;
+  contain: layout style;
 }
 
 /* Force hovered markers to the front */
@@ -318,7 +318,7 @@ a {
   /* Ensure the container itself doesn't grow and shift the Marker's center */
   overflow: visible;
   will-change: transform;
-  contain: layout style paint;
+  contain: layout style;
 }
 
 .marker-cluster {
