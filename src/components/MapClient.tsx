@@ -210,7 +210,7 @@ export default function MapClient({
   return (
     <div
       className={`map-wrapper style-${currentStyle.id}`}
-      style={{ width: '100vw', height: '100vh', position: 'relative' }}
+      style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, background: '#000' }}
     >
       <Map
         ref={mapRef}
