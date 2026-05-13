@@ -224,6 +224,9 @@ export default function MapClient({
         }}
         mapStyle={currentStyle.value}
         dragRotate
+        onLoad={() => {
+          updateBounds();
+        }}
         onClick={() => {
           if (spiderfiedCluster) setSpiderfiedCluster(null);
           setShowStyleMenu(false);
