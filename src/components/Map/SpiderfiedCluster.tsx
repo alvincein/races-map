@@ -11,6 +11,7 @@ interface SpiderfiedClusterProps {
   races: Race[];
   selectedRaceId: string | null;
   onRaceClick: (race: Race, lng: number, lat: number) => void;
+  isFavorite: (id: string) => boolean;
 }
 
 const SPIDER_BASE_RADIUS = 60;
@@ -23,7 +24,7 @@ function spokePosition(index: number, total: number) {
 }
 
 export const SpiderfiedCluster = React.memo(function SpiderfiedCluster({
-  longitude, latitude, races, selectedRaceId, onRaceClick,
+  longitude, latitude, races, selectedRaceId, onRaceClick, isFavorite,
 }: SpiderfiedClusterProps) {
   return (
     <>
@@ -64,6 +65,7 @@ export const SpiderfiedCluster = React.memo(function SpiderfiedCluster({
             lng={longitude}
             lat={latitude}
             offset={[x, y]}
+            isFavorite={isFavorite(race.id)}
           />
         );
       })}

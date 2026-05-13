@@ -39,9 +39,11 @@ export function nextRaceDate(race: Race, _now: Date): Date | null {
   return new Date(race.dates[0]);
 }
 
-export function applyFilters(races: Race[], filters: FilterState, now: Date = new Date()): Race[] {
+export function applyFilters(races: Race[], filters: FilterState, now: Date = new Date(), favorites: string[] = []): Race[] {
   const dateRange = computeDateRange(filters, now);
   return races.filter(race => {
+    if (filters.favoritesOnly && !favorites.includes(race.id)) return false;
+    
     if (filters.type !== 'all' && race.event_type?.toLowerCase() !== filters.type) return false;
 
     if (filters.distanceRange.length > 0) {

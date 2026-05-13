@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
-import { Mountain, Calendar, MapPin, Icon } from 'lucide-react';
+import { Mountain, Calendar, MapPin, Icon, Bookmark } from 'lucide-react';
 import { sneaker } from '@lucide/lab';
 import type { Race } from '../../types/database';
 
@@ -14,10 +14,11 @@ interface RaceMarkerProps {
   /** When part of a spiderfied cluster, render at the cluster center, not the race's own coords. */
   lng?: number;
   lat?: number;
+  isFavorite?: boolean;
 }
 
 export const RaceMarker = React.memo(function RaceMarker({
-  race, isSelected, onClick, offset, lng: propLng, lat: propLat,
+  race, isSelected, onClick, offset, lng: propLng, lat: propLat, isFavorite,
 }: RaceMarkerProps) {
   const isTrail = race.event_type?.toLowerCase() === 'trail';
   const lng = propLng ?? race.location_lng;
@@ -36,7 +37,17 @@ export const RaceMarker = React.memo(function RaceMarker({
       }}
       style={{ zIndex: isSelected ? 10 : 1 }}
     >
-      <div className={`marker-container ${isSelected ? 'selected' : ''}`}>
+      <div className={`marker-container ${isSelected ? 'selected' : ''} ${isFavorite ? 'favorited' : ''}`}>
+        {isFavorite && (
+          <div className="marker-favorite-badge" style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'var(--accent-primary)'
+          }}>
+            <Bookmark size={10} fill="black" color="black" />
+          </div>
+        )}
         <div className={`marker-pin ${isTrail ? 'marker-trail' : 'marker-road'}`}>
           {isTrail ? <Mountain size={16} /> : <Icon iconNode={sneaker} size={16} />}
         </div>

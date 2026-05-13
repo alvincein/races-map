@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SlidersHorizontal, X, Calendar, MapPin, Trophy, Navigation } from 'lucide-react';
+import { SlidersHorizontal, X, Calendar, MapPin, Trophy, Navigation, Bookmark } from 'lucide-react';
 import { FilterState, DEFAULT_FILTERS, DistanceBucket } from '../types/filters';
 import './FilterWidget.css';
 import { RangeCalendar } from './Calendar/RangeCalendar';
@@ -69,6 +69,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
     filters.dateRange !== 'all' ||
     filters.regions.length > 0 ||
     filters.hasGpxOnly ||
+    filters.favoritesOnly ||
     !filters.upcomingOnly;
 
   return (
@@ -115,6 +116,15 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
                 <button
                   className={`toggle-switch ${filters.hasGpxOnly ? 'active' : ''}`}
                   onClick={() => onChange({ ...filters, hasGpxOnly: !filters.hasGpxOnly })}
+                >
+                  <div className="switch-knob"></div>
+                </button>
+              </div>
+              <div className="toggle-row">
+                <span>Αγαπημένα</span>
+                <button
+                  className={`toggle-switch ${filters.favoritesOnly ? 'active' : ''}`}
+                  onClick={() => onChange({ ...filters, favoritesOnly: !filters.favoritesOnly })}
                 >
                   <div className="switch-knob"></div>
                 </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Bookmark } from 'lucide-react';
 import type { Race, SubRace } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
 import { WeatherWidget } from '../WeatherWidget';
@@ -18,10 +18,12 @@ interface RaceDetailProps {
   isLoadingSubRaces: boolean;
   onSubRaceClick: (subRaceId: string) => void;
   onBack: () => void;
+  toggleFavorite: (id: string) => void;
+  isFavorite: (id: string) => boolean;
 }
 
 export function RaceDetail({
-  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, onSubRaceClick, onBack,
+  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, onSubRaceClick, onBack, toggleFavorite, isFavorite,
 }: RaceDetailProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
@@ -36,7 +38,7 @@ export function RaceDetail({
 
   return (
     <>
-      <div className="sidebar-header">
+      <div className="detail-header-actions">
         <button
           className="back-btn"
           onClick={() => {
@@ -46,6 +48,12 @@ export function RaceDetail({
         >
           <ArrowLeft size={16} />
           <span>Πίσω στη λίστα</span>
+        </button>
+        <button 
+          className={`favorite-toggle-btn ${isFavorite(race.id) ? 'active' : ''}`}
+          onClick={() => toggleFavorite(race.id)}
+        >
+          <Bookmark size={20} fill={isFavorite(race.id) ? 'var(--accent-primary)' : 'none'} />
         </button>
       </div>
 

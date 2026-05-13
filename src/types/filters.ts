@@ -10,6 +10,7 @@ export interface FilterState {
   dateRange: DateRangePreset;
   regions: string[];
   hasGpxOnly: boolean;
+  favoritesOnly: boolean;
   customDateStart?: string;
   customDateEnd?: string;
 }
@@ -22,4 +23,5 @@ export const DEFAULT_FILTERS: FilterState = {
   dateRange: 'all',
   regions: [],
   hasGpxOnly: false,
+  favoritesOnly: false,
 };

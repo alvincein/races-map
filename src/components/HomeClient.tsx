@@ -9,6 +9,7 @@ import { applyFilters } from '../lib/filters';
 import type { RoutePoint } from '../types/routes';
 import { useSubRaces } from '../lib/useSubRaces';
 import { useRouteIndex } from '../lib/useRouteIndex';
+import { useFavorites } from '../lib/useFavorites';
 import { List, Loader2 } from 'lucide-react';
 import MapClient from './MapClient';
 import Sidebar from './Sidebar';
@@ -32,6 +33,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
 
   const { subRaces, isLoading: isLoadingSubRaces } = useSubRaces(selectedRace?.id ?? null);
   const { routes: fetchedRoutes } = useRouteIndex(subRaces);
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
 
   // Ctrl/Cmd+Shift+R bypasses ISR and re-fetches races from Supabase. Useful
@@ -50,7 +52,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const filteredByControls = useMemo(() => applyFilters(races, filters), [races, filters]);
+  const filteredByControls = useMemo(() => applyFilters(races, filters, new Date(), favorites), [races, filters, favorites]);
 
 
   const handleRaceSelect = (race: Race) => {
@@ -102,6 +104,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
           else setSidebarState('half');
         }}
         onRefreshingChange={setIsListRefreshing}
+        isFavorite={isFavorite}
       />
       <Sidebar
         races={sidebarRaces}
@@ -122,6 +125,8 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
         }}
         sidebarState={sidebarState}
         onStateChange={setSidebarState}
+        toggleFavorite={toggleFavorite}
+        isFavorite={isFavorite}
       />
 
 

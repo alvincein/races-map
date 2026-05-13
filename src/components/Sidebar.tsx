@@ -22,6 +22,8 @@ interface SidebarProps {
   isRefreshing: boolean;
   onStateChange: (state: 'minimized' | 'half' | 'full') => void;
   fetchedRoutes: RouteIndex;
+  toggleFavorite: (id: string) => void;
+  isFavorite: (id: string) => boolean;
 }
 
 export default function Sidebar({
@@ -38,6 +40,8 @@ export default function Sidebar({
   onStateChange,
   fetchedRoutes,
   isRefreshing,
+  toggleFavorite,
+  isFavorite,
 }: SidebarProps) {
   const drag = useBottomSheetDrag({
     state: sidebarState,
@@ -83,6 +87,8 @@ export default function Sidebar({
               isLoadingSubRaces={isLoadingSubRaces}
               onSubRaceClick={onSubRaceClick}
               onBack={onBack}
+              toggleFavorite={toggleFavorite}
+              isFavorite={isFavorite}
             />
           </div>
         ) : (
@@ -93,6 +99,8 @@ export default function Sidebar({
               isRefreshing={isRefreshing}
               onRaceClick={onRaceClick}
               onBack={onBack}
+              toggleFavorite={toggleFavorite}
+              isFavorite={isFavorite}
             />
           </div>
         )}

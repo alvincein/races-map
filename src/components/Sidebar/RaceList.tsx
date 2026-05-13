@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, Search, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, Loader2, Bookmark } from 'lucide-react';
 import type { Race } from '../../types/database';
 import { RaceCard } from './RaceCard';
 
@@ -11,9 +11,11 @@ interface RaceListProps {
   isRefreshing: boolean;
   onRaceClick: (race: Race) => void;
   onBack: () => void;
+  toggleFavorite: (id: string) => void;
+  isFavorite: (id: string) => boolean;
 }
 
-export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack }: RaceListProps) {
+export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack, toggleFavorite, isFavorite }: RaceListProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredRaces = useMemo(() => {
@@ -41,7 +43,9 @@ export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack 
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <h1>Αγώνες στην Ελλάδα</h1>
-            {isRefreshing && <Loader2 size={18} className="animate-spin" style={{ opacity: 0.5 }} />}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {isRefreshing && <Loader2 size={18} className="animate-spin" style={{ opacity: 0.5 }} />}
+            </div>
           </div>
         )}
 
@@ -62,7 +66,14 @@ export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack 
 
       <div className="races-list">
         {filteredRaces.map(race => (
-          <RaceCard key={race.id} race={race} isSelected={false} onClick={onRaceClick} />
+          <RaceCard 
+            key={race.id} 
+            race={race} 
+            isSelected={false} 
+            onClick={onRaceClick} 
+            onToggleFavorite={toggleFavorite}
+            isFavorite={isFavorite(race.id)}
+          />
         ))}
         {filteredRaces.length === 0 && (
           <div className="no-results">Δεν βρέθηκαν αγώνες.</div>

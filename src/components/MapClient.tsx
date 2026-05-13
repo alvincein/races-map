@@ -46,6 +46,7 @@ interface MapClientProps {
   onFiltersChange: (filters: FilterState) => void;
   onFilterToggle?: (open: boolean) => void;
   onRefreshingChange?: (refreshing: boolean) => void;
+  isFavorite: (id: string) => boolean;
 }
 
 export default function MapClient({
@@ -63,6 +64,7 @@ export default function MapClient({
   onFiltersChange,
   onFilterToggle,
   onRefreshingChange,
+  isFavorite,
 }: MapClientProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
@@ -256,6 +258,7 @@ export default function MapClient({
               race={racePoint.properties.race}
               isSelected={false}
               onClick={handleRaceClick}
+              isFavorite={isFavorite(racePoint.properties.raceId)}
             />
           );
         })}
@@ -263,7 +266,12 @@ export default function MapClient({
         {selectedRace?.location_lng != null &&
           selectedRace.location_lat != null &&
           (!spiderfiedCluster || !spiderfiedCluster.races.some(r => r.id === selectedRace.id)) && (
-            <RaceMarker race={selectedRace} isSelected onClick={handleRaceClick} />
+            <RaceMarker 
+              race={selectedRace} 
+              isSelected 
+              onClick={handleRaceClick} 
+              isFavorite={isFavorite(selectedRace.id)}
+            />
           )}
 
         {spiderfiedCluster && (
@@ -273,6 +281,7 @@ export default function MapClient({
             races={spiderfiedCluster.races}
             selectedRaceId={selectedRace?.id ?? null}
             onRaceClick={handleRaceClick}
+            isFavorite={isFavorite}
           />
         )}
 

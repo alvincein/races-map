@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Bookmark } from 'lucide-react';
 import type { Race } from '../../types/database';
 import { RaceTypeBadge } from './raceLabels';
 
@@ -9,12 +9,42 @@ interface RaceCardProps {
   race: Race;
   isSelected: boolean;
   onClick: (race: Race) => void;
+  onToggleFavorite: (id: string) => void;
+  isFavorite: boolean;
 }
 
-export const RaceCard = React.memo(function RaceCard({ race, isSelected, onClick }: RaceCardProps) {
+export const RaceCard = React.memo(function RaceCard({ 
+  race, isSelected, onClick, onToggleFavorite, isFavorite 
+}: RaceCardProps) {
   return (
     <div className={`race-card ${isSelected ? 'active' : ''}`} onClick={() => onClick(race)}>
-      <div className="race-card-header">
+      <button 
+        className={`card-favorite-btn ${isFavorite ? 'active' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleFavorite(race.id);
+        }}
+        style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          background: 'rgba(0,0,0,0.2)',
+          backdropFilter: 'blur(4px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          padding: '6px',
+          borderRadius: '50%',
+          cursor: 'pointer',
+          color: isFavorite ? 'var(--accent-primary)' : 'rgba(255,255,255,0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2,
+          transition: 'all 0.2s ease'
+        }}
+      >
+        <Bookmark size={16} fill={isFavorite ? 'var(--accent-primary)' : 'none'} />
+      </button>
+      <div className="race-card-header" style={{ justifyContent: 'flex-start', gap: '12px' }}>
         <RaceTypeBadge eventType={race.event_type} />
         {race.dates && race.dates.length > 0 && (
           <span className="race-date">
