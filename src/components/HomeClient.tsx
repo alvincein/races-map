@@ -31,6 +31,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
   const { subRaces, isLoading: isLoadingSubRaces } = useSubRaces(selectedRace?.id ?? null);
   const { routes: fetchedRoutes } = useRouteIndex(subRaces);
 
+
   // Ctrl/Cmd+Shift+R bypasses ISR and re-fetches races from Supabase. Useful
   // when editing data in Supabase and previewing without waiting for the
   // 1-hour revalidate window.
@@ -48,6 +49,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
   }, []);
 
   const filteredByControls = useMemo(() => applyFilters(races, filters), [races, filters]);
+
 
   const handleRaceSelect = (race: Race) => {
     setSelectedRace(race);
@@ -91,6 +93,8 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
         onClusterClick={handleClusterClick}
         onVisibleRacesChange={setVisibleRaces}
         onDeselect={handleDeselect}
+        filters={filters}
+        onFiltersChange={setFilters}
       />
       <Sidebar
         races={sidebarRaces}
@@ -108,6 +112,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
       />
 
       <FilterWidget filters={filters} onChange={setFilters} />
+
 
       {isSidebarMinimized && (
         <button

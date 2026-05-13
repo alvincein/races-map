@@ -15,6 +15,8 @@ import { MAP_STYLES, ROUTE_COLORS } from './Map/mapStyles';
 import type { ClusterFeature, RacePointFeature, RacePointProps, SpiderfiedClusterState } from './Map/types';
 import { useGeolocation } from './Map/useGeolocation';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { FilterWidget } from './FilterWidget';
+import { FilterState } from './HomeClient';
 
 const INITIAL_VIEW_STATE = {
   longitude: 23.7275,
@@ -39,6 +41,8 @@ interface MapClientProps {
   onDeselect: () => void;
   hoveredPoint: RoutePoint | null;
   fetchedRoutes: RouteIndex;
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
 }
 
 export default function MapClient({
@@ -52,6 +56,8 @@ export default function MapClient({
   onDeselect,
   hoveredPoint,
   fetchedRoutes,
+  filters,
+  onFiltersChange,
 }: MapClientProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
@@ -60,14 +66,30 @@ export default function MapClient({
   const [bounds, setBounds] = useState<[number, number, number, number] | undefined>(undefined);
   const { userLocation, isLocating, locateAndFly } = useGeolocation();
 
+  const [showStyleMenu, setShowStyleMenu] = useState(false);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+
+  const toggleStyleMenu = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextState = !showStyleMenu;
+    setShowStyleMenu(nextState);
+    if (nextState) setShowFilterMenu(false);
+  }, [showStyleMenu]);
+
+  const toggleFilterMenu = useCallback((open: boolean) => {
+    setShowFilterMenu(open);
+    if (open) setShowStyleMenu(false);
+  }, []);
+
   const resetView = useCallback(() => {
-    mapRef.current?.getMap().flyTo({
+    mapRef.current?.flyTo({
       center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
       zoom: INITIAL_VIEW_STATE.zoom,
       pitch: INITIAL_VIEW_STATE.pitch,
       bearing: INITIAL_VIEW_STATE.bearing,
       duration: 1500,
     });
+    setViewState(INITIAL_VIEW_STATE);
   }, []);
 
   const points = useMemo<RacePointFeature[]>(() => {
@@ -133,17 +155,19 @@ export default function MapClient({
     (race: Race, lng: number, lat: number) => {
       onRaceSelect(race);
       mapRef.current?.flyTo({ center: [lng, lat], zoom: 12, pitch: 45, duration: 1000 });
+      setViewState(prev => ({ ...prev, zoom: 12, longitude: lng, latitude: lat }));
     },
     [onRaceSelect],
   );
 
-  const routesToShow = useMemo<(RouteData & { isFocused: boolean })[]>(() => {
+  const routesToShow = useMemo(() => {
     if (!selectedRace || !subRaces.length) return [];
     return subRaces
       .filter(sub => fetchedRoutes[sub.id])
       .map(sub => ({
         ...fetchedRoutes[sub.id],
         isFocused: selectedSubRaceId === sub.id,
+        aid_stations: sub.aid_stations,
       }));
   }, [selectedRace, selectedSubRaceId, subRaces, fetchedRoutes]);
 
@@ -174,7 +198,6 @@ export default function MapClient({
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         onLoad={updateBounds}
-        onZoomEnd={updateBounds}
         onMoveEnd={updateBounds}
         mapStyle={currentStyle.value}
         dragRotate
@@ -262,11 +285,18 @@ export default function MapClient({
       <MapControls
         currentStyle={currentStyle}
         onStyleChange={setCurrentStyle}
-        isLocating={isLocating}
-        hasUserLocation={userLocation != null}
-        onLocateClick={() => locateAndFly(mapRef)}
-        showResetView={viewState.zoom > 7 || selectedRace != null}
+        showStyleMenu={showStyleMenu}
+        onToggleStyleMenu={toggleStyleMenu}
         onResetView={resetView}
+        onLocate={locateAndFly}
+        isLocating={isLocating}
+      />
+
+      <FilterWidget
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        isOpen={showFilterMenu}
+        onToggle={toggleFilterMenu}
       />
     </div>
   );

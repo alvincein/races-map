@@ -6,7 +6,7 @@ import { Play, Flag } from 'lucide-react';
 import type { RouteData } from '../../types/routes';
 
 interface RouteLayerProps {
-  route: RouteData;
+  route: RouteData & { aid_stations?: any[] };
   index: number;
   color: string;
   isFocused: boolean;
@@ -76,8 +76,47 @@ export function RouteLayer({ route, index, color, isFocused, hasFocus }: RouteLa
               <div className="route-marker-label">Τερματισμός</div>
             </div>
           </Marker>
+
+          {/* Aid Station Markers */}
+          {isFocused && Array.isArray(route.aid_stations) && route.aid_stations.map((station, sIndex) => {
+            if (station.km_location == null) return null;
+            
+            const profilePoints = route.profile;
+            if (!profilePoints || profilePoints.length === 0) return null;
+            
+            const targetDist = station.km_location * 1000;
+            let closestPoint = profilePoints[0];
+            let minDiff = Math.abs(profilePoints[0].d - targetDist);
+            
+            for (const p of profilePoints) {
+              const diff = Math.abs(p.d - targetDist);
+              if (diff < minDiff) {
+                minDiff = diff;
+                closestPoint = p;
+              }
+            }
+            
+            if (!closestPoint || !closestPoint.c) return null;
+            
+            return (
+              <Marker
+                key={`aid-${index}-${sIndex}`}
+                longitude={closestPoint.c[0]}
+                latitude={closestPoint.c[1]}
+                anchor="center"
+              >
+                <div className="route-marker-container" style={{ opacity: 1, transform: 'scale(1)', zIndex: 10 }}>
+                  <div className="route-marker-pin" style={{ background: '#FF3366', borderColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', border: '2px solid white', boxShadow: '0 0 10px rgba(255, 51, 102, 0.5)' }}>
+                    <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '11px' }}>{station.station_number || ''}</span>
+                  </div>
+                  <div className="route-marker-label">Σταθμός {station.station_number || ''}</div>
+                </div>
+              </Marker>
+            );
+          })}
         </>
       )}
     </>
   );
 }
+

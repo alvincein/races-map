@@ -56,12 +56,25 @@ export function SubRaceCard({ subRace, routeData, isSelected, onClick }: SubRace
             <span className="stat-value">{elevationLabel}</span>
           </div>
         )}
+        {subRace.start_time && (
+          <div className="stat-box">
+            <span className="stat-label">Εκκίνηση</span>
+            <span className="stat-value">{subRace.start_time.substring(0, 5)}</span>
+          </div>
+        )}
+        {subRace.cut_off_time_hours && (
+          <div className="stat-box">
+            <span className="stat-label">Όριο</span>
+            <span className="stat-value">{subRace.cut_off_time_hours}h</span>
+          </div>
+        )}
         {!!subRace.price && (
           <div className="stat-box">
             <span className="stat-label">Τιμή</span>
             <span className="stat-value">{subRace.price}€</span>
           </div>
         )}
+
       </div>
     </div>
   );

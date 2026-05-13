@@ -66,7 +66,7 @@ export const WeatherWidget = ({ lat, lng, date }: WeatherWidgetProps) => {
           </div>
         </div>
       </div>
-      <div className="weather-label">Πρόγνωση για την ημέρα του αγώνα</div>
+      <div className="weather-label">Προγνωση για την ημερα του αγωνα</div>
     </div>
   );
 };

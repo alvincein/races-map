@@ -31,7 +31,7 @@ export async function fetchRaceRoute(subRaceId: string): Promise<RouteData> {
   if (!STORAGE_URL) {
     throw new Error('NEXT_PUBLIC_STORAGE_URL is not configured');
   }
-  const url = `${STORAGE_URL}${BUCKET_PATH}/${subRaceId}.json`;
+  const url = `${STORAGE_URL}${BUCKET_PATH}/${subRaceId}.json?t=${Date.now()}`;
 
   const response = await fetch(url);
   if (!response.ok) {

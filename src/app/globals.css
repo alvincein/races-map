@@ -407,8 +407,8 @@ a {
 /* Hover Sync Marker on Map */
 .hover-sync-marker {
   position: relative;
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -417,19 +417,19 @@ a {
 }
 
 .marker-dot {
-  width: 8px;
-  height: 8px;
+  width: 14px;
+  height: 14px;
   background: white;
-  border: 2px solid var(--accent-primary);
+  border: 3px solid var(--accent-primary);
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(255, 232, 0, 0.8);
+  box-shadow: 0 0 15px rgba(255, 232, 0, 1);
 }
 
 .pulse-ring {
   position: absolute;
-  width: 30px;
-  height: 30px;
-  border: 2px solid white;
+  width: 45px;
+  height: 45px;
+  border: 3px solid white;
   border-radius: 50%;
   animation: pulseMarker 1.5s ease-out infinite;
   opacity: 0;
@@ -558,7 +558,7 @@ a {
   border-radius: 12px;
   box-shadow: var(--glass-shadow);
   min-width: 140px;
-  z-index: 100;
+  z-index: 2000;
 }
 
 .style-option {

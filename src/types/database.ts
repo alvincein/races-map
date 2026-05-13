@@ -38,6 +38,11 @@ export interface Database {
           rescaned_date: string | null
           confidence_score: number | null
           confidence_explanation: string | null
+          registration_url: string | null
+          certifications: string[] | null
+          swag_included: string[] | null
+          start_date: string | null
+          end_date: string | null
         }
       }
       sub_races: {
@@ -53,6 +58,9 @@ export interface Database {
           elevation: number | null
           category: string | null
           has_gpx: boolean | null
+          start_time: string | null
+          cut_off_time_hours: number | null
+          aid_stations: Json | null
         }
       }
     }

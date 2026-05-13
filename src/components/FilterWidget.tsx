@@ -6,10 +6,11 @@ import './FilterWidget.css';
 interface FilterWidgetProps {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
+  isOpen: boolean;
+  onToggle: (open: boolean) => void;
 }
 
-export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, isOpen, onToggle }) => {
 
   const months = [
     'Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιούν',
@@ -23,7 +24,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
     { id: '42k', label: 'Μαραθώνιος' },
     { id: 'ultra', label: 'Ultra' },
   ];
-  
+
   const REGIONS = [
     { id: 'Attiki', label: 'Αττική' },
     { id: 'Kentriki Makedonia', label: 'Κεντρική Μακεδονία' },
@@ -66,7 +67,10 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
     <div className="filter-widget-container">
       <button
         className={`filter-trigger-btn glass-panel ${hasActiveFilters ? 'has-active' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(!isOpen);
+        }}
         title="Φίλτρα Αναζήτησης"
       >
         <SlidersHorizontal size={20} />
@@ -78,7 +82,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
         <div className="filter-dropdown-panel glass-panel animation-slide-up">
           <div className="panel-header">
             <h3>Φίλτρα Αγώνων</h3>
-            <button className="close-panel-btn" onClick={() => setIsOpen(false)}>
+            <button className="close-panel-btn" onClick={() => onToggle(false)}>
               <X size={18} />
             </button>
           </div>
@@ -87,7 +91,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
             <div className="filter-section">
               <div className="section-header">
                 <Calendar size={14} />
-                <label>Χρονική Περίοδος</label>
+                <label>Χρονικη Περιοδος</label>
               </div>
               <div className="toggle-row">
                 <span>Μόνο Μελλοντικοί</span>
@@ -151,7 +155,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
             <div className="filter-section">
               <div className="section-header">
                 <Navigation size={14} />
-                <label>Τύπος Διαδρομής</label>
+                <label>Τυπος Διαδρομης</label>
               </div>
               <div className="filter-options-grid three-cols">
                 <button
@@ -172,7 +176,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
             <div className="filter-section">
               <div className="section-header">
                 <MapPin size={14} />
-                <label>Περιφέρεια</label>
+                <label>Περιφερεια</label>
               </div>
               <div className="filter-options-grid regions-grid">
                 {REGIONS.map(region => (
@@ -209,7 +213,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
             <div className="filter-section">
               <div className="section-header">
                 <Calendar size={14} />
-                <label>Μήνες Διεξαγωγής</label>
+                <label>Μηνες Διεξαγωγης</label>
               </div>
               <div className="months-grid">
                 {months.map((m, i) => (
@@ -230,7 +234,7 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange })
             >
               Επαναφορά
             </button>
-            <button className="apply-btn" onClick={() => setIsOpen(false)}>
+            <button className="apply-btn" onClick={() => onToggle(false)}>
               Εφαρμογή
             </button>
           </div>

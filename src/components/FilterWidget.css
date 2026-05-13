@@ -1,7 +1,5 @@
 .filter-widget-container {
-  position: absolute;
-  top: 136px; /* Below Layers and Location controls */
-  right: 20px;
+  position: relative;
   z-index: 1050;
 }
 
@@ -212,8 +210,6 @@
 
 @media (max-width: 768px) {
   .filter-widget-container {
-    top: 136px;
-    right: 12px;
     bottom: auto;
     left: auto;
   }

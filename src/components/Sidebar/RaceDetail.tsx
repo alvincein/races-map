@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy } from 'lucide-react';
 import type { Race, SubRace } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
 import { WeatherWidget } from '../WeatherWidget';
@@ -80,6 +80,24 @@ export function RaceDetail({
 
         <div className="detail-section">
           <h3>Πληροφορίες Εκδήλωσης</h3>
+          
+          {/* Certifications & Swag */}
+          {((race.certifications && race.certifications.length > 0) || 
+            (race.swag_included && race.swag_included.length > 0)) && (
+            <div className="event-extras" style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {race.certifications?.map((cert, idx) => (
+                <span key={`cert-${idx}`} className="badge cert-badge" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Trophy size={10} /> {cert}
+                </span>
+              ))}
+              {race.swag_included?.map((swag, idx) => (
+                <span key={`swag-${idx}`} className="badge swag-badge" style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6', padding: '4px 8px', borderRadius: '4px', fontSize: '11px' }}>
+                  {swag}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div className="full-description">
             <p>{displayedDescription}</p>
             {isLong && (
@@ -99,15 +117,17 @@ export function RaceDetail({
             <div className="loader">Φόρτωση αποστάσεων...</div>
           ) : subRaces.length > 0 ? (
             <div className="sub-races-list">
-              {subRaces.map(sub => (
-                <SubRaceCard
-                  key={sub.id}
-                  subRace={sub}
-                  routeData={fetchedRoutes[sub.id]}
-                  isSelected={selectedSubRaceId === sub.id}
-                  onClick={onSubRaceClick}
-                />
-              ))}
+              {[...subRaces]
+                .sort((a, b) => (b.distance || 0) - (a.distance || 0))
+                .map(sub => (
+                  <SubRaceCard
+                    key={sub.id}
+                    subRace={sub}
+                    routeData={fetchedRoutes[sub.id]}
+                    isSelected={selectedSubRaceId === sub.id}
+                    onClick={onSubRaceClick}
+                  />
+                ))}
             </div>
           ) : (
             <p className="no-subraces">Δεν έχουν καταχωρηθεί συγκεκριμένες αποστάσεις.</p>
@@ -115,14 +135,26 @@ export function RaceDetail({
         </div>
       </div>
 
-      <div className="detail-actions">
+      <div className="detail-actions" style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+        {race.registration_url && (
+          <a
+            href={race.registration_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="registration-btn"
+            style={{ flex: 1 }}
+          >
+            Εγγραφή
+          </a>
+        )}
         <a
           href={race.event_url || race.scraped_url || '#'}
           target="_blank"
           rel="noopener noreferrer"
-          className="primary-btn"
+          className="website-btn"
+          style={{ flex: race.registration_url ? 1 : 'none', width: race.registration_url ? 'auto' : '100%' }}
         >
-          Επίσημη Ιστοσελίδα <ExternalLink size={18} />
+          Ιστοσελίδα <ExternalLink size={16} />
         </a>
       </div>
     </>
