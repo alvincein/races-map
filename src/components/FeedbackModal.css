@@ -1,0 +1,377 @@
+/* =========================================
+   Feedback Modal — Glassmorphism Style
+   ========================================= */
+
+/* Overlay */
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: feedbackOverlayIn 0.25s ease-out;
+  padding: 20px;
+}
+
+@keyframes feedbackOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Modal Card */
+.feedback-modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  animation: feedbackSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
+  background: #121214; /* Solid background instead of transparent glass */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes feedbackSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Header */
+.feedback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 12px;
+}
+
+.feedback-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.feedback-close-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.feedback-close-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+/* Tab Bar */
+.feedback-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 20px;
+  margin-bottom: 4px;
+}
+
+.feedback-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  white-space: nowrap;
+}
+
+.feedback-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.feedback-tab.active {
+  background: rgba(255, 232, 0, 0.1);
+  border-color: rgba(255, 232, 0, 0.25);
+  color: var(--accent-primary);
+}
+
+/* Body */
+.feedback-body {
+  padding: 12px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Race context pill */
+.feedback-race-context {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.feedback-race-context svg {
+  flex-shrink: 0;
+  color: var(--accent-primary);
+}
+
+/* Textarea */
+.feedback-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.feedback-textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.feedback-textarea:focus {
+  border-color: rgba(255, 232, 0, 0.35);
+}
+
+.feedback-char-count {
+  text-align: right;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  margin-top: -6px;
+}
+
+/* Email input */
+.feedback-email {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.feedback-email::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.feedback-email:focus {
+  border-color: rgba(255, 232, 0, 0.3);
+}
+
+/* Error */
+.feedback-error {
+  padding: 10px 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #f87171;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Footer */
+.feedback-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 20px;
+  gap: 12px;
+}
+
+.feedback-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.feedback-cooldown {
+  font-size: 12px;
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.feedback-submit-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--accent-primary), #ffae00);
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  letter-spacing: 0.2px;
+}
+
+.feedback-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 232, 0, 0.3);
+}
+
+.feedback-submit-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.feedback-submit-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Success State */
+.feedback-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 12px;
+  text-align: center;
+  animation: feedbackSuccessIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.success-icon {
+  color: #10b981;
+  animation: successPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes successPop {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes feedbackSuccessIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.feedback-success h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.feedback-success p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* =========================================
+   Race Detail — Report Link
+   ========================================= */
+.race-report-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  margin-top: 16px;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: center;
+  line-height: 1.4;
+  width: 100%;
+}
+
+.race-report-link:hover {
+  color: var(--accent-primary);
+  border-color: rgba(255, 232, 0, 0.2);
+  background: rgba(255, 232, 0, 0.04);
+}
+
+.race-report-link svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.race-report-link:hover svg {
+  opacity: 1;
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+@media (max-width: 768px) {
+  .feedback-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .feedback-modal {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 85vh;
+    animation: feedbackSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes feedbackSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .feedback-tab span {
+    font-size: 11px;
+  }
+
+  .feedback-footer {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+}

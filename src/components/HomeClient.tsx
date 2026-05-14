@@ -15,6 +15,7 @@ import MapClient from './MapClient';
 import Sidebar from './Sidebar';
 import { ElevationWidget } from './ElevationWidget';
 import { FilterWidget } from './FilterWidget';
+import { FeedbackModal } from './FeedbackModal';
 
 interface HomeClientProps {
   initialRaces: RaceWithSubRaces[];
@@ -34,6 +35,23 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
   const { subRaces, isLoading: isLoadingSubRaces } = useSubRaces(selectedRace?.id ?? null);
   const { routes: fetchedRoutes } = useRouteIndex(subRaces);
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
+
+  // Feedback modal state
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackType, setFeedbackType] = useState<'bug' | 'feature' | 'race_data'>('bug');
+  const [feedbackRaceContext, setFeedbackRaceContext] = useState<{ id: string; name: string } | null>(null);
+
+  const handleOpenFeedback = useCallback(() => {
+    setFeedbackType('bug');
+    setFeedbackRaceContext(null);
+    setShowFeedbackModal(true);
+  }, []);
+
+  const handleReportRace = useCallback((raceId: string, raceName: string) => {
+    setFeedbackType('race_data');
+    setFeedbackRaceContext({ id: raceId, name: raceName });
+    setShowFeedbackModal(true);
+  }, []);
 
 
   // Ctrl/Cmd+Shift+R bypasses ISR and re-fetches races from Supabase. Useful
@@ -105,6 +123,8 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
         }}
         onRefreshingChange={setIsListRefreshing}
         isFavorite={isFavorite}
+        onFeedbackClick={handleOpenFeedback}
+        onSubRaceSelect={handleSubRaceSelect}
       />
       <Sidebar
         races={sidebarRaces}
@@ -127,6 +147,7 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
         onStateChange={setSidebarState}
         toggleFavorite={toggleFavorite}
         isFavorite={isFavorite}
+        onReportRace={handleReportRace}
       />
 
 
@@ -155,6 +176,13 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
           onClose={() => setSelectedSubRaceId(null)}
         />
       )}
+
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        preselectedType={feedbackType}
+        raceContext={feedbackRaceContext}
+      />
     </main>
   );
 }

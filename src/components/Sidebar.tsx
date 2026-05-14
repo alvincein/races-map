@@ -24,6 +24,7 @@ interface SidebarProps {
   fetchedRoutes: RouteIndex;
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
+  onReportRace: (raceId: string, raceName: string) => void;
 }
 
 export default function Sidebar({
@@ -42,6 +43,7 @@ export default function Sidebar({
   isRefreshing,
   toggleFavorite,
   isFavorite,
+  onReportRace,
 }: SidebarProps) {
   const drag = useBottomSheetDrag({
     state: sidebarState,
@@ -55,6 +57,15 @@ export default function Sidebar({
     `state-${sidebarState}`,
     drag.isDragging ? 'is-dragging' : '',
   ].filter(Boolean).join(' ');
+
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  // Reset scroll position when switching between list and detail, or between races
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [selectedRace?.id]);
 
   return (
     <div
@@ -76,9 +87,9 @@ export default function Sidebar({
         onTouchEnd={drag.onTouchEnd}
       />
 
-      <div className="sidebar-content-scroll">
+      <div className="sidebar-content-scroll" ref={scrollRef}>
         {selectedRace ? (
-          <div key="detail" className="animation-fade-in">
+          <div key={`detail-${selectedRace.id}`} className="animation-fade-in">
             <RaceDetail
               race={selectedRace}
               subRaces={subRaces}
@@ -89,6 +100,7 @@ export default function Sidebar({
               onBack={onBack}
               toggleFavorite={toggleFavorite}
               isFavorite={isFavorite}
+              onReportRace={onReportRace}
             />
           </div>
         ) : (

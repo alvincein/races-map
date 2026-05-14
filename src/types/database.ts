@@ -63,6 +63,30 @@ export interface Database {
           aid_stations: Json | null
         }
       }
+      user_feedback: {
+        Row: {
+          id: string
+          created_at: string
+          type: 'bug' | 'feature' | 'race_data'
+          message: string
+          email: string | null
+          race_id: string | null
+          race_name: string | null
+          page_url: string | null
+          user_agent: string | null
+          status: 'new' | 'reviewed' | 'resolved' | 'dismissed'
+          admin_notes: string | null
+        }
+        Insert: {
+          type: 'bug' | 'feature' | 'race_data'
+          message: string
+          email?: string | null
+          race_id?: string | null
+          race_name?: string | null
+          page_url?: string | null
+          user_agent?: string | null
+        }
+      }
     }
   }
 }
@@ -70,6 +94,8 @@ export interface Database {
 // Helper types
 export type Race = Database['public']['Tables']['races']['Row']
 export type SubRace = Database['public']['Tables']['sub_races']['Row']
+export type UserFeedback = Database['public']['Tables']['user_feedback']['Row']
+export type UserFeedbackInsert = Database['public']['Tables']['user_feedback']['Insert']
 
 export type RaceWithSubRaces = Race & {
   sub_races: Pick<SubRace, 'id' | 'has_gpx' | 'distance'>[];

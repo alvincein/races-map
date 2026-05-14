@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Layers, Maximize2, Navigation } from 'lucide-react';
+import { Layers, Maximize2, Navigation, MessageSquarePlus } from 'lucide-react';
 import { MAP_STYLES } from './mapStyles';
 import type { MapStyle } from './types';
 
@@ -22,6 +22,8 @@ interface MapControlsProps {
   onFiltersChange: (filters: FilterState) => void;
   showFilterMenu: boolean;
   onToggleFilterMenu: (open: boolean) => void;
+  // Feedback
+  onFeedbackClick: () => void;
 }
 
 export const MapControls = React.memo(function MapControls({
@@ -37,6 +39,7 @@ export const MapControls = React.memo(function MapControls({
   onFiltersChange,
   showFilterMenu,
   onToggleFilterMenu,
+  onFeedbackClick,
 }: MapControlsProps) {
   return (
     <div className="map-controls-top-right">
@@ -81,6 +84,16 @@ export const MapControls = React.memo(function MapControls({
         isOpen={showFilterMenu}
         onToggle={onToggleFilterMenu}
       />
+
+      <div className="map-control-group">
+        <button
+          className="map-control-btn"
+          onClick={(e) => { e.stopPropagation(); onFeedbackClick(); }}
+          title="Αναφορά / Πρόταση"
+        >
+          <MessageSquarePlus size={18} />
+        </button>
+      </div>
     </div>
   );
 });

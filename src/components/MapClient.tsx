@@ -47,6 +47,8 @@ interface MapClientProps {
   onFilterToggle?: (open: boolean) => void;
   onRefreshingChange?: (refreshing: boolean) => void;
   isFavorite: (id: string) => boolean;
+  onFeedbackClick: () => void;
+  onSubRaceSelect: (id: string) => void;
 }
 
 export default function MapClient({
@@ -65,6 +67,8 @@ export default function MapClient({
   onFilterToggle,
   onRefreshingChange,
   isFavorite,
+  onFeedbackClick,
+  onSubRaceSelect,
 }: MapClientProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
@@ -188,10 +192,18 @@ export default function MapClient({
       .filter(sub => fetchedRoutes[sub.id])
       .map(sub => ({
         ...fetchedRoutes[sub.id],
+        subRaceId: sub.id,
         isFocused: selectedSubRaceId === sub.id,
         aid_stations: sub.aid_stations,
       }));
   }, [selectedRace, selectedSubRaceId, subRaces, fetchedRoutes]);
+
+  const interactiveLayerIds = useMemo(() => {
+    return [
+      ...routesToShow.map((_, i) => `route-line-${i}`),
+      ...routesToShow.map((_, i) => `route-hitarea-${i}`)
+    ];
+  }, [routesToShow]);
 
   // Cancel any pending RAF on unmount.
   useEffect(() => {
@@ -257,14 +269,23 @@ export default function MapClient({
         }}
         mapStyle={currentStyle.value}
         dragRotate
+        interactiveLayerIds={interactiveLayerIds}
         onLoad={() => {
           syncMapState();
         }}
-        onClick={() => {
+        onClick={(e) => {
           if (spiderfiedCluster) setSpiderfiedCluster(null);
           setShowStyleMenu(false);
           setShowFilterMenu(false);
           onFilterToggle?.(false);
+          
+          // Check if we clicked on a route or its hitarea
+          const routeFeature = e.features?.find(f => f.layer.id.startsWith('route-'));
+          if (routeFeature && routeFeature.properties?.subRaceId) {
+            onSubRaceSelect(routeFeature.properties.subRaceId);
+            return;
+          }
+
           onDeselect();
         }}
       >
@@ -364,6 +385,7 @@ export default function MapClient({
         onFiltersChange={onFiltersChange}
         showFilterMenu={showFilterMenu}
         onToggleFilterMenu={toggleFilterMenu}
+        onFeedbackClick={onFeedbackClick}
       />
 
       {displayZoom > 7.5 && (

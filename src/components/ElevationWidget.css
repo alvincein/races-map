@@ -118,23 +118,37 @@
 .desktop-only { display: flex; }
 
 /* =========================================
-   Mobile — Full-width bottom bar
+   Mobile — Floating Info Box Centered
    ========================================= */
 @media (max-width: 768px) {
   .elevation-widget {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    border-radius: 16px 16px 0 0;
-    padding: 12px 16px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    bottom: 110px; /* High enough to be clear of the list button */
+    left: 50%;
+    right: auto;
+    top: auto;
+    width: calc(100% - 32px);
+    max-width: 400px;
+    transform: translateX(-50%);
+    border-radius: 14px;
+    padding: 10px 16px;
     z-index: 1100;
+    animation: widgetFadeInCenter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    background: rgba(18, 18, 20, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  @keyframes widgetFadeInCenter {
+    from { transform: translate(-50%, 20px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
   }
 
   .widget-header {
     margin-bottom: 0;
     gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .widget-content {
@@ -142,21 +156,27 @@
   }
 
   .widget-title {
-    font-size: 13px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.7;
+    margin-bottom: 4px;
   }
 
   .widget-title .title-icon {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
   }
 
   .widget-stats {
-    gap: 12px;
+    gap: 16px;
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .w-label {
-    font-size: 9px;
-    letter-spacing: 0.5px;
+    font-size: 8px;
+    margin-bottom: 2px;
   }
 
   .w-value {
@@ -168,18 +188,16 @@
   }
 
   .close-widget {
-    padding: 8px;
-    min-width: 34px;
-    min-height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.1);
   }
 
-  .hover-indicator {
-    font-size: 10px;
-    padding: 3px 10px;
-    gap: 8px;
+  .close-widget svg {
+    width: 14px;
+    height: 14px;
   }
 }
 

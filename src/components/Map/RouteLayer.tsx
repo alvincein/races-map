@@ -25,9 +25,28 @@ export const RouteLayer = React.memo(function RouteLayer({
   const opacity = isFocused ? 1 : (hasFocus ? 0.15 : 0.8);
   const markerOpacity = isFocused ? 1 : (hasFocus ? 0.15 : 0.7);
 
+  // Inject subRaceId into geojson properties for click detection
+  const geojsonData = React.useMemo(() => ({
+    ...route.geojson,
+    properties: {
+      ...route.geojson.properties,
+      subRaceId: (route as any).subRaceId
+    }
+  }), [route.geojson, (route as any).subRaceId]);
+
   return (
     <>
-      <Source id={`route-${index}`} type="geojson" data={route.geojson}>
+      <Source id={`route-${index}`} type="geojson" data={geojsonData}>
+        {/* Transparent hit area for easier tapping */}
+        <Layer
+          id={`route-hitarea-${index}`}
+          type="line"
+          layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+          paint={{
+            'line-color': 'rgba(0,0,0,0)',
+            'line-width': 100,
+          }}
+        />
         <Layer
           id={`route-line-${index}`}
           type="line"

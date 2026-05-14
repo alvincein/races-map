@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Bookmark } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Bookmark, AlertCircle } from 'lucide-react';
 import type { Race, SubRace, RaceWithSubRaces } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
 import { WeatherWidget } from '../WeatherWidget';
@@ -20,10 +20,11 @@ interface RaceDetailProps {
   fetchedRoutes: RouteIndex;
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
+  onReportRace: (raceId: string, raceName: string) => void;
 }
 
 export function RaceDetail({
-  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, onSubRaceClick, onBack, toggleFavorite, isFavorite,
+  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace,
 }: RaceDetailProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
@@ -165,6 +166,14 @@ export function RaceDetail({
           Ιστοσελίδα <ExternalLink size={16} />
         </a>
       </div>
+
+      <button
+        className="race-report-link"
+        onClick={() => onReportRace(race.id, race.event_name)}
+      >
+        <AlertCircle size={14} />
+        <span>Κάτι δεν είναι σωστό; Αναφέρετε λάθος ή ελλιπή πληροφορία</span>
+      </button>
     </>
   );
 }
