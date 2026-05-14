@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Bookmark, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Heart, AlertCircle } from 'lucide-react';
 import type { Race, SubRace, RaceWithSubRaces } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
 import { WeatherWidget } from '../WeatherWidget';
@@ -54,7 +54,7 @@ export function RaceDetail({
           className={`favorite-toggle-btn ${isFavorite(race.id) ? 'active' : ''}`}
           onClick={() => toggleFavorite(race.id)}
         >
-          <Bookmark size={20} fill={isFavorite(race.id) ? 'var(--accent-primary)' : 'none'} />
+          <Heart size={20} fill={isFavorite(race.id) ? '#FF3366' : 'none'} color={isFavorite(race.id) ? '#FF3366' : 'currentColor'} />
         </button>
       </div>
 

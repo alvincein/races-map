@@ -1041,3 +1041,49 @@ h1, h2, h3 {
     transform: translateX(-50%) translateY(0);
   }
 }
+
+.favorites-btn {
+  position: relative;
+}
+
+.favorites-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.favorites-count-inside {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 9px;
+  font-weight: 800;
+  color: white;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  letter-spacing: -0.02em;
+}
+
+.favorites-count-inside.digits-2 {
+  font-size: 8px;
+}
+
+.favorites-count-inside.digits-3 {
+  font-size: 7px;
+  letter-spacing: -0.05em;
+}
+
+.favorites-btn.active .favorites-count-inside {
+  color: #121214;
+}
+
+.map-control-btn.active.favorites-btn {
+  color: #FF3366 !important;
+  border-color: rgba(255, 51, 102, 0.4) !important;
+}
+
+.map-control-btn.favorites-btn:hover:not(.active) {
+  color: #FF3366;
+}

@@ -49,6 +49,8 @@ interface MapClientProps {
   isFavorite: (id: string) => boolean;
   onFeedbackClick: () => void;
   onSubRaceSelect: (id: string) => void;
+  favoritesCount: number;
+  onToggleFavorites: () => void;
 }
 
 export default function MapClient({
@@ -69,6 +71,8 @@ export default function MapClient({
   isFavorite,
   onFeedbackClick,
   onSubRaceSelect,
+  favoritesCount,
+  onToggleFavorites,
 }: MapClientProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
@@ -386,6 +390,8 @@ export default function MapClient({
         showFilterMenu={showFilterMenu}
         onToggleFilterMenu={toggleFilterMenu}
         onFeedbackClick={onFeedbackClick}
+        favoritesCount={favoritesCount}
+        onToggleFavorites={onToggleFavorites}
       />
 
       {displayZoom > 7.5 && (

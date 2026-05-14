@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Layers, Maximize2, Navigation, MessageSquarePlus } from 'lucide-react';
+import { Layers, Maximize2, Navigation, MessageSquarePlus, Heart } from 'lucide-react';
 import { MAP_STYLES } from './mapStyles';
 import type { MapStyle } from './types';
 
@@ -24,6 +24,9 @@ interface MapControlsProps {
   onToggleFilterMenu: (open: boolean) => void;
   // Feedback
   onFeedbackClick: () => void;
+  // Favorites toggle
+  favoritesCount: number;
+  onToggleFavorites: () => void;
 }
 
 export const MapControls = React.memo(function MapControls({
@@ -40,6 +43,8 @@ export const MapControls = React.memo(function MapControls({
   showFilterMenu,
   onToggleFilterMenu,
   onFeedbackClick,
+  favoritesCount,
+  onToggleFavorites,
 }: MapControlsProps) {
   return (
     <div className="map-controls-top-right">
@@ -75,6 +80,23 @@ export const MapControls = React.memo(function MapControls({
           title="Η τοποθεσία μου"
         >
           <Navigation size={18} fill={hasUserLocation ? 'currentColor' : 'none'} />
+        </button>
+      </div>
+
+      <div className="map-control-group">
+        <button
+          className={`map-control-btn favorites-btn ${filters.favoritesOnly ? 'active' : ''}`}
+          onClick={(e) => { e.stopPropagation(); onToggleFavorites(); }}
+          title="Αγαπημένα"
+        >
+          <div className="favorites-icon-wrapper">
+            <Heart size={24} fill={filters.favoritesOnly ? 'currentColor' : 'none'} />
+            {favoritesCount > 0 && (
+              <span className={`favorites-count-inside digits-${favoritesCount.toString().length}`}>
+                {favoritesCount}
+              </span>
+            )}
+          </div>
         </button>
       </div>
 

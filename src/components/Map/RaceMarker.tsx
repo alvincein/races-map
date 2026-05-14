@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
-import { Mountain, Calendar, MapPin, Icon, Bookmark } from 'lucide-react';
+import { Mountain, Calendar, MapPin, Icon, Heart } from 'lucide-react';
 import { sneaker } from '@lucide/lab';
 import { RaceWithSubRaces } from '../../types/database';
 import type { Race } from '../../types/database';
@@ -44,9 +44,9 @@ export const RaceMarker = React.memo(function RaceMarker({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'var(--accent-primary)'
+            backgroundColor: '#FF3366'
           }}>
-            <Bookmark size={10} fill="black" color="black" />
+            <Heart size={10} fill="white" color="white" />
           </div>
         )}
         <div className={`marker-pin ${isTrail ? 'marker-trail' : 'marker-road'}`}>

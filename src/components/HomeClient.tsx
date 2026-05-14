@@ -125,6 +125,8 @@ export default function HomeClient({ initialRaces }: HomeClientProps) {
         isFavorite={isFavorite}
         onFeedbackClick={handleOpenFeedback}
         onSubRaceSelect={handleSubRaceSelect}
+        favoritesCount={favorites.length}
+        onToggleFavorites={() => setFilters(f => ({ ...f, favoritesOnly: !f.favoritesOnly }))}
       />
       <Sidebar
         races={sidebarRaces}

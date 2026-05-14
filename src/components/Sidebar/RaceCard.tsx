@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Calendar, MapPin, Bookmark } from 'lucide-react';
+import { Calendar, MapPin, Heart } from 'lucide-react';
 import { RaceWithSubRaces } from '../../types/database';
 import { RaceTypeBadge } from './raceLabels';
 
@@ -34,15 +34,16 @@ export const RaceCard = React.memo(function RaceCard({
           padding: '6px',
           borderRadius: '50%',
           cursor: 'pointer',
-          color: isFavorite ? 'var(--accent-primary)' : 'rgba(255,255,255,0.6)',
+          color: isFavorite ? '#FF3366' : 'rgba(255,255,255,0.6)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 2,
-          transition: 'all 0.2s ease'
+          transition: 'all 0.2s ease',
+          borderColor: isFavorite ? 'rgba(255, 51, 102, 0.4)' : 'rgba(255,255,255,0.1)'
         }}
       >
-        <Bookmark size={16} fill={isFavorite ? 'var(--accent-primary)' : 'none'} />
+        <Heart size={16} fill={isFavorite ? '#FF3366' : 'none'} />
       </button>
       <div className="race-card-header" style={{ justifyContent: 'flex-start', gap: '12px' }}>
         <RaceTypeBadge eventType={race.event_type} />
