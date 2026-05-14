@@ -9,11 +9,11 @@ interface DateRange {
 function distanceMatchesBuckets(dist: number, buckets: DistanceBucket[]): boolean {
   return buckets.some(bucket => {
     switch (bucket) {
-      case '5k': return dist <= 5000;
-      case '10k': return dist > 5000 && dist <= 12000;
-      case '21k': return dist > 12000 && dist <= 25000;
-      case '42k': return dist > 25000 && dist <= 45000;
-      case 'ultra': return dist > 45000;
+      case '5k': return dist <= 10500; // Includes 5k to 10k (with a small buffer)
+      case '10k': return dist > 10500 && dist <= 20500; // 10k to 20k
+      case '21k': return dist > 20500 && dist <= 31000; // Half Marathon range
+      case '42k': return dist > 31000 && dist <= 50000; // Marathon range
+      case 'ultra': return dist > 50000; // Ultra
     }
   });
 }
@@ -47,7 +47,11 @@ export function applyFilters<T extends Race>(races: T[], filters: FilterState, n
     if (filters.type !== 'all' && race.event_type?.toLowerCase() !== filters.type) return false;
 
     if (filters.distanceRange.length > 0) {
-      if (!distanceMatchesBuckets(race.max_distance ?? 0, filters.distanceRange)) return false;
+      const subRaces = (race as any).sub_races as { distance?: number | null }[];
+      const hasMatchingSubRace = subRaces?.some(sr => 
+        sr.distance != null && distanceMatchesBuckets(sr.distance, filters.distanceRange)
+      );
+      if (!hasMatchingSubRace) return false;
     }
 
     const raceDate = nextRaceDate(race, now);

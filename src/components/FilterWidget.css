@@ -110,11 +110,21 @@
 }
 
 .section-header label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.filter-sub-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--text-secondary);
+  margin: 12px 0 8px 0;
+  opacity: 0.8;
 }
 
 .toggle-row {

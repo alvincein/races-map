@@ -99,17 +99,8 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
           <div className="panel-content">
             <div className="filter-section">
               <div className="section-header">
-                <Calendar size={14} />
-                <label>Χρονικη Περιοδος</label>
-              </div>
-              <div className="toggle-row">
-                <span>Μόνο Μελλοντικοί</span>
-                <button
-                  className={`toggle-switch ${filters.upcomingOnly ? 'active' : ''}`}
-                  onClick={() => onChange({ ...filters, upcomingOnly: !filters.upcomingOnly })}
-                >
-                  <div className="switch-knob"></div>
-                </button>
+                <Bookmark size={14} />
+                <label>Προτιμήσεις</label>
               </div>
               <div className="toggle-row">
                 <span>Με Διαδρομή (GPX)</span>
@@ -129,6 +120,24 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
                   <div className="switch-knob"></div>
                 </button>
               </div>
+            </div>
+
+            <div className="filter-section">
+              <div className="section-header">
+                <Calendar size={14} />
+                <label>Χρονικη Περιοδος</label>
+              </div>
+              <div className="toggle-row">
+                <span>Μόνο Μελλοντικοί</span>
+                <button
+                  className={`toggle-switch ${filters.upcomingOnly ? 'active' : ''}`}
+                  onClick={() => onChange({ ...filters, upcomingOnly: !filters.upcomingOnly })}
+                >
+                  <div className="switch-knob"></div>
+                </button>
+              </div>
+              
+              <div className="filter-sub-label">Συγκεκριμένο Διάστημα</div>
               <div className={`airbnb-date-container ${isCalendarOpen ? 'active' : ''}`} onClick={() => setIsCalendarOpen(!isCalendarOpen)}>
                   <div className="date-field">
                     <label>ΑΠΟ</label>

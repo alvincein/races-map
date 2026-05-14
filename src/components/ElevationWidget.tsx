@@ -15,12 +15,12 @@ interface ElevationWidgetProps {
   onClose: () => void;
 }
 
-export const ElevationWidget: React.FC<ElevationWidgetProps> = ({ 
-  routeData, 
+export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
+  routeData,
   officialStats,
-  hoveredPoint, 
+  hoveredPoint,
   onHover,
-  onClose 
+  onClose
 }) => {
   const displayDistance = officialStats?.distance
     ? (officialStats.distance / 1000).toFixed(1) + 'km'
@@ -34,7 +34,7 @@ export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
       <div className="widget-header">
         <div className="widget-title">
           <Route size={16} className="title-icon" />
-          <span>Ανάλυση Διαδρομής</span>
+          <span>Αναλυση Διαδρομης</span>
         </div>
         <div className="widget-stats">
           <div className="w-stat">
@@ -64,13 +64,13 @@ export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
       </div>
 
       <div className="widget-content">
-        <ElevationProfile 
-          data={routeData.profile} 
-          onHover={onHover} 
+        <ElevationProfile
+          data={routeData.profile}
+          onHover={onHover}
           hoveredPoint={hoveredPoint}
           aidStations={officialStats?.aid_stations as any[]}
         />
-        
+
         {hoveredPoint && (
           <div className="hover-indicator">
             <div className="h-stat">
