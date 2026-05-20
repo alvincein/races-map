@@ -26,23 +26,28 @@ export function useSubRaces(raceId: string | null): UseSubRacesResult {
     let cancelled = false;
     setIsLoading(true);
 
-    supabase
-      .from('sub_races')
-      .select('*')
-      .eq('race_id', raceId)
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) {
-          console.error('Error fetching sub-races:', error);
-          setSubRaces([]);
-        } else {
-          setSubRaces((data ?? []) as SubRace[]);
-        }
-        setIsLoading(false);
-      });
+    // Delay fetching sub-races by 1000ms to allow the map zoom/pan flight
+    // transition to complete smoothly without thread interruption.
+    const timer = setTimeout(() => {
+      supabase
+        .from('sub_races')
+        .select('*')
+        .eq('race_id', raceId)
+        .then(({ data, error }) => {
+          if (cancelled) return;
+          if (error) {
+            console.error('Error fetching sub-races:', error);
+            setSubRaces([]);
+          } else {
+            setSubRaces((data ?? []) as SubRace[]);
+          }
+          setIsLoading(false);
+        });
+    }, 1000);
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [raceId]);
 

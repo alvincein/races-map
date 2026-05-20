@@ -81,9 +81,14 @@ export default function MapClient({
   // re-rendering on every fractional zoom change during pinch/scroll.
   const [clusterZoom, setClusterZoom] = useState(Math.floor(INITIAL_VIEW_STATE.zoom));
   const [bounds, setBounds] = useState<[number, number, number, number] | undefined>(undefined);
-  // Track zoom for the "reset view" button visibility without triggering
-  // cluster recalculations.
-  const [displayZoom, setDisplayZoom] = useState(INITIAL_VIEW_STATE.zoom);
+  // Track whether to show the "reset view" button without triggering
+  // cluster recalculations or re-rendering on every frame of a zoom.
+  const [showResetZoom, setShowResetZoom] = useState(() => {
+    if (selectedRace?.location_lng != null && selectedRace?.location_lat != null) {
+      return true; // Selected race zoom is 12, which is > 7.5
+    }
+    return INITIAL_VIEW_STATE.zoom > 7.5;
+  });
   const { userLocation, isLocating, locateAndFly } = useGeolocation();
 
   const [showStyleMenu, setShowStyleMenu] = useState(false);
@@ -134,8 +139,6 @@ export default function MapClient({
     options: { radius: CLUSTER_RADIUS, maxZoom: CLUSTER_MAX_ZOOM },
   });
 
-  // Sync bounds + cluster zoom from the native map state. Called on moveEnd
-  // and on load — never on every frame.
   const syncMapState = useCallback(() => {
     const map = mapRef.current?.getMap();
     if (!map) return;
@@ -148,9 +151,11 @@ export default function MapClient({
         mapBounds.getNorth(),
       ]);
     }
-    const z = Math.floor(map.getZoom());
-    setClusterZoom(prev => (prev !== z ? z : prev));
-    setDisplayZoom(map.getZoom());
+    const z = map.getZoom();
+    const floorZ = Math.floor(z);
+    setClusterZoom(prev => (prev !== floorZ ? floorZ : prev));
+    const nextShow = z > 7.5;
+    setShowResetZoom(prev => (prev !== nextShow ? nextShow : prev));
   }, []);
 
   useEffect(() => {
@@ -216,9 +221,32 @@ export default function MapClient({
     };
   }, []);
 
+  // Dynamic initial view state calculated once on mount
+  const initialViewState = useMemo(() => {
+    if (selectedRace?.location_lng != null && selectedRace?.location_lat != null) {
+      return {
+        longitude: selectedRace.location_lng,
+        latitude: selectedRace.location_lat,
+        zoom: 12,
+        pitch: 45,
+        bearing: 0,
+      };
+    }
+    return INITIAL_VIEW_STATE;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Navigate to race on select
   useEffect(() => {
     if (selectedRace?.location_lng != null && selectedRace?.location_lat != null) {
+      const map = mapRef.current?.getMap();
+      if (map) {
+        const center = map.getCenter();
+        const dist = Math.hypot(center.lng - selectedRace.location_lng, center.lat - selectedRace.location_lat);
+        // If the map is already centered on this race (e.g. within 0.001 deg / ~100m), skip flyTo
+        if (dist < 0.001 && Math.abs(map.getZoom() - 12) < 0.1) {
+          return;
+        }
+      }
       mapRef.current?.flyTo({
         center: [selectedRace.location_lng, selectedRace.location_lat],
         zoom: 12,
@@ -252,19 +280,21 @@ export default function MapClient({
     >
       <Map
         ref={mapRef}
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={initialViewState}
         onMoveStart={() => {
           onRefreshingChange?.(true);
         }}
         onMove={() => {
-          // Throttle zoom reads to one per animation frame so we keep the
-          // "reset view" button responsive without triggering React re-renders
-          // on every single map frame.
+          // Throttle zoom reads to one per animation frame. Updates state
+          // ONLY when the zoom level crosses the 7.5 threshold.
           if (rafRef.current == null) {
             rafRef.current = requestAnimationFrame(() => {
               rafRef.current = null;
               const z = mapRef.current?.getMap().getZoom();
-              if (z != null) setDisplayZoom(z);
+              if (z != null) {
+                const nextShow = z > 7.5;
+                setShowResetZoom(prev => (prev !== nextShow ? nextShow : prev));
+              }
             });
           }
         }}
@@ -394,7 +424,7 @@ export default function MapClient({
         onToggleFavorites={onToggleFavorites}
       />
 
-      {displayZoom > 7.5 && (
+      {showResetZoom && (
         <button className="reset-zoom-floating glass-panel" onClick={resetView}>
           <Maximize2 size={16} />
           <span>Επαναφορά Χάρτη</span>

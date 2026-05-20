@@ -61,3 +61,24 @@ export async function fetchRacesWithSubRaces(
     return [];
   }
 }
+
+let cachedRaces: RaceWithSubRaces[] | null = null;
+let lastFetchTime = 0;
+const CACHE_TTL_MS = 60000; // 1 minute cache TTL
+
+/**
+ * Cached wrapper around fetchRacesWithSubRaces.
+ * Prevents slamming the database with concurrent requests during next build.
+ */
+export async function fetchRacesCached(
+  supabase: SupabaseClient<Database>,
+): Promise<RaceWithSubRaces[]> {
+  const now = Date.now();
+  // If cache is empty or expired (TTL), fetch fresh data
+  if (!cachedRaces || now - lastFetchTime > CACHE_TTL_MS) {
+    cachedRaces = await fetchRacesWithSubRaces(supabase);
+    lastFetchTime = now;
+  }
+  return cachedRaces;
+}
+

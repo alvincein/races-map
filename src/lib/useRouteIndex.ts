@@ -31,26 +31,32 @@ export function useRouteIndex(subRaces: SubRace[]): UseRouteIndexResult {
     setIsLoading(true);
     setRoutes(EMPTY);
 
-    Promise.all(
-      subRaces.map(async sub => {
-        if (!sub.has_gpx) return null;
-        try {
-          const route = await fetchRaceRoute(sub.id);
-          return [sub.id, route] as const;
-        } catch {
-          return null;
-        }
-      }),
-    ).then(entries => {
-      if (cancelled) return;
-      const next: RouteIndex = {};
-      for (const entry of entries) if (entry) next[entry[0]] = entry[1];
-      setRoutes(next);
-      setIsLoading(false);
-    });
+    // Debounce the fetching and decoding of routes by 800ms. This prevents the
+    // CPU-heavy polyline decoding and distance calculations from blocking the
+    // browser main thread during map camera flight transitions (flyTo).
+    const timer = setTimeout(() => {
+      Promise.all(
+        subRaces.map(async sub => {
+          if (!sub.has_gpx) return null;
+          try {
+            const route = await fetchRaceRoute(sub.id);
+            return [sub.id, route] as const;
+          } catch {
+            return null;
+          }
+        }),
+      ).then(entries => {
+        if (cancelled) return;
+        const next: RouteIndex = {};
+        for (const entry of entries) if (entry) next[entry[0]] = entry[1];
+        setRoutes(next);
+        setIsLoading(false);
+      });
+    }, 800);
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [subRaces]);
 
