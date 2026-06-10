@@ -50,6 +50,19 @@ describe('applyFilters', () => {
     expect(result.map(r => r.id)).toEqual(['r2']);
   });
 
+  it('upcomingOnly includes races up to 3 days before today', () => {
+    // NOW is 2026-05-01.
+    // 3 days ago is 2026-04-28.
+    const races = [
+      makeRace({ id: 'r1', dates: ['2026-04-27'] }), // 4 days ago -> excluded
+      makeRace({ id: 'r2', dates: ['2026-04-28'] }), // 3 days ago -> included
+      makeRace({ id: 'r3', dates: ['2026-04-29'] }), // 2 days ago -> included
+      makeRace({ id: 'r4', dates: ['2026-05-01'] }), // today -> included
+    ];
+    const result = applyFilters(races, DEFAULT_FILTERS, NOW);
+    expect(result.map(r => r.id).sort()).toEqual(['r2', 'r3', 'r4'].sort());
+  });
+
   it('filter by type=trail excludes road races', () => {
     const races = [
       makeRace({ id: 'road', event_type: 'Road' }),

@@ -17,10 +17,21 @@ export const RaceCard = React.memo(function RaceCard({
   race, isSelected, onClick, onToggleFavorite, isFavorite 
 }: RaceCardProps) {
   return (
-    <div className={`race-card ${isSelected ? 'active' : ''}`} onClick={() => onClick(race)}>
+    <a 
+      href={`/race/${race.id}`}
+      className={`race-card ${isSelected ? 'active' : ''}`} 
+      onClick={(e) => {
+        // Prevent default navigation for normal left clicks to run client-side selection
+        if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+          e.preventDefault();
+          onClick(race);
+        }
+      }}
+    >
       <button 
         className={`card-favorite-btn ${isFavorite ? 'active' : ''}`}
         onClick={(e) => {
+          e.preventDefault(); // Prevent triggering the card's link navigation
           e.stopPropagation();
           onToggleFavorite(race.id);
         }}
@@ -88,6 +99,6 @@ export const RaceCard = React.memo(function RaceCard({
           }
         </div>
       )}
-    </div>
+    </a>
   );
 });

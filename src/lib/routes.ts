@@ -5,7 +5,7 @@ import type { RouteData, RoutePoint, RouteStats } from '../types/routes';
 // Re-export for backwards-compat with components that imported the old name.
 export type OptimizedRoute = RouteData;
 
-const STORAGE_URL = process.env.NEXT_PUBLIC_STORAGE_URL ?? '';
+const STORAGE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 const BUCKET_PATH = '/storage/v1/object/public/race-tracks';
 const EARTH_RADIUS_M = 6371000;
 
@@ -29,7 +29,7 @@ function haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number)
 
 export async function fetchRaceRoute(subRaceId: string): Promise<RouteData> {
   if (!STORAGE_URL) {
-    throw new Error('NEXT_PUBLIC_STORAGE_URL is not configured');
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured');
   }
   const url = `${STORAGE_URL}${BUCKET_PATH}/${subRaceId}.json?t=${Date.now()}`;
 

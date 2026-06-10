@@ -50,10 +50,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: pageTitle,
     description: description.substring(0, 160),
+    alternates: {
+      canonical: `/race/${id}`,
+    },
     openGraph: {
       title: race.event_name,
       description: description.substring(0, 160),
       type: 'website',
+      url: `/race/${id}`,
     },
     twitter: {
       card: 'summary_large_image',

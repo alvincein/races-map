@@ -16,13 +16,35 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://races-map.vercel.app';
+
 export const metadata: Metadata = {
-  title: "Greek Running Races",
-  description: "Discover the best road and trail running races across Greece.",
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "Greek Running Races | Διαδραστικός Χάρτης Αγώνων",
+    template: "%s | Greek Running Races",
+  },
+  description: "Δείτε όλους τους αγώνες ορεινού τρεξίματος και ασφάλτου στην Ελλάδα. Διαδραστικός χάρτης, διαδρομές, υψομετρικά προφίλ και ημερολόγιο αγώνων.",
+  alternates: {
+    canonical: "./",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Races Map',
+  },
+  openGraph: {
+    title: "Greek Running Races | Διαδραστικός Χάρτης Αγώνων",
+    description: "Δείτε όλους τους αγώνες ορεινού τρεξίματος και ασφάλτου στην Ελλάδα. Διαδραστικός χάρτης, διαδρομές, υψομετρικά προφίλ και ημερολόγιο αγώνων.",
+    url: baseUrl,
+    siteName: "Greek Running Races",
+    locale: "el_GR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Greek Running Races | Διαδραστικός Χάρτης Αγώνων",
+    description: "Δείτε όλους τους αγώνες ορεινού τρεξίματος και ασφάλτου στην Ελλάδα. Διαδραστικός χάρτης, διαδρομές, υψομετρικά προφίλ και ημερολόγιο αγώνων.",
   },
 };
 

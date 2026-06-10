@@ -89,8 +89,6 @@ export const ElevationProfile: React.FC<ElevationProfileProps> = ({
     if (onHover) onHover(null);
   };
 
-  if (!data.length) return null;
-
   const validAidStations = useMemo(() => {
     if (!aidStations || !Array.isArray(aidStations) || maxDist === 0) return [];
     return aidStations
@@ -106,6 +104,8 @@ export const ElevationProfile: React.FC<ElevationProfileProps> = ({
       })
       .filter(station => station.x >= 0 && station.x <= 1000);
   }, [aidStations, maxDist]);
+
+  if (!data.length) return null;
 
   const gradientId = `eleGradient-${data.length}-${Math.round(maxEle)}`;
   

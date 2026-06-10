@@ -48,9 +48,9 @@ export function applyFilters<T extends Race>(races: T[], filters: FilterState, n
 
     if (filters.distanceRange.length > 0) {
       const subRaces = (race as any).sub_races as { distance?: number | null }[];
-      const hasMatchingSubRace = subRaces?.some(sr => 
-        sr.distance != null && distanceMatchesBuckets(sr.distance, filters.distanceRange)
-      );
+      const hasMatchingSubRace = subRaces && subRaces.length > 0
+        ? subRaces.some(sr => sr.distance != null && distanceMatchesBuckets(sr.distance, filters.distanceRange))
+        : (race.max_distance != null && distanceMatchesBuckets(race.max_distance, filters.distanceRange));
       if (!hasMatchingSubRace) return false;
     }
 
@@ -61,7 +61,15 @@ export function applyFilters<T extends Race>(races: T[], filters: FilterState, n
     }
 
     if (raceDate) {
-      if (filters.upcomingOnly && raceDate < now) return false;
+      if (filters.upcomingOnly) {
+        const threeDaysAgo = new Date(now);
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+        threeDaysAgo.setHours(0, 0, 0, 0);
+        if (raceDate < threeDaysAgo) return false;
+      }
+      if (filters.months && filters.months.length > 0) {
+        if (!filters.months.includes(raceDate.getMonth())) return false;
+      }
       if (dateRange) {
         if (raceDate < dateRange.start) return false;
         if (dateRange.end && raceDate > dateRange.end) return false;
