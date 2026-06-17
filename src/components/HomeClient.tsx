@@ -10,6 +10,7 @@ import type { RoutePoint } from '../types/routes';
 import { useSubRaces } from '../lib/useSubRaces';
 import { useRouteIndex } from '../lib/useRouteIndex';
 import { useFavorites } from '../lib/useFavorites';
+import { getRaceSlug } from '../lib/slugs';
 import { List, Loader2 } from 'lucide-react';
 import Sidebar from './Sidebar';
 import dynamic from 'next/dynamic';
@@ -141,8 +142,8 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId }: Home
       const path = window.location.pathname;
       const match = path.match(/^\/race\/([^/]+)/);
       if (match) {
-        const id = match[1];
-        const race = races.find(r => r.id === id);
+        const slugOrId = match[1];
+        const race = races.find(r => getRaceSlug(r) === slugOrId || r.id === slugOrId);
         if (race) {
           setSelectedRace(race);
           setSelectedSubRaceId(null);
@@ -170,7 +171,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId }: Home
     setSelectedRace(race);
     setSelectedSubRaceId(null);
     setSidebarState('half');
-    pushStateBypassingNext(null, '', `/race/${race.id}`);
+    pushStateBypassingNext(null, '', `/race/${getRaceSlug(race)}`);
   }, []);
 
   const handleSubRaceSelect = useCallback((subRaceId: string) => {
@@ -219,6 +220,11 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId }: Home
 
   return (
     <main className={`app-layout ${hasElevation ? 'has-elevation' : ''}`}>
+      <div className="main-brand-card glass-panel" onClick={handleBack} title="Αρχική Σελίδα">
+        <img src="/logo-white.svg" alt="RaceMap" className="main-brand-logo" />
+        <span className="main-brand-title">RaceMap</span>
+      </div>
+
       <MapClient
         races={filteredByControls}
         selectedRace={selectedRace}

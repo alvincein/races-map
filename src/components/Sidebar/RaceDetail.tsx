@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Heart, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Heart, AlertCircle, Share2, Check } from 'lucide-react';
 import type { Race, SubRace, RaceWithSubRaces } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
 import { WeatherWidget } from '../WeatherWidget';
 import { RaceTypeBadge } from './raceLabels';
 import { SubRaceCard } from './SubRaceCard';
+import { getRaceSlug } from '../../lib/slugs';
 
 const DESCRIPTION_TRUNCATE_LENGTH = 250;
 
@@ -27,6 +28,18 @@ export function RaceDetail({
   race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace,
 }: RaceDetailProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
+
+  const handleShare = () => {
+    const slug = getRaceSlug(race);
+    const siteUrl = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : 'https://races-map.vercel.app';
+    const shareUrl = `${siteUrl}/race/${slug}`;
+    
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
+    });
+  };
 
   const description =
     race.description || race.description_en || 'No description available for this event.';
@@ -50,12 +63,26 @@ export function RaceDetail({
           <ArrowLeft size={16} />
           <span>Πίσω στη λίστα</span>
         </button>
-        <button 
-          className={`favorite-toggle-btn ${isFavorite(race.id) ? 'active' : ''}`}
-          onClick={() => toggleFavorite(race.id)}
-        >
-          <Heart size={20} fill={isFavorite(race.id) ? '#FF3366' : 'none'} color={isFavorite(race.id) ? '#FF3366' : 'currentColor'} />
-        </button>
+        <div className="header-action-buttons" style={{ display: 'flex', gap: '8px' }}>
+          <button
+            className={`share-btn ${showCopied ? 'copied' : ''}`}
+            onClick={handleShare}
+            title="Κοινοποίηση αγώνα"
+          >
+            {showCopied ? (
+              <Check size={20} />
+            ) : (
+              <Share2 size={20} />
+            )}
+            {showCopied && <div className="share-tooltip">Αντιγράφηκε!</div>}
+          </button>
+          <button 
+            className={`favorite-toggle-btn ${isFavorite(race.id) ? 'active' : ''}`}
+            onClick={() => toggleFavorite(race.id)}
+          >
+            <Heart size={20} fill={isFavorite(race.id) ? '#FF3366' : 'none'} color={isFavorite(race.id) ? '#FF3366' : 'currentColor'} />
+          </button>
+        </div>
       </div>
 
       <div className="detail-content">

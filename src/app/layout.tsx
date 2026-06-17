@@ -21,29 +21,34 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://races-map.vercel.ap
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Greek Running Races | Διαδραστικός Χάρτης Αγώνων",
-    template: "%s | Greek Running Races",
+    default: "RaceMap | Διαδραστικός Χάρτης Αγώνων",
+    template: "%s | RaceMap",
   },
   description: "Δείτε όλους τους αγώνες ορεινού τρεξίματος και ασφάλτου στην Ελλάδα. Διαδραστικός χάρτης, διαδρομές, υψομετρικά προφίλ και ημερολόγιο αγώνων.",
   alternates: {
     canonical: "./",
   },
+  icons: {
+    icon: "/logo-white.svg",
+    shortcut: "/logo-white.svg",
+    apple: "/logo-white.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Races Map',
+    title: 'RaceMap',
   },
   openGraph: {
-    title: "Greek Running Races | Διαδραστικός Χάρτης Αγώνων",
+    title: "RaceMap | Διαδραστικός Χάρτης Αγώνων",
     description: "Δείτε όλους τους αγώνες ορεινού τρεξίματος και ασφάλτου στην Ελλάδα. Διαδραστικός χάρτης, διαδρομές, υψομετρικά προφίλ και ημερολόγιο αγώνων.",
     url: baseUrl,
-    siteName: "Greek Running Races",
+    siteName: "RaceMap",
     locale: "el_GR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Greek Running Races | Διαδραστικός Χάρτης Αγώνων",
+    title: "RaceMap | Διαδραστικός Χάρτης Αγώνων",
     description: "Δείτε όλους τους αγώνες ορεινού τρεξίματος και ασφάλτου στην Ελλάδα. Διαδραστικός χάρτης, διαδρομές, υψομετρικά προφίλ και ημερολόγιο αγώνων.",
   },
 };

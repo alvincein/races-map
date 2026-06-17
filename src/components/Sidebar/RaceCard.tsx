@@ -4,6 +4,7 @@ import React from 'react';
 import { Calendar, MapPin, Heart } from 'lucide-react';
 import { RaceWithSubRaces } from '../../types/database';
 import { RaceTypeBadge } from './raceLabels';
+import { getRaceSlug } from '../../lib/slugs';
 
 interface RaceCardProps {
   race: RaceWithSubRaces;
@@ -18,7 +19,7 @@ export const RaceCard = React.memo(function RaceCard({
 }: RaceCardProps) {
   return (
     <a 
-      href={`/race/${race.id}`}
+      href={`/race/${getRaceSlug(race)}`}
       className={`race-card ${isSelected ? 'active' : ''}`} 
       onClick={(e) => {
         // Prevent default navigation for normal left clicks to run client-side selection

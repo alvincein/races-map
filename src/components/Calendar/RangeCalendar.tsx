@@ -28,8 +28,7 @@ export function RangeCalendar({ startDate, endDate, onChange }: RangeCalendarPro
   const monthName = currentMonth.toLocaleString('el-GR', { month: 'long', year: 'numeric' });
 
   const handleDateClick = (day: number) => {
-    const clickedDate = new Date(daysInMonth.year, daysInMonth.month, day);
-    const dateStr = clickedDate.toISOString().split('T')[0];
+    const dateStr = `${daysInMonth.year}-${(daysInMonth.month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 
     if (!startDate || (startDate && endDate)) {
       // Start new selection
@@ -45,13 +44,13 @@ export function RangeCalendar({ startDate, endDate, onChange }: RangeCalendarPro
   };
 
   const isSelected = (day: number) => {
-    const dateStr = new Date(daysInMonth.year, daysInMonth.month, day).toISOString().split('T')[0];
+    const dateStr = `${daysInMonth.year}-${(daysInMonth.month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     return dateStr === startDate || dateStr === endDate;
   };
 
   const isInRange = (day: number) => {
     if (!startDate || !endDate) return false;
-    const dateStr = new Date(daysInMonth.year, daysInMonth.month, day).toISOString().split('T')[0];
+    const dateStr = `${daysInMonth.year}-${(daysInMonth.month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     return dateStr > startDate && dateStr < endDate;
   };
 
@@ -84,11 +83,12 @@ export function RangeCalendar({ startDate, endDate, onChange }: RangeCalendarPro
         
         {Array.from({ length: daysInMonth.days }).map((_, i) => {
           const day = i + 1;
+          const dateStr = `${daysInMonth.year}-${(daysInMonth.month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
           const selected = isSelected(day);
           const range = isInRange(day);
           const today = isToday(day);
-          const isStart = startDate === new Date(daysInMonth.year, daysInMonth.month, day).toISOString().split('T')[0];
-          const isEnd = endDate === new Date(daysInMonth.year, daysInMonth.month, day).toISOString().split('T')[0];
+          const isStart = startDate === dateStr;
+          const isEnd = endDate === dateStr;
 
           return (
             <div

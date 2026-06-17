@@ -1,33 +1,33 @@
 import { supabase } from '@/lib/supabase';
 import HomeClient from '@/components/HomeClient';
 import { fetchRacesCached } from '@/lib/races';
-import type { RaceWithSubRaces } from '@/types/database';
+import { getRaceSlug } from '@/lib/slugs';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 1800;
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 // Generate static params for all races to statically pre-render them at build time
 export async function generateStaticParams() {
   const races = await fetchRacesCached(supabase);
   return races.map((race) => ({
-    id: race.id,
+    slug: getRaceSlug(race),
   }));
 }
 
 // Generate dynamic metadata for SEO and social sharing tags
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
+  const { slug } = await params;
   const races = await fetchRacesCached(supabase);
-  const race = races.find((r) => r.id === id);
+  const race = races.find((r) => getRaceSlug(r) === slug || r.id === slug);
 
   if (!race) {
     return {
-      title: 'Race Not Found - Greek Running Races',
+      title: 'Race Not Found - RaceMap',
     };
   }
 
@@ -45,19 +45,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         })
       : '';
 
-  const pageTitle = `${race.event_name}${dateStr ? ` - ${dateStr}` : ''} - Greek Running Races`;
+  const pageTitle = `${race.event_name}${dateStr ? ` - ${dateStr}` : ''} - RaceMap`;
+  const raceSlug = getRaceSlug(race);
 
   return {
     title: pageTitle,
     description: description.substring(0, 160),
     alternates: {
-      canonical: `/race/${id}`,
+      canonical: `/race/${raceSlug}`,
     },
     openGraph: {
       title: race.event_name,
       description: description.substring(0, 160),
       type: 'website',
-      url: `/race/${id}`,
+      url: `/race/${raceSlug}`,
     },
     twitter: {
       card: 'summary_large_image',
@@ -68,9 +69,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RacePage({ params }: Props) {
-  const { id } = await params;
+  const { slug } = await params;
   const races = await fetchRacesCached(supabase);
-  const race = races.find((r) => r.id === id);
+  const race = races.find((r) => getRaceSlug(r) === slug || r.id === slug);
 
   if (!race) {
     notFound();
@@ -108,8 +109,7 @@ export default async function RacePage({ params }: Props) {
           __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
         }}
       />
-      <HomeClient initialRaces={races} initialSelectedRaceId={id} />
+      <HomeClient initialRaces={races} initialSelectedRaceId={race.id} />
     </>
   );
 }
-

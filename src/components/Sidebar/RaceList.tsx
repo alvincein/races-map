@@ -35,21 +35,14 @@ export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack,
     <>
       <div className="sidebar-header">
         {isFiltered ? (
-          <button className="back-btn" onClick={onBack}>
+          <button className="back-btn" onClick={onBack} style={{ marginBottom: '16px' }}>
             <ArrowLeft size={16} />
             <span>Εμφάνιση όλων των αγώνων</span>
             {isRefreshing && <Loader2 size={14} className="animate-spin" style={{ marginLeft: '8px', opacity: 0.7 }} />}
           </button>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <h1>Αγώνες στην Ελλάδα</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {isRefreshing && <Loader2 size={18} className="animate-spin" style={{ opacity: 0.5 }} />}
-            </div>
-          </div>
-        )}
+        ) : null}
 
-        {isFiltered && <h2 className="filter-title">Αγώνες σε αυτή την τοποθεσία</h2>}
+        {isFiltered && <h2 className="filter-title">Αγωνες σε αυτη την τοποθεσια</h2>}
 
         <div className="search-row">
           <div className="search-box">
@@ -60,17 +53,20 @@ export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack,
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
+            {!isFiltered && isRefreshing && (
+              <Loader2 size={18} className="search-spinner animate-spin" />
+            )}
           </div>
         </div>
       </div>
 
       <div className="races-list">
         {filteredRaces.map(race => (
-          <RaceCard 
-            key={race.id} 
-            race={race} 
-            isSelected={false} 
-            onClick={onRaceClick} 
+          <RaceCard
+            key={race.id}
+            race={race}
+            isSelected={false}
+            onClick={onRaceClick}
             onToggleFavorite={toggleFavorite}
             isFavorite={isFavorite(race.id)}
           />

@@ -11,6 +11,15 @@ interface FilterWidgetProps {
   onToggle: (open: boolean) => void;
 }
 
+const formatLocalDateString = (dateStr: string) => {
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  return new Date(year, month, day).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
 export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, isOpen, onToggle }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [showAllRegions, setShowAllRegions] = useState(false);
@@ -133,14 +142,14 @@ export const FilterWidget: React.FC<FilterWidgetProps> = ({ filters, onChange, i
                   <div className="date-field">
                     <label>ΑΠΟ</label>
                     <div className="date-display-val">
-                      {filters.customDateStart ? new Date(filters.customDateStart).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Επιλογή'}
+                      {filters.customDateStart ? formatLocalDateString(filters.customDateStart) : 'Επιλογή'}
                     </div>
                   </div>
                   <div className="date-divider"></div>
                   <div className="date-field">
                     <label>ΕΩΣ</label>
                     <div className="date-display-val">
-                      {filters.customDateEnd ? new Date(filters.customDateEnd).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Επιλογή'}
+                      {filters.customDateEnd ? formatLocalDateString(filters.customDateEnd) : 'Επιλογή'}
                     </div>
                   </div>
               </div>
