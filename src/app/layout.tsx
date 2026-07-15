@@ -16,7 +16,7 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://races-map.vercel.app';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://racemap.gr';
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),

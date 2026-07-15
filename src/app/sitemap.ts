@@ -6,7 +6,7 @@ import { getRaceSlug } from '@/lib/slugs';
 export const revalidate = 1800; // Revalidate every 30 minutes to match data updates
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://races-map.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://racemap.gr';
 
   const races = await fetchRacesCached(supabase);
 
