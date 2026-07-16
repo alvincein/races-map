@@ -25,6 +25,7 @@ interface SidebarProps {
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
   onReportRace: (raceId: string, raceName: string) => void;
+  onRaceHover?: (raceId: string | null) => void;
 }
 
 export default function Sidebar({
@@ -44,6 +45,7 @@ export default function Sidebar({
   toggleFavorite,
   isFavorite,
   onReportRace,
+  onRaceHover,
 }: SidebarProps) {
   const drag = useBottomSheetDrag({
     state: sidebarState,
@@ -113,6 +115,7 @@ export default function Sidebar({
               onBack={onBack}
               toggleFavorite={toggleFavorite}
               isFavorite={isFavorite}
+              onRaceHover={onRaceHover}
             />
           </div>
         )}

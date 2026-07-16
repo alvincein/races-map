@@ -51,6 +51,7 @@ interface MapClientProps {
   onSubRaceSelect: (id: string) => void;
   favoritesCount: number;
   onToggleFavorites: () => void;
+  hoveredRaceId: string | null;
 }
 
 export default function MapClient({
@@ -73,6 +74,7 @@ export default function MapClient({
   onSubRaceSelect,
   favoritesCount,
   onToggleFavorites,
+  hoveredRaceId,
 }: MapClientProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
@@ -338,6 +340,7 @@ export default function MapClient({
                 onZoom={handleClusterZoom}
                 onSpiderfy={handleSpiderfy}
                 onRaceClick={handleRaceClick}
+                hoveredRaceId={hoveredRaceId}
               />
             );
           }
@@ -350,6 +353,7 @@ export default function MapClient({
               isSelected={false}
               onClick={handleRaceClick}
               isFavorite={isFavorite(racePoint.properties.raceId)}
+              isHovered={hoveredRaceId === racePoint.properties.raceId}
             />
           );
         })}
@@ -362,6 +366,7 @@ export default function MapClient({
               isSelected 
               onClick={handleRaceClick} 
               isFavorite={isFavorite(selectedRace.id)}
+              isHovered={hoveredRaceId === selectedRace.id}
             />
           )}
 
@@ -373,6 +378,7 @@ export default function MapClient({
             selectedRaceId={selectedRace?.id ?? null}
             onRaceClick={handleRaceClick}
             isFavorite={isFavorite}
+            hoveredRaceId={hoveredRaceId}
           />
         )}
 

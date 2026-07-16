@@ -5,7 +5,7 @@ import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Heart, A
 import type { Race, SubRace, RaceWithSubRaces } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
 import { WeatherWidget } from '../WeatherWidget';
-import { RaceTypeBadge } from './raceLabels';
+import { RaceTypeBadge, RaceStatusBadge } from './raceLabels';
 import { SubRaceCard } from './SubRaceCard';
 import { getRaceSlug } from '../../lib/slugs';
 
@@ -87,7 +87,10 @@ export function RaceDetail({
 
       <div className="detail-content">
         <div className="detail-hero">
-          <RaceTypeBadge eventType={race.event_type} iconSize={12} />
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <RaceTypeBadge eventType={race.event_type} iconSize={12} />
+            <RaceStatusBadge status={race.status} iconSize={12} />
+          </div>
           <h1>{race.event_name}</h1>
 
           <div className="detail-meta">

@@ -3,7 +3,9 @@ import { supabase } from '@/lib/supabase';
 import { fetchRacesCached } from '@/lib/races';
 import { getRaceSlug } from '@/lib/slugs';
 
-export const revalidate = 1800; // Revalidate every 30 minutes to match data updates
+// Cache indefinitely; refreshed on-demand via /api/revalidate when races are
+// imported or updated (which calls revalidatePath('/sitemap.xml')).
+export const revalidate = false;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://racemap.gr';

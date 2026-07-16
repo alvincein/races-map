@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Race, RaceWithSubRaces } from '../types/database';
 import { supabase } from '../lib/supabase';
-import { fetchRacesWithSubRaces } from '../lib/races';
+import { fetchRacesWithSubRaces, fetchRaceById } from '../lib/races';
 import { FilterState, DEFAULT_FILTERS } from '../types/filters';
 import { applyFilters } from '../lib/filters';
 import type { RoutePoint } from '../types/routes';
@@ -76,24 +76,32 @@ function pushStateBypassingNext(state: any, title: string, url: string) {
 }
 
 interface HomeClientProps {
-  initialRaces: RaceWithSubRaces[];
+  // The full race list is normally loaded client-side from the cached
+  // /api/races endpoint. `initialRaces` is optional for callers that already
+  // have the list; race detail pages instead pass just `initialSelectedRace`
+  // so the detail panel renders immediately while the map data loads.
+  initialRaces?: RaceWithSubRaces[];
   initialSelectedRaceId?: string;
+  initialSelectedRace?: RaceWithSubRaces;
 }
 
-export default function HomeClient({ initialRaces, initialSelectedRaceId }: HomeClientProps) {
-  const [races, setRaces] = useState<RaceWithSubRaces[]>(initialRaces);
+export default function HomeClient({ initialRaces, initialSelectedRaceId, initialSelectedRace }: HomeClientProps) {
+  const seedRaces = initialRaces ?? (initialSelectedRace ? [initialSelectedRace] : []);
+  const [races, setRaces] = useState<RaceWithSubRaces[]>(seedRaces);
   const [selectedRace, setSelectedRace] = useState<RaceWithSubRaces | null>(() => {
+    if (initialSelectedRace) return initialSelectedRace;
     if (initialSelectedRaceId) {
-      return initialRaces.find(r => r.id === initialSelectedRaceId) || null;
+      return seedRaces.find(r => r.id === initialSelectedRaceId) || null;
     }
     return null;
   });
   const [selectedSubRaceId, setSelectedSubRaceId] = useState<string | null>(null);
+  const [hoveredRaceId, setHoveredRaceId] = useState<string | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<RoutePoint | null>(null);
   const [focusedRaces, setFocusedRaces] = useState<RaceWithSubRaces[] | null>(null);
-  const [visibleRaces, setVisibleRaces] = useState<RaceWithSubRaces[]>(initialRaces);
+  const [visibleRaces, setVisibleRaces] = useState<RaceWithSubRaces[]>(seedRaces);
   const [sidebarState, setSidebarState] = useState<'minimized' | 'half' | 'full'>(
-    initialSelectedRaceId ? 'half' : 'minimized'
+    (initialSelectedRaceId || initialSelectedRace) ? 'half' : 'minimized'
   );
   const [isListRefreshing, setIsListRefreshing] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
@@ -113,6 +121,10 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId }: Home
     setShowFeedbackModal(true);
   }, []);
 
+  const handleRaceHover = useCallback((raceId: string | null) => {
+    setHoveredRaceId(raceId);
+  }, []);
+
   const handleReportRace = useCallback((raceId: string, raceName: string) => {
     setFeedbackType('race_data');
     setFeedbackRaceContext({ id: raceId, name: raceName });
@@ -120,9 +132,68 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId }: Home
   }, []);
 
 
-  // Ctrl/Cmd+Shift+R bypasses ISR and re-fetches races from Supabase. Useful
-  // when editing data in Supabase and previewing without waiting for the
-  // 1-hour revalidate window.
+  // Load the full race list from the edge-cached /api/races endpoint. This keeps
+  // the ~1,000-race payload out of every statically generated page: the home
+  // page ships an empty shell and race detail pages ship only their own race,
+  // then the map data streams in from the CDN here. Skipped when a caller
+  // already provided the full list via `initialRaces`.
+  useEffect(() => {
+    if (initialRaces && initialRaces.length > 0) return;
+    let cancelled = false;
+    setIsListRefreshing(true);
+    fetch('/api/races')
+      .then(res => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then((rows: RaceWithSubRaces[]) => {
+        if (cancelled || !Array.isArray(rows)) return;
+        setRaces(rows);
+        // Seed the visible set so the sidebar list shows races immediately; the
+        // map narrows this to the current viewport once it reports bounds.
+        setVisibleRaces(rows);
+        if (initialSelectedRaceId) {
+          setSelectedRace(prev => {
+            // Keep an already-hydrated (full-detail) selection; only fill in
+            // from the list when we don't yet have the race object.
+            if (prev && 'description' in (prev as Record<string, unknown>)) return prev;
+            return rows.find(r => r.id === initialSelectedRaceId) ?? prev;
+          });
+        }
+      })
+      .catch(err => console.error('Failed to load races:', err))
+      .finally(() => {
+        if (!cancelled) setIsListRefreshing(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Run once on mount; props are stable per page render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // The race list from /api/races is slim (no descriptions, certifications,
+  // registration links, etc.) to keep the payload small. When a race is
+  // selected, hydrate it with full detail on-demand. Skipped when the object is
+  // already full — race detail pages seed a complete `initialSelectedRace`, and
+  // a hydrated selection carries the `description` key even when it is null.
+  useEffect(() => {
+    if (!selectedRace) return;
+    // Runtime presence check via a cast so TypeScript doesn't narrow the typed
+    // object (which always declares `description`) down to `never`.
+    const alreadyFull = 'description' in (selectedRace as Record<string, unknown>);
+    if (alreadyFull) return;
+    const id = selectedRace.id;
+    let cancelled = false;
+    fetchRaceById(supabase, id).then(full => {
+      if (cancelled || !full) return;
+      setSelectedRace(prev => (prev && prev.id === id ? full : prev));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedRace]);
+
+  // Ctrl/Cmd+Shift+R bypasses the cache and re-fetches races directly from
+  // Supabase. Useful when editing data in Supabase and previewing without
+  // triggering an on-demand revalidation.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
@@ -245,6 +316,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId }: Home
         onSubRaceSelect={handleSubRaceSelect}
         favoritesCount={favorites.length}
         onToggleFavorites={handleToggleFavorites}
+        hoveredRaceId={hoveredRaceId}
       />
       <Sidebar
         races={sidebarRaces}
@@ -263,6 +335,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId }: Home
         toggleFavorite={toggleFavorite}
         isFavorite={isFavorite}
         onReportRace={handleReportRace}
+        onRaceHover={handleRaceHover}
       />
 
 

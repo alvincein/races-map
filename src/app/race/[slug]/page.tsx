@@ -5,7 +5,12 @@ import { getRaceSlug } from '@/lib/slugs';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 1800;
+// Race detail pages are static and change only when that race is imported or
+// edited. Cache indefinitely and refresh on-demand via /api/revalidate instead
+// of regenerating every 30 minutes across ~1,000 pages. New race slugs not in
+// the last build are generated on first request (dynamicParams defaults to true)
+// and then cached.
+export const revalidate = false;
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -109,7 +114,7 @@ export default async function RacePage({ params }: Props) {
           __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
         }}
       />
-      <HomeClient initialRaces={races} initialSelectedRaceId={race.id} />
+      <HomeClient initialSelectedRace={race} initialSelectedRaceId={race.id} />
     </>
   );
 }

@@ -13,9 +13,10 @@ interface RaceListProps {
   onBack: () => void;
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
+  onRaceHover?: (raceId: string | null) => void;
 }
 
-export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack, toggleFavorite, isFavorite }: RaceListProps) {
+export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack, toggleFavorite, isFavorite, onRaceHover }: RaceListProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredRaces = useMemo(() => {
@@ -69,6 +70,8 @@ export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack,
             onClick={onRaceClick}
             onToggleFavorite={toggleFavorite}
             isFavorite={isFavorite(race.id)}
+            onMouseEnter={() => onRaceHover?.(race.id)}
+            onMouseLeave={() => onRaceHover?.(null)}
           />
         ))}
         {filteredRaces.length === 0 && (

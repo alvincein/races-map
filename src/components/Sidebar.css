@@ -56,6 +56,9 @@
   object-fit: contain;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
 }
 
 .main-brand-card:hover .main-brand-logo {
@@ -70,6 +73,8 @@
   background: linear-gradient(135deg, #fff, #a1a1aa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 
@@ -221,6 +226,36 @@
   background: rgba(30, 58, 138, 0.15);
   color: #60a5fa; /* Lighter blue for readability */
   border: 1px solid rgba(30, 58, 138, 0.3);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.status-badge.scheduled {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399; /* Bright emerald for dark mode accessibility */
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.status-badge.postponed {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24; /* Bright amber/yellow for accessibility */
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.status-badge.cancelled {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171; /* Bright red/rose for visibility */
+  border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
 .race-date {

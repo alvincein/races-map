@@ -3,7 +3,7 @@
 import React from 'react';
 import { Calendar, MapPin, Heart } from 'lucide-react';
 import { RaceWithSubRaces } from '../../types/database';
-import { RaceTypeBadge } from './raceLabels';
+import { RaceTypeBadge, RaceStatusBadge } from './raceLabels';
 import { getRaceSlug } from '../../lib/slugs';
 
 interface RaceCardProps {
@@ -12,10 +12,12 @@ interface RaceCardProps {
   onClick: (race: RaceWithSubRaces) => void;
   onToggleFavorite: (id: string) => void;
   isFavorite: boolean;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 export const RaceCard = React.memo(function RaceCard({ 
-  race, isSelected, onClick, onToggleFavorite, isFavorite 
+  race, isSelected, onClick, onToggleFavorite, isFavorite, onMouseEnter, onMouseLeave 
 }: RaceCardProps) {
   return (
     <a 
@@ -28,6 +30,8 @@ export const RaceCard = React.memo(function RaceCard({
           onClick(race);
         }
       }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <button 
         className={`card-favorite-btn ${isFavorite ? 'active' : ''}`}
@@ -57,8 +61,11 @@ export const RaceCard = React.memo(function RaceCard({
       >
         <Heart size={16} fill={isFavorite ? '#FF3366' : 'none'} />
       </button>
-      <div className="race-card-header" style={{ justifyContent: 'flex-start', gap: '12px' }}>
+      <div className="race-card-header" style={{ justifyContent: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
         <RaceTypeBadge eventType={race.event_type} />
+        {race.status && race.status !== 'scheduled' && (
+          <RaceStatusBadge status={race.status} />
+        )}
         {race.dates && race.dates.length > 0 && (
           <span className="race-date">
             <Calendar size={14} />

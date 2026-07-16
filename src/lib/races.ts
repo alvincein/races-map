@@ -25,11 +25,12 @@ interface RawRaceRow {
  */
 export async function fetchRacesWithSubRaces(
   supabase: SupabaseClient<Database>,
+  columns: string = '*',
 ): Promise<RaceWithSubRaces[]> {
   try {
     const { data, error } = await supabase
       .from('races')
-      .select('*, sub_races!inner(id, has_gpx, distance)')
+      .select(`${columns}, sub_races!inner(id, has_gpx, distance)`)
       .not('location_lat', 'is', null)
       .not('location_lng', 'is', null)
       .limit(1000);
@@ -59,6 +60,64 @@ export async function fetchRacesWithSubRaces(
   } catch (err) {
     console.error('Supabase configuration missing or error occurred:', err);
     return [];
+  }
+}
+
+// Slim column set for map markers, the race list, and client-side filters.
+// Excludes heavy detail-only fields (description, translations, certifications,
+// registration links, etc.) to keep the /api/races payload small — those are
+// loaded per race via `fetchRaceById` when a race is selected.
+export const RACE_LIST_COLUMNS = [
+  'id',
+  'event_name',
+  'event_name_en',
+  'event_type',
+  'max_distance',
+  'dates',
+  'location_lat',
+  'location_lng',
+  'location_region',
+  'location_city',
+  'location_place',
+  'status',
+].join(', ');
+
+/**
+ * Slim race list for the map/sidebar. Same shape as fetchRacesWithSubRaces but
+ * only the columns the map, list, and filters actually read.
+ */
+export function fetchRaceListItems(
+  supabase: SupabaseClient<Database>,
+): Promise<RaceWithSubRaces[]> {
+  return fetchRacesWithSubRaces(supabase, RACE_LIST_COLUMNS);
+}
+
+/**
+ * Full detail for a single race, loaded on-demand when a race is selected so the
+ * list payload can stay slim. Returns `null` on error or if not found.
+ */
+export async function fetchRaceById(
+  supabase: SupabaseClient<Database>,
+  id: string,
+): Promise<RaceWithSubRaces | null> {
+  try {
+    const { data, error } = await supabase
+      .from('races')
+      .select('*, sub_races(id, has_gpx, distance)')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      if (error) console.error('Error fetching race detail:', error);
+      return null;
+    }
+
+    const { sub_races, ...rest } = data as unknown as RawRaceRow;
+    const joined = Array.isArray(sub_races) ? sub_races : sub_races ? [sub_races] : [];
+    return { ...(rest as unknown as Race), sub_races: joined };
+  } catch (err) {
+    console.error('Supabase error fetching race detail:', err);
+    return null;
   }
 }
 

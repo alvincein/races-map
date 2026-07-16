@@ -1,13 +1,8 @@
-import { supabase } from '@/lib/supabase';
 import HomeClient from '@/components/HomeClient';
-import { fetchRacesCached } from '@/lib/races';
-import type { RaceWithSubRaces } from '@/types/database';
 
-export const revalidate = 1800;
-
-export default async function Home() {
-  const races = (await fetchRacesCached(supabase)) as RaceWithSubRaces[];
-
-  return <HomeClient initialRaces={races} />;
+// Static shell. The race list is loaded client-side from the edge-cached
+// /api/races endpoint, so this page carries no per-request data cost and never
+// needs time-based revalidation.
+export default function Home() {
+  return <HomeClient />;
 }
-

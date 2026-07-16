@@ -14,16 +14,27 @@ interface ClusterMarkerProps {
   onZoom: (lng: number, lat: number, zoom: number) => void;
   onSpiderfy: (id: number, races: RaceWithSubRaces[], lng: number, lat: number) => void;
   onRaceClick: (race: RaceWithSubRaces, lng: number, lat: number) => void;
+  hoveredRaceId?: string | null;
 }
 
 const HOVER_LEAVES_LIMIT = 10;
 const HOVER_LEAVE_BUFFER_MS = 150;
 
 export const ClusterMarker = React.memo(function ClusterMarker({
-  cluster, supercluster, viewStateZoom, onZoom, onSpiderfy, onRaceClick,
+  cluster, supercluster, viewStateZoom, onZoom, onSpiderfy, onRaceClick, hoveredRaceId,
 }: ClusterMarkerProps) {
   const [longitude, latitude] = cluster.geometry.coordinates;
   const { point_count: pointCount, cluster_id: clusterId } = cluster.properties;
+
+  const isHovered = React.useMemo(() => {
+    if (!hoveredRaceId || !supercluster) return false;
+    try {
+      const leaves = supercluster.getLeaves(clusterId, Infinity);
+      return leaves.some(leaf => leaf.properties.raceId === hoveredRaceId);
+    } catch (e) {
+      return false;
+    }
+  }, [hoveredRaceId, supercluster, clusterId]);
 
   const [hoveredLeaves, setHoveredLeaves] = useState<RacePointFeature[]>([]);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -54,7 +65,7 @@ export const ClusterMarker = React.memo(function ClusterMarker({
   return (
     <Marker longitude={longitude} latitude={latitude} anchor="center">
       <div
-        className="marker-cluster-container"
+        className={`marker-cluster-container ${isHovered ? 'hover-shake' : ''}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >

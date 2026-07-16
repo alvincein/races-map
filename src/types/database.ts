@@ -43,6 +43,7 @@ export interface Database {
           swag_included: string[] | null
           start_date: string | null
           end_date: string | null
+          status: 'scheduled' | 'postponed' | 'cancelled' | null
         }
       }
       sub_races: {

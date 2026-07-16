@@ -16,10 +16,11 @@ interface RaceMarkerProps {
   lng?: number;
   lat?: number;
   isFavorite?: boolean;
+  isHovered?: boolean;
 }
 
 export const RaceMarker = React.memo(function RaceMarker({
-  race, isSelected, onClick, offset, lng: propLng, lat: propLat, isFavorite,
+  race, isSelected, onClick, offset, lng: propLng, lat: propLat, isFavorite, isHovered,
 }: RaceMarkerProps) {
   const isTrail = race.event_type?.toLowerCase() === 'trail';
   const lng = propLng ?? race.location_lng;
@@ -38,7 +39,7 @@ export const RaceMarker = React.memo(function RaceMarker({
       }}
       style={{ zIndex: isSelected ? 10 : 1 }}
     >
-      <div className={`marker-container ${isSelected ? 'selected' : ''} ${isFavorite ? 'favorited' : ''}`}>
+      <div className={`marker-container ${isSelected ? 'selected' : ''} ${isFavorite ? 'favorited' : ''} ${isHovered ? 'hover-shake' : ''}`}>
         {isFavorite && (
           <div className="marker-favorite-badge" style={{
             display: 'flex',
