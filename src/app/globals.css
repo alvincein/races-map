@@ -185,9 +185,9 @@ a {
 }
 
 .marker-featured {
-  background: linear-gradient(135deg, #4c1d95, #7e22ce);
-  color: #ffd700 !important;
-  border: 2px solid #ffd700 !important;
+  background: linear-gradient(135deg, #18181b, #09090b);
+  color: #f59e0b !important;
+  border: 2px solid #f59e0b !important;
   animation: featured-pulse 2s infinite;
   z-index: 10;
 }
