@@ -8,6 +8,7 @@ import { WeatherWidget } from '../WeatherWidget';
 import { RaceTypeBadge, RaceStatusBadge } from './raceLabels';
 import { SubRaceCard } from './SubRaceCard';
 import { getRaceSlug } from '../../lib/slugs';
+import { getRegionLabel } from '../../lib/regions';
 
 const DESCRIPTION_TRUNCATE_LENGTH = 250;
 
@@ -111,7 +112,7 @@ export function RaceDetail({
             {race.location_region && (
               <div className="meta-item">
                 <Navigation size={16} />
-                <span>{race.location_region}</span>
+                <span>{getRegionLabel(race.location_region)}</span>
               </div>
             )}
           </div>

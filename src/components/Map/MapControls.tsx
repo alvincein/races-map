@@ -62,7 +62,8 @@ export const MapControls = React.memo(function MapControls({
               <button
                 key={style.id}
                 className={`style-option ${currentStyle.id === style.id ? 'active' : ''}`}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   onStyleChange(style);
                 }}
               >

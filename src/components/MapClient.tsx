@@ -13,7 +13,7 @@ import { SpiderfiedCluster } from './Map/SpiderfiedCluster';
 import { RouteLayer } from './Map/RouteLayer';
 import { MapControls } from './Map/MapControls';
 import { MAP_STYLES, ROUTE_COLORS } from './Map/mapStyles';
-import type { ClusterFeature, RacePointFeature, RacePointProps, SpiderfiedClusterState } from './Map/types';
+import type { ClusterFeature, RacePointFeature, RacePointProps, SpiderfiedClusterState, MapStyle } from './Map/types';
 import { useGeolocation } from './Map/useGeolocation';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { FilterWidget } from './FilterWidget';
@@ -105,6 +105,11 @@ export default function MapClient({
     setShowStyleMenu(nextState);
     if (nextState) setShowFilterMenu(false);
   }, [showStyleMenu]);
+
+  const handleStyleChange = useCallback((style: MapStyle) => {
+    setCurrentStyle(style);
+    setShowStyleMenu(false);
+  }, []);
 
   const toggleFilterMenu = useCallback((open: boolean) => {
     setShowFilterMenu(open);
@@ -414,7 +419,7 @@ export default function MapClient({
 
       <MapControls
         currentStyle={currentStyle}
-        onStyleChange={setCurrentStyle}
+        onStyleChange={handleStyleChange}
         showStyleMenu={showStyleMenu}
         onToggleStyleMenu={toggleStyleMenu}
         isLocating={isLocating}
