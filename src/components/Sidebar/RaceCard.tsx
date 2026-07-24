@@ -19,6 +19,20 @@ interface RaceCardProps {
 export const RaceCard = React.memo(function RaceCard({ 
   race, isSelected, onClick, onToggleFavorite, isFavorite, onMouseEnter, onMouseLeave 
 }: RaceCardProps) {
+  const [hasImgError, setHasImgError] = React.useState(false);
+
+  const isImageUrl = (val?: string | null) => {
+    if (!val) return false;
+    const str = val.trim();
+    return (
+      str.startsWith('http://') ||
+      str.startsWith('https://') ||
+      str.startsWith('/') ||
+      str.startsWith('data:image/') ||
+      /\.(png|jpe?g|svg|webp|gif)($|\?)/i.test(str)
+    );
+  };
+
   return (
     <a 
       href={`/race/${getRaceSlug(race)}`}
@@ -64,7 +78,16 @@ export const RaceCard = React.memo(function RaceCard({
       <div className="race-card-header" style={{ justifyContent: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
         {race.is_featured && (
           <span className="featured-card-badge">
-            <Sparkles size={11} />
+            {race.featured_icon && isImageUrl(race.featured_icon) && !hasImgError ? (
+              <img
+                src={race.featured_icon}
+                alt=""
+                onError={() => setHasImgError(true)}
+                style={{ width: '12px', height: '12px', objectFit: 'contain', borderRadius: '2px' }}
+              />
+            ) : (
+              <Sparkles size={11} />
+            )}
             <span>Featured</span>
           </span>
         )}

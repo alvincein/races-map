@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Marker } from 'react-map-gl/maplibre';
 import { Mountain, Calendar, MapPin, Icon, Heart, Sparkles, Star, Crown, Trophy } from 'lucide-react';
 import { sneaker } from '@lucide/lab';
@@ -28,9 +28,40 @@ export const RaceMarker = React.memo(function RaceMarker({
   const lat = propLat ?? race.location_lat;
   if (lng == null || lat == null) return null;
 
+  const [hasImgError, setHasImgError] = useState(false);
+
+  const isImageUrl = (val?: string | null) => {
+    if (!val) return false;
+    const str = val.trim();
+    return (
+      str.startsWith('http://') ||
+      str.startsWith('https://') ||
+      str.startsWith('/') ||
+      str.startsWith('data:image/') ||
+      /\.(png|jpe?g|svg|webp|gif)($|\?)/i.test(str)
+    );
+  };
+
   const renderIcon = () => {
     if (isFeatured) {
-      const iconKey = race.featured_icon?.toLowerCase();
+      const iconVal = race.featured_icon?.trim();
+      if (iconVal && isImageUrl(iconVal) && !hasImgError) {
+        return (
+          <img
+            src={iconVal}
+            alt=""
+            onError={() => setHasImgError(true)}
+            style={{
+              width: '18px',
+              height: '18px',
+              objectFit: 'contain',
+              borderRadius: '4px',
+              display: 'block',
+            }}
+          />
+        );
+      }
+      const iconKey = iconVal?.toLowerCase();
       if (iconKey === 'crown') return <Crown size={16} />;
       if (iconKey === 'trophy') return <Trophy size={16} />;
       if (iconKey === 'star') return <Star size={16} />;
