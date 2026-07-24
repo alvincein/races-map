@@ -173,6 +173,7 @@ function buildRaceJsonLd(race: RaceWithSubRaces, raceSlug: string) {
     eventStatus: (race.status && EVENT_STATUS_SCHEMA[race.status]) || undefined,
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     sport: 'Running',
+    image: [`${pageUrl}/opengraph-image`],
     location,
     url: pageUrl,
     sameAs: officialUrl,
