@@ -174,20 +174,20 @@ a {
 
 @keyframes featured-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.8), 0 0 16px rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 0 0 var(--glow-color, #f59e0b), 0 0 16px var(--glow-color, #f59e0b);
   }
   70% {
-    box-shadow: 0 0 0 14px rgba(255, 215, 0, 0), 0 0 28px rgba(255, 215, 0, 0.9);
+    box-shadow: 0 0 0 14px rgba(0, 0, 0, 0), 0 0 28px var(--glow-color, #f59e0b);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0), 0 0 16px rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 0 0 var(--glow-color, #f59e0b), 0 0 16px var(--glow-color, #f59e0b);
   }
 }
 
 .marker-featured {
   background: #27272a;
   color: #ffffff !important;
-  border: 2px solid #f59e0b !important;
+  border: 2px solid var(--glow-color, #f59e0b) !important;
   animation: featured-pulse 2s infinite;
   z-index: 10;
 }

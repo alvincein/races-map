@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Heart, AlertCircle, Share2, Check, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Heart, AlertCircle, Share2, Check, Loader2, Sparkles } from 'lucide-react';
 import type { Race, SubRace, RaceWithSubRaces } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
 import { WeatherWidget } from '../WeatherWidget';
@@ -31,6 +31,19 @@ export function RaceDetail({
 }: RaceDetailProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
+  const [hasHeroImgError, setHasHeroImgError] = useState(false);
+
+  const isImageUrl = (val?: string | null) => {
+    if (!val) return false;
+    const str = val.trim();
+    return (
+      str.startsWith('http://') ||
+      str.startsWith('https://') ||
+      str.startsWith('/') ||
+      str.startsWith('data:image/') ||
+      /\.(png|jpe?g|svg|webp|gif)($|\?)/i.test(str)
+    );
+  };
 
   const handleShare = () => {
     const slug = getRaceSlug(race);
@@ -90,11 +103,34 @@ export function RaceDetail({
 
       <div className="detail-content">
         <div className="detail-hero">
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
+            {race.is_featured && (
+              <span 
+                className="race-badge featured"
+                style={race.featured_bg_color ? { background: race.featured_bg_color, borderColor: 'rgba(255,255,255,0.4)', color: '#ffffff' } : undefined}
+              >
+                <Sparkles size={12} />
+                <span>Featured</span>
+              </span>
+            )}
             <RaceTypeBadge eventType={race.event_type} iconSize={12} />
             <RaceStatusBadge status={race.status} iconSize={12} />
           </div>
-          <h1>{race.event_name}</h1>
+          <div className="title-with-logo">
+            {race.is_featured && race.featured_icon && isImageUrl(race.featured_icon) && !hasHeroImgError && (
+              <div 
+                className="standalone-hero-logo"
+                style={race.featured_bg_color ? { background: race.featured_bg_color, borderColor: race.featured_bg_color } : undefined}
+              >
+                <img
+                  src={race.featured_icon}
+                  alt=""
+                  onError={() => setHasHeroImgError(true)}
+                />
+              </div>
+            )}
+            <h1>{race.event_name}</h1>
+          </div>
 
           <div className="detail-meta">
             <div className="meta-item">

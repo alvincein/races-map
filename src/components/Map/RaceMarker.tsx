@@ -52,8 +52,8 @@ export const RaceMarker = React.memo(function RaceMarker({
             alt=""
             onError={() => setHasImgError(true)}
             style={{
-              width: '18px',
-              height: '18px',
+              width: '24px',
+              height: '24px',
               objectFit: 'contain',
               borderRadius: '4px',
               display: 'block',
@@ -62,12 +62,12 @@ export const RaceMarker = React.memo(function RaceMarker({
         );
       }
       const iconKey = iconVal?.toLowerCase();
-      if (iconKey === 'crown') return <Crown size={16} />;
-      if (iconKey === 'trophy') return <Trophy size={16} />;
-      if (iconKey === 'star') return <Star size={16} />;
-      return <Sparkles size={16} />;
+      if (iconKey === 'crown') return <Crown size={22} />;
+      if (iconKey === 'trophy') return <Trophy size={22} />;
+      if (iconKey === 'star') return <Star size={22} />;
+      return <Sparkles size={22} />;
     }
-    return isTrail ? <Mountain size={16} /> : <Icon iconNode={sneaker} size={16} />;
+    return isTrail ? <Mountain size={18} /> : <Icon iconNode={sneaker} size={18} />;
   };
 
   return (
@@ -95,7 +95,11 @@ export const RaceMarker = React.memo(function RaceMarker({
         )}
         <div 
           className={`marker-pin ${isFeatured ? 'marker-featured' : isTrail ? 'marker-trail' : 'marker-road'}`}
-          style={isFeatured ? { background: race.featured_bg_color?.trim() || '#27272a' } : undefined}
+          style={isFeatured ? {
+            background: race.featured_bg_color?.trim() || '#27272a',
+            borderColor: race.featured_bg_color?.trim() || '#f59e0b',
+            '--glow-color': race.featured_bg_color?.trim() || '#f59e0b',
+          } as React.CSSProperties : undefined}
         >
           {renderIcon()}
         </div>

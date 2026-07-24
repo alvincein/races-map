@@ -78,19 +78,10 @@ export const RaceCard = React.memo(function RaceCard({
       <div className="race-card-header" style={{ justifyContent: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
         {race.is_featured && (
           <span 
-            className="featured-card-badge"
-            style={race.featured_bg_color ? { background: race.featured_bg_color, borderColor: 'rgba(255,255,255,0.3)', color: '#ffffff' } : undefined}
+            className="race-badge featured"
+            style={race.featured_bg_color ? { background: race.featured_bg_color, borderColor: 'rgba(255,255,255,0.4)', color: '#ffffff' } : undefined}
           >
-            {race.featured_icon && isImageUrl(race.featured_icon) && !hasImgError ? (
-              <img
-                src={race.featured_icon}
-                alt=""
-                onError={() => setHasImgError(true)}
-                style={{ width: '12px', height: '12px', objectFit: 'contain', borderRadius: '2px' }}
-              />
-            ) : (
-              <Sparkles size={11} />
-            )}
+            <Sparkles size={10} />
             <span>Featured</span>
           </span>
         )}
@@ -105,7 +96,21 @@ export const RaceCard = React.memo(function RaceCard({
           </span>
         )}
       </div>
-      <h3>{race.event_name}</h3>
+      <div className="title-with-logo">
+        {race.is_featured && race.featured_icon && isImageUrl(race.featured_icon) && !hasImgError && (
+          <div 
+            className="standalone-card-logo"
+            style={race.featured_bg_color ? { background: race.featured_bg_color, borderColor: race.featured_bg_color } : undefined}
+          >
+            <img
+              src={race.featured_icon}
+              alt=""
+              onError={() => setHasImgError(true)}
+            />
+          </div>
+        )}
+        <h3>{race.event_name}</h3>
+      </div>
       <div className="race-location">
         <MapPin size={14} />
         <span>{race.location_place || race.location_city || 'TBD'}</span>
