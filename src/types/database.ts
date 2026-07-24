@@ -15,6 +15,8 @@ export interface Database {
           event_name: string
           description: string | null
           display_description: string | null
+          is_featured: boolean | null
+          featured_icon: string | null
           dates: string[] | null
           max_distance: number | null
           event_type: string | null

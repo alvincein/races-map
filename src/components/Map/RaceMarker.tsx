@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
-import { Mountain, Calendar, MapPin, Icon, Heart } from 'lucide-react';
+import { Mountain, Calendar, MapPin, Icon, Heart, Sparkles, Star, Crown, Trophy } from 'lucide-react';
 import { sneaker } from '@lucide/lab';
 import { RaceWithSubRaces } from '../../types/database';
 import type { Race } from '../../types/database';
@@ -22,10 +22,22 @@ interface RaceMarkerProps {
 export const RaceMarker = React.memo(function RaceMarker({
   race, isSelected, onClick, offset, lng: propLng, lat: propLat, isFavorite, isHovered,
 }: RaceMarkerProps) {
+  const isFeatured = !!race.is_featured;
   const isTrail = race.event_type?.toLowerCase() === 'trail';
   const lng = propLng ?? race.location_lng;
   const lat = propLat ?? race.location_lat;
   if (lng == null || lat == null) return null;
+
+  const renderIcon = () => {
+    if (isFeatured) {
+      const iconKey = race.featured_icon?.toLowerCase();
+      if (iconKey === 'crown') return <Crown size={16} />;
+      if (iconKey === 'trophy') return <Trophy size={16} />;
+      if (iconKey === 'star') return <Star size={16} />;
+      return <Sparkles size={16} />;
+    }
+    return isTrail ? <Mountain size={16} /> : <Icon iconNode={sneaker} size={16} />;
+  };
 
   return (
     <Marker
@@ -37,9 +49,9 @@ export const RaceMarker = React.memo(function RaceMarker({
         e.originalEvent.stopPropagation();
         onClick(race, lng, lat);
       }}
-      style={{ zIndex: isSelected ? 10 : 1 }}
+      style={{ zIndex: isSelected ? 10 : isFeatured ? 5 : 1 }}
     >
-      <div className={`marker-container ${isSelected ? 'selected' : ''} ${isFavorite ? 'favorited' : ''} ${isHovered ? 'hover-shake' : ''}`}>
+      <div className={`marker-container ${isSelected ? 'selected' : ''} ${isFavorite ? 'favorited' : ''} ${isFeatured ? 'featured' : ''} ${isHovered ? 'hover-shake' : ''}`}>
         {isFavorite && (
           <div className="marker-favorite-badge" style={{
             display: 'flex',
@@ -50,8 +62,8 @@ export const RaceMarker = React.memo(function RaceMarker({
             <Heart size={10} fill="white" color="white" />
           </div>
         )}
-        <div className={`marker-pin ${isTrail ? 'marker-trail' : 'marker-road'}`}>
-          {isTrail ? <Mountain size={16} /> : <Icon iconNode={sneaker} size={16} />}
+        <div className={`marker-pin ${isFeatured ? 'marker-featured' : isTrail ? 'marker-trail' : 'marker-road'}`}>
+          {renderIcon()}
         </div>
         <div className="marker-label">
           <div className="label-header">

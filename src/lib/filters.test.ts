@@ -9,6 +9,8 @@ function makeRace(overrides: Partial<Race> = {}): Race {
     event_name: 'Test Race',
     description: null,
     display_description: null,
+    is_featured: null,
+    featured_icon: null,
     dates: ['2026-06-15'],
     max_distance: 21000,
     event_type: 'Road',
@@ -43,6 +45,22 @@ describe('applyFilters', () => {
   it('returns all races with default filters when all are upcoming', () => {
     const races = [makeRace({ dates: ['2026-06-15'] }), makeRace({ id: 'r2', dates: ['2026-10-01'] })];
     expect(applyFilters(races, DEFAULT_FILTERS, NOW)).toHaveLength(2);
+  });
+
+  it('pins featured races to top of the list when sorting', () => {
+    const races = [
+      makeRace({ id: 'normal-earlier', dates: ['2026-05-10'], is_featured: false }),
+      makeRace({ id: 'featured-later', dates: ['2026-08-01'], is_featured: true }),
+    ];
+    const sorted = [...races].sort((a, b) => {
+      const featA = a.is_featured ? 1 : 0;
+      const featB = b.is_featured ? 1 : 0;
+      if (featA !== featB) return featB - featA;
+      const dateA = a.dates?.length ? new Date(a.dates[0]).getTime() : Infinity;
+      const dateB = b.dates?.length ? new Date(b.dates[0]).getTime() : Infinity;
+      return dateA - dateB;
+    });
+    expect(sorted.map(r => r.id)).toEqual(['featured-later', 'normal-earlier']);
   });
 
   it('upcomingOnly excludes past races', () => {

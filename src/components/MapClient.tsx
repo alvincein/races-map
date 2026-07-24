@@ -130,13 +130,20 @@ export default function MapClient({
   const points = useMemo<RacePointFeature[]>(() => {
     return (races as RaceWithSubRaces[])
       .filter((r): r is RaceWithSubRaces & { location_lat: number; location_lng: number } =>
-        r.location_lat != null && r.location_lng != null,
+        r.location_lat != null && r.location_lng != null && !r.is_featured,
       )
       .map(race => ({
         type: 'Feature',
         properties: { cluster: false, raceId: race.id, race },
         geometry: { type: 'Point', coordinates: [race.location_lng, race.location_lat] as [number, number] },
       }));
+  }, [races]);
+
+  const featuredRaces = useMemo(() => {
+    return (races as RaceWithSubRaces[]).filter(
+      (r): r is RaceWithSubRaces & { location_lat: number; location_lng: number } =>
+        !!r.is_featured && r.location_lat != null && r.location_lng != null,
+    );
   }, [races]);
 
   const { clusters, supercluster } = useSupercluster<RacePointProps>({
@@ -359,6 +366,20 @@ export default function MapClient({
               onClick={handleRaceClick}
               isFavorite={isFavorite(racePoint.properties.raceId)}
               isHovered={hoveredRaceId === racePoint.properties.raceId}
+            />
+          );
+        })}
+
+        {featuredRaces.map(race => {
+          if (selectedRace && race.id === selectedRace.id) return null;
+          return (
+            <RaceMarker
+              key={`featured-${race.id}`}
+              race={race}
+              isSelected={false}
+              onClick={handleRaceClick}
+              isFavorite={isFavorite(race.id)}
+              isHovered={hoveredRaceId === race.id}
             />
           );
         })}

@@ -198,6 +198,18 @@
   box-shadow: 0 0 20px var(--accent-primary-glow);
 }
 
+.race-card.is-featured {
+  border: 1.5px solid rgba(255, 215, 0, 0.45);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 255, 255, 0.02));
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.15);
+}
+
+.race-card.is-featured:hover {
+  border-color: rgba(255, 215, 0, 0.75);
+  box-shadow: 0 6px 24px rgba(255, 215, 0, 0.3);
+  transform: translateY(-2px);
+}
+
 .race-card-header {
   display: flex;
   justify-content: space-between;

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Calendar, MapPin, Heart } from 'lucide-react';
+import { Calendar, MapPin, Heart, Sparkles } from 'lucide-react';
 import { RaceWithSubRaces } from '../../types/database';
 import { RaceTypeBadge, RaceStatusBadge } from './raceLabels';
 import { getRaceSlug } from '../../lib/slugs';
@@ -22,7 +22,7 @@ export const RaceCard = React.memo(function RaceCard({
   return (
     <a 
       href={`/race/${getRaceSlug(race)}`}
-      className={`race-card ${isSelected ? 'active' : ''}`} 
+      className={`race-card ${isSelected ? 'active' : ''} ${race.is_featured ? 'is-featured' : ''}`} 
       onClick={(e) => {
         // Prevent default navigation for normal left clicks to run client-side selection
         if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
@@ -61,7 +61,13 @@ export const RaceCard = React.memo(function RaceCard({
       >
         <Heart size={16} fill={isFavorite ? '#FF3366' : 'none'} />
       </button>
-      <div className="race-card-header" style={{ justifyContent: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+      <div className="race-card-header" style={{ justifyContent: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
+        {race.is_featured && (
+          <span className="featured-card-badge">
+            <Sparkles size={11} />
+            <span>Featured</span>
+          </span>
+        )}
         <RaceTypeBadge eventType={race.event_type} />
         {race.status && race.status !== 'scheduled' && (
           <RaceStatusBadge status={race.status} />

@@ -26,6 +26,10 @@ export function RaceList({ races, isFiltered, isRefreshing, onRaceClick, onBack,
       (r.location_place?.toLowerCase().includes(term)),
     );
     return [...filtered].sort((a, b) => {
+      const featA = a.is_featured ? 1 : 0;
+      const featB = b.is_featured ? 1 : 0;
+      if (featA !== featB) return featB - featA;
+
       const dateA = a.dates?.length ? new Date(a.dates[0]).getTime() : Infinity;
       const dateB = b.dates?.length ? new Date(b.dates[0]).getTime() : Infinity;
       return dateA - dateB;

@@ -80,6 +80,8 @@ export const RACE_LIST_COLUMNS = [
   'location_city',
   'location_place',
   'status',
+  'is_featured',
+  'featured_icon',
 ].join(', ');
 
 /**
