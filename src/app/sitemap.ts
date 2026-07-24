@@ -2,13 +2,14 @@ import type { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 import { fetchRacesCached } from '@/lib/races';
 import { getRaceSlug } from '@/lib/slugs';
+import { SITE_URL } from '@/lib/site';
 
 // Cache indefinitely; refreshed on-demand via /api/revalidate when races are
 // imported or updated (which calls revalidatePath('/sitemap.xml')).
 export const revalidate = false;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://racemap.gr';
+  const baseUrl = SITE_URL;
 
   const races = await fetchRacesCached(supabase);
 

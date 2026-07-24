@@ -5,7 +5,22 @@ interface SubRaceJoin {
   id: string;
   has_gpx: boolean | null;
   distance: number | null;
+  // Present only when fetched with SUB_RACE_SCHEMA_COLUMNS (build-time pages).
+  name?: string | null;
+  date?: string | null;
+  price?: number | null;
+  start_time?: string | null;
+  race_type?: string | null;
 }
+
+// Sub-race columns for the slim client payload (/api/races) — just enough for
+// the map markers and the "has GPX" / distance filters.
+const SUB_RACE_LIST_COLUMNS = 'id, has_gpx, distance';
+
+// Wider sub-race columns used at build time for race detail pages, where the
+// extra fields feed SportsEvent structured data (subEvent names, dates, offers).
+export const SUB_RACE_SCHEMA_COLUMNS =
+  'id, has_gpx, distance, name, date, price, start_time, race_type';
 
 interface RawRaceRow {
   id: string;
@@ -26,11 +41,12 @@ interface RawRaceRow {
 export async function fetchRacesWithSubRaces(
   supabase: SupabaseClient<Database>,
   columns: string = '*',
+  subRaceColumns: string = SUB_RACE_LIST_COLUMNS,
 ): Promise<RaceWithSubRaces[]> {
   try {
     const { data, error } = await supabase
       .from('races')
-      .select(`${columns}, sub_races!inner(id, has_gpx, distance)`)
+      .select(`${columns}, sub_races!inner(${subRaceColumns})`)
       .not('location_lat', 'is', null)
       .not('location_lng', 'is', null)
       .limit(1000);
@@ -138,7 +154,9 @@ export async function fetchRacesCached(
   const now = Date.now();
   // If cache is empty or expired (TTL), fetch fresh data
   if (!cachedRaces || now - lastFetchTime > CACHE_TTL_MS) {
-    cachedRaces = await fetchRacesWithSubRaces(supabase);
+    // Build-time consumers (race pages, sitemap) get the wider sub-race columns
+    // so structured data can describe each distance as a subEvent with offers.
+    cachedRaces = await fetchRacesWithSubRaces(supabase, '*', SUB_RACE_SCHEMA_COLUMNS);
     lastFetchTime = now;
   }
   return cachedRaces;

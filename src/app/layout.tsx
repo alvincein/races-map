@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { SITE_URL as baseUrl } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ 
@@ -15,8 +16,6 @@ export const viewport: Viewport = {
   userScalable: false,
   viewportFit: 'cover',
 };
-
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://racemap.gr';
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
