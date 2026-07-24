@@ -307,7 +307,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
   return (
     <main className={`app-layout ${hasElevation ? 'has-elevation' : ''}`}>
       <div className="main-brand-card glass-panel" onClick={handleBack} title="Αρχική Σελίδα">
-        <img src="/logo-white.svg" alt="RaceMap" className="main-brand-logo" />
+        <img src="/logo-128.png" alt="RaceMap" className="main-brand-logo" />
         <span className="main-brand-title">RaceMap</span>
       </div>
 

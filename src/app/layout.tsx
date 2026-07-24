@@ -28,9 +28,9 @@ export const metadata: Metadata = {
     canonical: "./",
   },
   icons: {
-    icon: "/logo-white.svg",
-    shortcut: "/logo-white.svg",
-    apple: "/logo-white.svg",
+    icon: "/logo-192.png",
+    shortcut: "/logo-192.png",
+    apple: "/logo-512.png",
   },
   appleWebApp: {
     capable: true,
@@ -57,9 +57,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL;
   return (
     <html lang="el" suppressHydrationWarning>
       <body className={inter.variable} suppressHydrationWarning>
+        {/* React hoists these into <head>: warm up the two third-party
+            origins every page hits (map tiles, race data). */}
+        <link rel="preconnect" href="https://basemaps.cartocdn.com" />
+        {supabaseOrigin && <link rel="preconnect" href={supabaseOrigin} />}
         {children}
         <Analytics />
       </body>

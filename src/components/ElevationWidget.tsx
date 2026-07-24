@@ -3,6 +3,7 @@ import { ElevationProfile } from './ElevationProfile';
 import { Route, X } from 'lucide-react';
 import type { RouteData, RoutePoint } from '../types/routes';
 import type { SubRace } from '../types/database';
+import { calculatePointGrade } from '../lib/routes';
 import './ElevationWidget.css';
 
 interface ElevationWidgetProps {
@@ -26,9 +27,10 @@ export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
     ? (officialStats.distance / 1000).toFixed(1) + 'km'
     : (routeData.distance / 1000).toFixed(1) + 'km';
 
-  const displayGain = officialStats?.elevation != null
-    ? '+' + Math.round(officialStats.elevation) + 'm'
-    : '+' + Math.round(routeData.stats.gain) + 'm';
+  const gpxGain = '+' + Math.round(routeData.stats.gain) + 'm';
+  const gpxLoss = '-' + Math.round(routeData.stats.loss) + 'm';
+  const gpxMaxEle = Math.round(routeData.stats.max_ele) + 'm';
+  const gpxMinEle = Math.round(routeData.stats.min_ele) + 'm';
   return (
     <div className="elevation-widget">
       <div className="widget-header">
@@ -43,19 +45,19 @@ export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
           </div>
           <div className="w-stat">
             <span className="w-label">D+</span>
-            <span className="w-value accent-green">{displayGain}</span>
+            <span className="w-value accent-green">{gpxGain}</span>
           </div>
           <div className="w-stat">
             <span className="w-label">D-</span>
-            <span className="w-value accent-red">-{routeData.stats.loss}m</span>
+            <span className="w-value accent-red">{gpxLoss}</span>
           </div>
-          <div className="w-stat desktop-only">
+          <div className="w-stat">
             <span className="w-label">Μέγιστο</span>
-            <span className="w-value">{routeData.stats.max_ele}m</span>
+            <span className="w-value">{gpxMaxEle}</span>
           </div>
-          <div className="w-stat desktop-only">
+          <div className="w-stat">
             <span className="w-label">Ελάχιστο</span>
-            <span className="w-value">{routeData.stats.min_ele}m</span>
+            <span className="w-value">{gpxMinEle}</span>
           </div>
         </div>
         <button className="close-widget" onClick={onClose} aria-label="Close">
@@ -71,18 +73,28 @@ export const ElevationWidget: React.FC<ElevationWidgetProps> = ({
           aidStations={officialStats?.aid_stations as any[]}
         />
 
-        {hoveredPoint && (
-          <div className="hover-indicator">
-            <div className="h-stat">
-              <span>Απόσταση: </span>
-              <strong>{(hoveredPoint.d / 1000).toFixed(2)}km</strong>
+        {hoveredPoint && (() => {
+          const rawGrade = calculatePointGrade(routeData.profile, hoveredPoint);
+          const displayGrade = rawGrade > 0 ? `+${rawGrade.toFixed(1)}%` : `${rawGrade.toFixed(1)}%`;
+          return (
+            <div className="hover-indicator">
+              <div className="h-stat">
+                <span>Απόσταση: </span>
+                <strong>{(hoveredPoint.d / 1000).toFixed(2)}km</strong>
+              </div>
+              <div className="h-stat">
+                <span>Υψόμετρο: </span>
+                <strong>{Math.round(hoveredPoint.e)}m</strong>
+              </div>
+              <div className="h-stat">
+                <span>Κλίση: </span>
+                <strong style={{ color: rawGrade > 0 ? '#10b981' : rawGrade < 0 ? '#ef4444' : 'inherit' }}>
+                  {displayGrade}
+                </strong>
+              </div>
             </div>
-            <div className="h-stat">
-              <span>Υψόμετρο: </span>
-              <strong>{Math.round(hoveredPoint.e)}m</strong>
-            </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

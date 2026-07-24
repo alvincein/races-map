@@ -14,7 +14,7 @@ export default function NotFound() {
 
       <div className="not-found-card glass-panel no-shimmer">
         <div className="not-found-logo-wrapper">
-          <img src="/logo-white.svg" alt="RaceMap" className="not-found-logo" />
+          <img src="/logo-128.png" alt="RaceMap" className="not-found-logo" />
           <span className="not-found-brand-title">RaceMap</span>
         </div>
 

@@ -76,3 +76,45 @@ export async function fetchRaceRoute(subRaceId: string): Promise<RouteData> {
     geojson,
   };
 }
+
+/**
+ * Calculates the local grade (%) at a point in the route profile.
+ * Uses a rolling window around the point (default 30m) to smooth out micro GPS noise.
+ */
+export function calculatePointGrade(profile: RoutePoint[], point: RoutePoint, windowMeters: number = 30): number {
+  if (!profile || profile.length < 2) return 0;
+
+  // Find start of window (at least windowMeters back, or first point)
+  let prevIdx = 0;
+  for (let i = 0; i < profile.length; i++) {
+    if (profile[i].d >= point.d - windowMeters) {
+      prevIdx = i;
+      break;
+    }
+  }
+
+  // Find end of window (at least windowMeters ahead, or last point)
+  let nextIdx = profile.length - 1;
+  for (let i = profile.length - 1; i >= 0; i--) {
+    if (profile[i].d <= point.d + windowMeters) {
+      nextIdx = i;
+      break;
+    }
+  }
+
+  // If point is at extreme start or end and window range is 0, expand indices
+  if (prevIdx === nextIdx) {
+    if (prevIdx > 0) prevIdx--;
+    else if (nextIdx < profile.length - 1) nextIdx++;
+  }
+
+  const prev = profile[prevIdx];
+  const next = profile[nextIdx];
+
+  const distDiff = next.d - prev.d;
+  if (distDiff <= 0) return 0;
+
+  const eleDiff = next.e - prev.e;
+  const grade = (eleDiff / distDiff) * 100;
+  return Math.round(grade * 10) / 10;
+}
