@@ -93,7 +93,10 @@ export const RaceMarker = React.memo(function RaceMarker({
             <Heart size={10} fill="white" color="white" />
           </div>
         )}
-        <div className={`marker-pin ${isFeatured ? 'marker-featured' : isTrail ? 'marker-trail' : 'marker-road'}`}>
+        <div 
+          className={`marker-pin ${isFeatured ? 'marker-featured' : isTrail ? 'marker-trail' : 'marker-road'}`}
+          style={isFeatured ? { background: race.featured_bg_color?.trim() || '#27272a' } : undefined}
+        >
           {renderIcon()}
         </div>
         <div className="marker-label">

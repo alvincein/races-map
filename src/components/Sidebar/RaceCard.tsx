@@ -77,7 +77,10 @@ export const RaceCard = React.memo(function RaceCard({
       </button>
       <div className="race-card-header" style={{ justifyContent: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
         {race.is_featured && (
-          <span className="featured-card-badge">
+          <span 
+            className="featured-card-badge"
+            style={race.featured_bg_color ? { background: race.featured_bg_color, borderColor: 'rgba(255,255,255,0.3)', color: '#ffffff' } : undefined}
+          >
             {race.featured_icon && isImageUrl(race.featured_icon) && !hasImgError ? (
               <img
                 src={race.featured_icon}

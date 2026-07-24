@@ -11,6 +11,7 @@ function makeRace(overrides: Partial<Race> = {}): Race {
     display_description: null,
     is_featured: null,
     featured_icon: null,
+    featured_bg_color: null,
     dates: ['2026-06-15'],
     max_distance: 21000,
     event_type: 'Road',

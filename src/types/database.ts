@@ -17,6 +17,7 @@ export interface Database {
           display_description: string | null
           is_featured: boolean | null
           featured_icon: string | null
+          featured_bg_color: string | null
           dates: string[] | null
           max_distance: number | null
           event_type: string | null

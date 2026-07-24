@@ -82,6 +82,7 @@ export const RACE_LIST_COLUMNS = [
   'status',
   'is_featured',
   'featured_icon',
+  'featured_bg_color',
 ].join(', ');
 
 /**
