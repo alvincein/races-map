@@ -20,10 +20,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "RaceMap | Διαδραστικός Χάρτης Αγώνων",
+    default: "Αγώνες Δρόμου & Trail στην Ελλάδα – Διαδραστικός Χάρτης | RaceMap",
     template: "%s | RaceMap",
   },
-  description: "Δείτε όλους τους αγώνες ορεινού τρεξίματος και ασφάλτου στην Ελλάδα. Διαδραστικός χάρτης, διαδρομές, υψομετρικά προφίλ και ημερολόγιο αγώνων.",
+  description: "Όλοι οι αγώνες δρόμου, βουνού και trail στην Ελλάδα σε έναν διαδραστικό χάρτη: ημερομηνίες, αποστάσεις, διαδρομές GPX, υψομετρικά προφίλ και σύνδεσμοι εγγραφής.",
   alternates: {
     canonical: "./",
   },
@@ -38,8 +38,8 @@ export const metadata: Metadata = {
     title: 'RaceMap',
   },
   openGraph: {
-    title: "RaceMap | Διαδραστικός Χάρτης Αγώνων",
-    description: "Δείτε όλους τους αγώνες ορεινού τρεξίματος και ασφάλτου στην Ελλάδα. Διαδραστικός χάρτης, διαδρομές, υψομετρικά προφίλ και ημερολόγιο αγώνων.",
+    title: "Αγώνες Δρόμου & Trail στην Ελλάδα – Διαδραστικός Χάρτης | RaceMap",
+    description: "Όλοι οι αγώνες δρόμου, βουνού και trail στην Ελλάδα σε έναν διαδραστικό χάρτη: ημερομηνίες, αποστάσεις, διαδρομές GPX, υψομετρικά προφίλ και σύνδεσμοι εγγραφής.",
     url: baseUrl,
     siteName: "RaceMap",
     locale: "el_GR",
@@ -47,8 +47,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "RaceMap | Διαδραστικός Χάρτης Αγώνων",
-    description: "Δείτε όλους τους αγώνες ορεινού τρεξίματος και ασφάλτου στην Ελλάδα. Διαδραστικός χάρτης, διαδρομές, υψομετρικά προφίλ και ημερολόγιο αγώνων.",
+    title: "Αγώνες Δρόμου & Trail στην Ελλάδα – Διαδραστικός Χάρτης | RaceMap",
+    description: "Όλοι οι αγώνες δρόμου, βουνού και trail στην Ελλάδα σε έναν διαδραστικό χάρτη: ημερομηνίες, αποστάσεις, διαδρομές GPX, υψομετρικά προφίλ και σύνδεσμοι εγγραφής.",
   },
 };
 
@@ -58,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="el" suppressHydrationWarning>
       <body className={inter.variable} suppressHydrationWarning>
         {children}
         <Analytics />

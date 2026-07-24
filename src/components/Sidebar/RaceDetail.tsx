@@ -49,7 +49,7 @@ export function RaceDetail({
 
   const handleShare = () => {
     const slug = getRaceSlug(race);
-    const siteUrl = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : 'https://races-map.vercel.app';
+    const siteUrl = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : 'https://racemap.gr';
     const shareUrl = `${siteUrl}/race/${slug}`;
     
     navigator.clipboard.writeText(shareUrl).then(() => {
@@ -138,9 +138,13 @@ export function RaceDetail({
             <div className="meta-item">
               <Calendar size={16} />
               <span>
-                {firstDate
-                  ? new Date(firstDate).toLocaleDateString('el-GR', { day: 'numeric', month: 'long', year: 'numeric' })
-                  : 'Δεν έχει οριστεί'}
+                {firstDate ? (
+                  <time dateTime={firstDate}>
+                    {new Date(firstDate).toLocaleDateString('el-GR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </time>
+                ) : (
+                  'Δεν έχει οριστεί'
+                )}
               </span>
             </div>
             <div className="meta-item">

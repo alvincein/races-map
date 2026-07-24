@@ -40,10 +40,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const description =
+  const city = race.location_place || race.location_city || '';
+  const distances = race.sub_races
+    .map((s) => s.distance)
+    .filter((d): d is number => typeof d === 'number')
+    .sort((a, b) => b - a)
+    .map((d) => (d >= 1000 ? `${d / 1000}χλμ` : `${d}μ`))
+    .join(', ');
+
+  const description = (
     race.display_description ||
     race.description_en ||
-    `Δείτε πληροφορίες, χάρτη διαδρομής, υψομετρικό προφίλ και δηλώστε συμμετοχή για τον αγώνα ${race.event_name}.`;
+    `Ο αγώνας ${race.event_name}${city ? ` στην τοποθεσία ${city}` : ''}${distances ? ` με αποστάσεις ${distances}` : ''}. Δείτε ημερομηνία, χάρτη διαδρομής, υψομετρικό προφίλ και σύνδεσμο εγγραφής στο RaceMap.`
+  ).substring(0, 160);
 
   const dateStr =
     race.dates && race.dates.length > 0
@@ -54,25 +63,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         })
       : '';
 
-  const pageTitle = `${race.event_name}${dateStr ? ` - ${dateStr}` : ''} - RaceMap`;
+  // The layout's title.template appends "| RaceMap" — don't brand it here too.
+  const pageTitle = [race.event_name, dateStr, city].filter(Boolean).join(' – ');
   const raceSlug = getRaceSlug(race);
 
   return {
     title: pageTitle,
-    description: description.substring(0, 160),
+    description,
     alternates: {
       canonical: `/race/${raceSlug}`,
     },
     openGraph: {
-      title: race.event_name,
-      description: description.substring(0, 160),
+      title: pageTitle,
+      description,
       type: 'website',
       url: `/race/${raceSlug}`,
+      siteName: 'RaceMap',
+      locale: 'el_GR',
     },
     twitter: {
       card: 'summary_large_image',
-      title: race.event_name,
-      description: description.substring(0, 160),
+      title: pageTitle,
+      description,
     },
   };
 }
