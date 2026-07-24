@@ -3,6 +3,7 @@
 import React from 'react';
 import type { Race, SubRace, RaceWithSubRaces } from '../types/database';
 import type { RouteIndex } from '../types/routes';
+import type { RelatedRaceLink } from '../lib/relatedRaces';
 import { useBottomSheetDrag } from './Sidebar/useBottomSheetDrag';
 import { RaceList } from './Sidebar/RaceList';
 import { RaceDetail } from './Sidebar/RaceDetail';
@@ -27,6 +28,7 @@ interface SidebarProps {
   isFavorite: (id: string) => boolean;
   onReportRace: (raceId: string, raceName: string) => void;
   onRaceHover?: (raceId: string | null) => void;
+  relatedRaces?: RelatedRaceLink[];
 }
 
 export default function Sidebar({
@@ -48,6 +50,7 @@ export default function Sidebar({
   isFavorite,
   onReportRace,
   onRaceHover,
+  relatedRaces,
 }: SidebarProps) {
   const drag = useBottomSheetDrag({
     state: sidebarState,
@@ -106,6 +109,7 @@ export default function Sidebar({
               toggleFavorite={toggleFavorite}
               isFavorite={isFavorite}
               onReportRace={onReportRace}
+              relatedRaces={relatedRaces}
             />
           </div>
         ) : (

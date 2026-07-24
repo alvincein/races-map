@@ -7,6 +7,7 @@ import { fetchRacesWithSubRaces, fetchRaceById } from '../lib/races';
 import { FilterState, DEFAULT_FILTERS } from '../types/filters';
 import { applyFilters } from '../lib/filters';
 import type { RoutePoint } from '../types/routes';
+import type { RelatedRaceLink } from '../lib/relatedRaces';
 import { useSubRaces } from '../lib/useSubRaces';
 import { useRouteIndex } from '../lib/useRouteIndex';
 import { useFavorites } from '../lib/useFavorites';
@@ -83,9 +84,12 @@ interface HomeClientProps {
   initialRaces?: RaceWithSubRaces[];
   initialSelectedRaceId?: string;
   initialSelectedRace?: RaceWithSubRaces;
+  // Server-computed "Σχετικοί Αγώνες" links for the initially selected race
+  // (race detail pages only) — rendered into the SSR HTML for SEO.
+  relatedRaces?: RelatedRaceLink[];
 }
 
-export default function HomeClient({ initialRaces, initialSelectedRaceId, initialSelectedRace }: HomeClientProps) {
+export default function HomeClient({ initialRaces, initialSelectedRaceId, initialSelectedRace, relatedRaces }: HomeClientProps) {
   const seedRaces = initialRaces ?? (initialSelectedRace ? [initialSelectedRace] : []);
   const [races, setRaces] = useState<RaceWithSubRaces[]>(seedRaces);
   const [selectedRace, setSelectedRace] = useState<RaceWithSubRaces | null>(() => {
@@ -348,6 +352,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
         isFavorite={isFavorite}
         onReportRace={handleReportRace}
         onRaceHover={handleRaceHover}
+        relatedRaces={selectedRace && selectedRace.id === initialSelectedRaceId ? relatedRaces : undefined}
       />
 
 

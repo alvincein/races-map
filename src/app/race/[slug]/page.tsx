@@ -3,6 +3,7 @@ import HomeClient from '@/components/HomeClient';
 import { fetchRacesCached } from '@/lib/races';
 import { getRaceSlug } from '@/lib/slugs';
 import { getRegionLabel } from '@/lib/regions';
+import { computeRelatedRaces } from '@/lib/relatedRaces';
 import { SITE_URL } from '@/lib/site';
 import type { RaceWithSubRaces } from '@/types/database';
 import type { Metadata } from 'next';
@@ -188,6 +189,10 @@ export default async function RacePage({ params }: Props) {
   }
 
   const jsonLd = buildRaceJsonLd(race, getRaceSlug(race));
+  // Server-computed internal links ("Σχετικοί Αγώνες") — crawlable in the
+  // static HTML, so race pages link to each other instead of being islands
+  // reachable only via the sitemap.
+  const relatedRaces = computeRelatedRaces(race, races);
 
   return (
     <>
@@ -197,7 +202,7 @@ export default async function RacePage({ params }: Props) {
           __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
         }}
       />
-      <HomeClient initialSelectedRace={race} initialSelectedRaceId={race.id} />
+      <HomeClient initialSelectedRace={race} initialSelectedRaceId={race.id} relatedRaces={relatedRaces} />
     </>
   );
 }

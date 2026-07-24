@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Heart, AlertCircle, Share2, Check, Loader2, Sparkles } from 'lucide-react';
 import type { Race, SubRace, RaceWithSubRaces } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
+import type { RelatedRaceLink } from '../../lib/relatedRaces';
 import { WeatherWidget } from '../WeatherWidget';
 import { RaceTypeBadge, RaceStatusBadge } from './raceLabels';
 import { SubRaceCard } from './SubRaceCard';
@@ -24,10 +25,11 @@ interface RaceDetailProps {
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
   onReportRace: (raceId: string, raceName: string) => void;
+  relatedRaces?: RelatedRaceLink[];
 }
 
 export function RaceDetail({
-  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, isLoadingRaceDetail = false, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace,
+  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, isLoadingRaceDetail = false, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace, relatedRaces,
 }: RaceDetailProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
@@ -218,6 +220,30 @@ export function RaceDetail({
             <p className="no-subraces">Δεν έχουν καταχωρηθεί συγκεκριμένες αποστάσεις.</p>
           )}
         </div>
+
+        {relatedRaces && relatedRaces.length > 0 && (
+          <div className="detail-section">
+            <h3>Σχετικοί Αγώνες</h3>
+            <ul className="related-races-list">
+              {relatedRaces.map((r) => (
+                <li key={r.slug}>
+                  <a href={`/race/${r.slug}`} className="related-race-link">
+                    <span className="related-race-name">{r.name}</span>
+                    <span className="related-race-meta">
+                      {r.date && (
+                        <time dateTime={r.date}>
+                          {new Date(r.date).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </time>
+                      )}
+                      {r.date && r.place ? ' · ' : ''}
+                      {r.place}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="detail-actions" style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
