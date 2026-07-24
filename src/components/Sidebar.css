@@ -330,6 +330,19 @@
   margin-bottom: 24px;
 }
 
+.description-loader {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .detail-actions {
   padding: 16px 24px;
   border-top: 1px solid var(--glass-border);

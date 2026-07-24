@@ -8,6 +8,7 @@ function makeRace(overrides: Partial<Race> = {}): Race {
     id: 'r1',
     event_name: 'Test Race',
     description: null,
+    display_description: null,
     dates: ['2026-06-15'],
     max_distance: 21000,
     event_type: 'Road',

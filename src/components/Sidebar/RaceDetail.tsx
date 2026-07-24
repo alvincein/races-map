@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Heart, AlertCircle, Share2, Check } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, ExternalLink, Navigation, Trophy, Heart, AlertCircle, Share2, Check, Loader2 } from 'lucide-react';
 import type { Race, SubRace, RaceWithSubRaces } from '../../types/database';
 import type { RouteIndex } from '../../types/routes';
 import { WeatherWidget } from '../WeatherWidget';
@@ -16,6 +16,7 @@ interface RaceDetailProps {
   subRaces: SubRace[];
   selectedSubRaceId: string | null;
   isLoadingSubRaces: boolean;
+  isLoadingRaceDetail?: boolean;
   onSubRaceClick: (subRaceId: string) => void;
   onBack: () => void;
   fetchedRoutes: RouteIndex;
@@ -25,7 +26,7 @@ interface RaceDetailProps {
 }
 
 export function RaceDetail({
-  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace,
+  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, isLoadingRaceDetail = false, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace,
 }: RaceDetailProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
@@ -42,13 +43,14 @@ export function RaceDetail({
   };
 
   const description =
-    race.description || race.description_en || 'No description available for this event.';
+    race.display_description || race.description_en || 'Δεν υπάρχουν διαθέσιμες πληροφορίες για αυτή την εκδήλωση.';
   const isLong = description.length > DESCRIPTION_TRUNCATE_LENGTH;
   const displayedDescription = isDescriptionExpanded || !isLong
     ? description
     : description.substring(0, DESCRIPTION_TRUNCATE_LENGTH) + '...';
 
   const firstDate = race.dates && race.dates.length > 0 ? race.dates[0] : null;
+  const isDetailLoading = isLoadingRaceDetail || !('display_description' in race);
 
   return (
     <>
@@ -137,17 +139,24 @@ export function RaceDetail({
             </div>
           )}
 
-          <div className="full-description">
-            <p>{displayedDescription}</p>
-            {isLong && (
-              <button
-                className="text-toggle-btn"
-                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-              >
-                {isDescriptionExpanded ? 'Λιγότερα' : 'Περισσότερα'}
-              </button>
-            )}
-          </div>
+          {isDetailLoading ? (
+            <div className="description-loader">
+              <Loader2 size={16} className="animate-spin" style={{ color: 'var(--accent-primary)' }} />
+              <span>Φόρτωση περιγραφής...</span>
+            </div>
+          ) : (
+            <div className="full-description">
+              <p>{displayedDescription}</p>
+              {isLong && (
+                <button
+                  className="text-toggle-btn"
+                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                >
+                  {isDescriptionExpanded ? 'Λιγότερα' : 'Περισσότερα'}
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="detail-section">

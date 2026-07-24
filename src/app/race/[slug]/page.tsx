@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const description =
-    race.description ||
+    race.display_description ||
     race.description_en ||
     `Δείτε πληροφορίες, χάρτη διαδρομής, υψομετρικό προφίλ και δηλώστε συμμετοχή για τον αγώνα ${race.event_name}.`;
 
@@ -87,7 +87,7 @@ export default async function RacePage({ params }: Props) {
     '@context': 'https://schema.org',
     '@type': 'SportsEvent',
     name: race.event_name,
-    description: race.description || race.description_en || undefined,
+    description: race.display_description || race.description_en || undefined,
     startDate: race.dates && race.dates.length > 0 ? race.dates[0] : undefined,
     location: {
       '@type': 'Place',

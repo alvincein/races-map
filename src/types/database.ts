@@ -14,6 +14,7 @@ export interface Database {
           id: string
           event_name: string
           description: string | null
+          display_description: string | null
           dates: string[] | null
           max_distance: number | null
           event_type: string | null

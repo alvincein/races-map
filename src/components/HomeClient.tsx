@@ -104,6 +104,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
     (initialSelectedRaceId || initialSelectedRace) ? 'half' : 'minimized'
   );
   const [isListRefreshing, setIsListRefreshing] = useState(false);
+  const [isLoadingRaceDetail, setIsLoadingRaceDetail] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
   const { subRaces, isLoading: isLoadingSubRaces } = useSubRaces(selectedRace?.id ?? null);
@@ -153,7 +154,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
           setSelectedRace(prev => {
             // Keep an already-hydrated (full-detail) selection; only fill in
             // from the list when we don't yet have the race object.
-            if (prev && 'description' in (prev as Record<string, unknown>)) return prev;
+            if (prev && 'display_description' in (prev as Record<string, unknown>)) return prev;
             return rows.find(r => r.id === initialSelectedRaceId) ?? prev;
           });
         }
@@ -173,18 +174,28 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
   // registration links, etc.) to keep the payload small. When a race is
   // selected, hydrate it with full detail on-demand. Skipped when the object is
   // already full — race detail pages seed a complete `initialSelectedRace`, and
-  // a hydrated selection carries the `description` key even when it is null.
+  // a hydrated selection carries the `display_description` key even when it is null.
   useEffect(() => {
-    if (!selectedRace) return;
+    if (!selectedRace) {
+      setIsLoadingRaceDetail(false);
+      return;
+    }
     // Runtime presence check via a cast so TypeScript doesn't narrow the typed
-    // object (which always declares `description`) down to `never`.
-    const alreadyFull = 'description' in (selectedRace as Record<string, unknown>);
-    if (alreadyFull) return;
+    // object (which always declares `display_description`) down to `never`.
+    const alreadyFull = 'display_description' in (selectedRace as Record<string, unknown>);
+    if (alreadyFull) {
+      setIsLoadingRaceDetail(false);
+      return;
+    }
     const id = selectedRace.id;
     let cancelled = false;
+    setIsLoadingRaceDetail(true);
     fetchRaceById(supabase, id).then(full => {
-      if (cancelled || !full) return;
-      setSelectedRace(prev => (prev && prev.id === id ? full : prev));
+      if (cancelled) return;
+      if (full) {
+        setSelectedRace(prev => (prev && prev.id === id ? full : prev));
+      }
+      setIsLoadingRaceDetail(false);
     });
     return () => {
       cancelled = true;
@@ -327,6 +338,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
         subRaces={subRaces}
         fetchedRoutes={fetchedRoutes}
         isLoadingSubRaces={isLoadingSubRaces}
+        isLoadingRaceDetail={isLoadingRaceDetail}
         onRaceClick={handleRaceSelect}
         onSubRaceClick={handleSubRaceSelect}
         onBack={handleBack}

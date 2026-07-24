@@ -17,6 +17,7 @@ interface SidebarProps {
   selectedSubRaceId: string | null;
   subRaces: SubRace[];
   isLoadingSubRaces: boolean;
+  isLoadingRaceDetail?: boolean;
   onBack: () => void;
   sidebarState: 'minimized' | 'half' | 'full';
   isRefreshing: boolean;
@@ -37,6 +38,7 @@ export default function Sidebar({
   selectedSubRaceId,
   subRaces,
   isLoadingSubRaces,
+  isLoadingRaceDetail,
   onBack,
   sidebarState,
   onStateChange,
@@ -98,6 +100,7 @@ export default function Sidebar({
               selectedSubRaceId={selectedSubRaceId}
               fetchedRoutes={fetchedRoutes}
               isLoadingSubRaces={isLoadingSubRaces}
+              isLoadingRaceDetail={isLoadingRaceDetail}
               onSubRaceClick={onSubRaceClick}
               onBack={onBack}
               toggleFavorite={toggleFavorite}
