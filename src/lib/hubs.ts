@@ -254,7 +254,7 @@ function buildAllHubs(all: RaceWithSubRaces[], today: string): ResolvedHub[] {
         h1: `Αγώνες Δρόμου & Trail – ${m.nom} ${y}`,
         metaTitle: `Αγώνες Δρόμου ${m.nom} ${y} – Όλοι οι Αγώνες & Ημερομηνίες`,
         metaDescription: `Όλοι οι αγώνες τρεξίματος τον ${m.gen} ${y} στην Ελλάδα: ${races.length} αγώνες δρόμου και βουνού με ημερομηνίες, αποστάσεις και τοποθεσίες στον χάρτη.`,
-        intro: `Το καλεντάρι αγώνων τρεξίματος για τον ${m.gen} ${y}: ${races.length} αγώνες δρόμου και ορεινού τρεξίματος σε όλη την Ελλάδα, με ημερομηνίες, αποστάσεις και συνδέσμους εγγραφής. Το ημερολόγιο ενημερώνεται καθημερινά από τις επίσημες σελίδες των διοργανωτών.`,
+        intro: `Οι αγώνες που τρέχουν τον ${m.gen} ${y} σε όλη την Ελλάδα — δρόμος, βουνό και trail, με μια ματιά στον χάρτη.`,
       }),
     );
   }
@@ -269,7 +269,7 @@ function buildAllHubs(all: RaceWithSubRaces[], today: string): ResolvedHub[] {
       intro: '',
     });
     if (hub.upcoming.length < 5) continue;
-    hub.intro = `Βρες όλους τους αγώνες δρόμου και ορεινού τρεξίματος ${c.inPhrase} για το ${year}. Αυτή τη στιγμή υπάρχουν ${hub.upcoming.length} προγραμματισμένοι αγώνες σε ακτίνα ${c.radiusKm}χλμ.${nextRacePhrase(hub.upcoming)} Δες αποστάσεις, διαδρομές και υψομετρικά στον διαδραστικό χάρτη.`;
+    hub.intro = `Τρέξιμο ${c.inPhrase}: αγώνες δρόμου και trail σε απόσταση έως ${c.radiusKm}χλμ από την πόλη, με τις διαδρομές τους στον χάρτη.${nextRacePhrase(hub.upcoming)}`;
     hub.area = { lat: c.lat, lng: c.lng, radiusKm: c.radiusKm };
     hubs.push(hub);
   }
@@ -288,7 +288,7 @@ function buildAllHubs(all: RaceWithSubRaces[], today: string): ResolvedHub[] {
       intro: '',
     });
     if (races.length < 2 || hub.upcoming.length < 1) continue;
-    hub.intro = `Οι αγώνες βουνού και trail ${m.inPhrase} για το ${year}, με ημερομηνίες, αποστάσεις και υψομετρικά.${nextRacePhrase(hub.upcoming)} Κάθε αγώνας έχει τη διαδρομή του στον διαδραστικό χάρτη.`;
+    hub.intro = `Ορεινό τρέξιμο ${m.inPhrase}: οι αγώνες βουνού της περιοχής, με διαδρομές και υψομετρικά πάνω στον χάρτη.${nextRacePhrase(hub.upcoming)}`;
     hub.area = { lat: m.lat, lng: m.lng, radiusKm: m.radiusKm };
     hubs.push(hub);
   }
@@ -305,7 +305,7 @@ function buildAllHubs(all: RaceWithSubRaces[], today: string): ResolvedHub[] {
       intro: '',
     });
     if (hub.upcoming.length < 3) continue;
-    hub.intro = `Πλήρες ημερολόγιο με όλους τους ${d.pluralAcc} στην Ελλάδα για το ${year} — ${hub.upcoming.length} προγραμματισμένοι αγώνες.${nextRacePhrase(hub.upcoming)} Δες για κάθε αγώνα την ακριβή απόσταση, την τοποθεσία και τον σύνδεσμο εγγραφής.`;
+    hub.intro = `Όλοι οι ${d.pluralNom} της Ελλάδας σε ένα μέρος — με ημερομηνίες, τοποθεσίες και εγγραφές.${nextRacePhrase(hub.upcoming)}`;
     hubs.push(hub);
   }
 
@@ -316,7 +316,10 @@ function buildAllHubs(all: RaceWithSubRaces[], today: string): ResolvedHub[] {
       h1: `${t.name} στην Ελλάδα ${year}`,
       metaTitle: `${t.name} στην Ελλάδα ${year} – Καλεντάρι & Χάρτης`,
       metaDescription: `Όλοι οι αγώνες ${t.inPhrase} στην Ελλάδα για το ${year}: ${races.length} αγώνες με ημερομηνίες, αποστάσεις και εγγραφές στον διαδραστικό χάρτη του RaceMap.`,
-      intro: `Το πλήρες καλεντάρι για αγώνες ${t.inPhrase} στην Ελλάδα το ${year}.${' '}Σύνολο ${races.length} αγώνες — δες ημερομηνίες, αποστάσεις και τοποθεσίες, και άνοιξε κάθε αγώνα στον διαδραστικό χάρτη.`,
+      intro:
+        t.eventType === 'road'
+          ? 'Οι αγώνες δρόμου της Ελλάδας σε έναν χάρτη — από city runs μέχρι μαραθώνιους, με ημερομηνίες και εγγραφές.'
+          : 'Trail και ορεινό τρέξιμο σε όλη την Ελλάδα: αγώνες βουνού με τις διαδρομές και τα υψομετρικά τους στον χάρτη.',
     });
     hubs.push(hub);
   }
@@ -331,7 +334,7 @@ function buildAllHubs(all: RaceWithSubRaces[], today: string): ResolvedHub[] {
       intro: '',
     });
     if (hub.upcoming.length < 3) continue;
-    hub.intro = `Όλοι οι αγώνες τρεξίματος ${reg.inPhrase} για το ${year} σε ένα ημερολόγιο: ${hub.upcoming.length} προγραμματισμένοι αγώνες δρόμου και ορεινού τρεξίματος.${nextRacePhrase(hub.upcoming)}`;
+    hub.intro = `Το ημερολόγιο αγώνων ${reg.inPhrase}: δρόμος και βουνό, με ημερομηνίες, αποστάσεις και εγγραφές πάνω στον χάρτη.${nextRacePhrase(hub.upcoming)}`;
     hubs.push(hub);
   }
 
@@ -429,7 +432,7 @@ export function hubPath(hub: Pick<ResolvedHub, 'slug'>): string {
 
 export interface HubDirectoryGroup {
   heading: string;
-  links: { href: string; label: string; count: number }[];
+  links: { href: string; slug: string; label: string; count: number }[];
 }
 
 /** Grouped hub links for the /agones directory panel in the sidebar. */
@@ -442,9 +445,30 @@ export function buildHubDirectory(hubs: ResolvedHub[]): HubDirectoryGroup[] {
       heading: KIND_META[kind].heading,
       links: hubs
         .filter((h) => h.kind === kind)
-        .map((h) => ({ href: hubPath(h), label: h.name, count: h.upcoming.length })),
+        .map((h) => ({ href: hubPath(h), slug: h.slug, label: h.name, count: h.upcoming.length })),
     }))
     .filter((g) => g.links.length > 0);
+}
+
+/** The client-side shape a hub takes when activated in the map app. */
+export interface ActiveHub {
+  slug: string;
+  name: string;
+  h1: string;
+  intro: string;
+  raceIds: string[];
+  area: { lat: number; lng: number; radiusKm: number } | null;
+}
+
+export function toActiveHub(hub: ResolvedHub, raceIds: string[]): ActiveHub {
+  return {
+    slug: hub.slug,
+    name: hub.name,
+    h1: hub.h1,
+    intro: hub.intro,
+    raceIds,
+    area: hub.area ?? null,
+  };
 }
 
 export { getRaceSlug };

@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Race, RaceWithSubRaces } from '../types/database';
 import { supabase } from '../lib/supabase';
 import { fetchRacesWithSubRaces, fetchRaceById } from '../lib/races';
-import { getActiveHubs, buildHubDirectory } from '../lib/hubs';
+import { getActiveHubs, buildHubDirectory, toActiveHub, type ActiveHub, type HubDirectoryGroup } from '../lib/hubs';
 import { FilterState, DEFAULT_FILTERS } from '../types/filters';
 import { applyFilters } from '../lib/filters';
 import type { RoutePoint } from '../types/routes';
@@ -93,16 +93,9 @@ interface HomeClientProps {
   // Hub landing pages (/agones/[hub]): the map opens filtered to this hub's
   // races, framed on its area. `initialRaces` then carries the hub's races
   // (slim) so the list is server-rendered for SEO.
-  initialHub?: {
-    slug: string;
-    name: string;
-    h1: string;
-    intro: string;
-    raceIds: string[];
-    area: { lat: number; lng: number; radiusKm: number } | null;
-  };
+  initialHub?: ActiveHub;
   // /agones index: grouped hub links rendered as a directory panel in the sidebar.
-  hubDirectory?: { heading: string; links: { href: string; label: string; count: number }[] }[];
+  hubDirectory?: HubDirectoryGroup[];
 }
 
 export default function HomeClient({ initialRaces, initialSelectedRaceId, initialSelectedRace, relatedRaces, hubLinks, initialHub, hubDirectory }: HomeClientProps) {
@@ -126,21 +119,23 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
   const [isListRefreshing, setIsListRefreshing] = useState(false);
   const [isLoadingRaceDetail, setIsLoadingRaceDetail] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-  // Hub landing pages start scoped to the hub's races; "Όλοι οι αγώνες" exits.
-  const [hubActive, setHubActive] = useState<boolean>(!!initialHub);
+  // The active hub scopes the map + list to its races; "Όλοι οι αγώνες" exits.
+  // Seeded from the SSR'd hub page prop, and switched entirely client-side
+  // when a hub is picked from the Εξερεύνηση panel — no page reloads.
+  const [activeHub, setActiveHub] = useState<ActiveHub | null>(initialHub ?? null);
   const hubIdSet = useMemo(
-    () => (initialHub ? new Set(initialHub.raceIds) : null),
-    [initialHub],
+    () => (activeHub ? new Set(activeHub.raceIds) : null),
+    [activeHub],
   );
   // The Εξερεύνηση panel (hub directory) replaces the race list when open.
-  // /agones passes an SSR'd directory (and starts open, for SEO); everywhere
-  // else it's computed client-side from the loaded race list on toggle.
+  // /agones passes an SSR'd directory (and starts open, for SEO); once the
+  // full race list loads, hubs resolve client-side so selection is instant.
   const [showDirectory, setShowDirectory] = useState<boolean>(!!hubDirectory);
+  const clientHubs = useMemo(() => (races.length > 0 ? getActiveHubs(races) : []), [races]);
   const directory = useMemo(() => {
-    if (hubDirectory) return hubDirectory;
-    if (races.length === 0) return [];
-    return buildHubDirectory(getActiveHubs(races));
-  }, [hubDirectory, races]);
+    if (clientHubs.length > 0) return buildHubDirectory(clientHubs);
+    return hubDirectory ?? [];
+  }, [clientHubs, hubDirectory]);
 
   const handleToggleDirectory = useCallback(() => {
     setShowDirectory(prev => {
@@ -153,6 +148,22 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
       return next;
     });
   }, []);
+
+  const handleSelectHub = useCallback((slug: string) => {
+    const hub = clientHubs.find(h => h.slug === slug);
+    if (!hub) {
+      // Race list not loaded yet — fall back to a normal navigation.
+      window.location.href = `/agones/${slug}`;
+      return;
+    }
+    setActiveHub(toActiveHub(hub, hub.upcoming.map(r => r.id)));
+    setShowDirectory(false);
+    setSelectedRace(null);
+    setSelectedSubRaceId(null);
+    setFocusedRaces(null);
+    setSidebarState('half');
+    pushStateBypassingNext(null, '', `/agones/${slug}`);
+  }, [clientHubs]);
 
   const { subRaces, isLoading: isLoadingSubRaces } = useSubRaces(selectedRace?.id ?? null);
   const { routes: fetchedRoutes } = useRouteIndex(subRaces);
@@ -271,9 +282,10 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
-      const match = path.match(/^\/race\/([^/]+)/);
-      if (match) {
-        const slugOrId = match[1];
+      const raceMatch = path.match(/^\/race\/([^/]+)/);
+      const hubMatch = path.match(/^\/agones\/([^/]+)/);
+      if (raceMatch) {
+        const slugOrId = raceMatch[1];
         const race = races.find(r => getRaceSlug(r) === slugOrId || r.id === slugOrId);
         if (race) {
           setSelectedRace(race);
@@ -284,30 +296,48 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
           setSelectedSubRaceId(null);
           setSidebarState('minimized');
         }
+      } else if (hubMatch) {
+        // Back/forward onto a hub URL — reactivate it client-side.
+        const hub = clientHubs.find(h => h.slug === hubMatch[1]);
+        setSelectedRace(null);
+        setSelectedSubRaceId(null);
+        if (hub) {
+          setActiveHub(toActiveHub(hub, hub.upcoming.map(r => r.id)));
+          setShowDirectory(false);
+          setSidebarState('half');
+        }
+      } else if (path === '/agones') {
+        setSelectedRace(null);
+        setSelectedSubRaceId(null);
+        setActiveHub(null);
+        setShowDirectory(true);
+        setSidebarState('half');
       } else {
         setSelectedRace(null);
         setSelectedSubRaceId(null);
+        setActiveHub(null);
+        setShowDirectory(false);
         setSidebarState('minimized');
       }
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [races]);
+  }, [races, clientHubs]);
 
   const filteredByControls = useMemo(() => {
     const base = applyFilters(races, filters, new Date(), favorites);
-    // Hub landing pages scope the map + list to the hub's races until the
-    // user exits via "Όλοι οι αγώνες".
-    if (hubActive && hubIdSet) return base.filter(r => hubIdSet.has(r.id));
+    // An active hub scopes the map + list to its races until the user exits
+    // via "Όλοι οι αγώνες".
+    if (hubIdSet) return base.filter(r => hubIdSet.has(r.id));
     return base;
-  }, [races, filters, favorites, hubActive, hubIdSet]);
+  }, [races, filters, favorites, hubIdSet]);
 
   // While a hub is active, leaving a race detail returns to the hub URL, not "/".
-  const basePath = hubActive && initialHub ? `/agones/${initialHub.slug}` : '/';
+  const basePath = activeHub ? `/agones/${activeHub.slug}` : '/';
 
   const handleExitHub = useCallback(() => {
-    setHubActive(false);
+    setActiveHub(null);
     setFocusedRaces(null);
     pushStateBypassingNext(null, '', '/');
   }, []);
@@ -370,7 +400,8 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
     setSelectedRace(null);
     setSelectedSubRaceId(null);
     setFocusedRaces(null);
-    setHubActive(false);
+    setActiveHub(null);
+    setShowDirectory(false);
     setSidebarState('half');
     pushStateBypassingNext(null, '', '/');
   }, []);
@@ -412,8 +443,9 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
         favoritesCount={favorites.length}
         onToggleFavorites={handleToggleFavorites}
         hoveredRaceId={hoveredRaceId}
-        hubArea={hubActive && initialHub ? initialHub.area : null}
-        hubFocus={hubActive && !!initialHub && !initialHub.area}
+        hubArea={activeHub?.area ?? null}
+        hubFocus={!!activeHub && !activeHub.area}
+        hubKey={activeHub?.slug ?? null}
       />
       <Sidebar
         races={sidebarRaces}
@@ -437,12 +469,15 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
         relatedRaces={selectedRace && selectedRace.id === initialSelectedRaceId ? relatedRaces : undefined}
         hubLinks={selectedRace && selectedRace.id === initialSelectedRaceId ? hubLinks : undefined}
         hubHeader={
-          hubActive && initialHub
-            ? { title: initialHub.h1, count: filteredByControls.length, intro: initialHub.intro }
+          activeHub
+            ? { title: activeHub.h1, count: filteredByControls.length, intro: activeHub.intro }
             : undefined
         }
-        onExitHub={hubActive && initialHub ? handleExitHub : undefined}
+        onExitHub={activeHub ? handleExitHub : undefined}
         hubDirectory={showDirectory ? directory : undefined}
+        showDirectory={showDirectory}
+        onToggleDirectory={handleToggleDirectory}
+        onHubSelect={handleSelectHub}
       />
 
 

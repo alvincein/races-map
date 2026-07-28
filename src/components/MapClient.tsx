@@ -101,6 +101,8 @@ interface MapClientProps {
   hubArea?: HubArea | null;
   /** Hub landing pages without a geo area: frame the given races instead. */
   hubFocus?: boolean;
+  /** Identity of the active hub — drives client-side fly-in/out transitions. */
+  hubKey?: string | null;
 }
 
 export default function MapClient({
@@ -126,6 +128,7 @@ export default function MapClient({
   hoveredRaceId,
   hubArea = null,
   hubFocus = false,
+  hubKey = null,
 }: MapClientProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
@@ -308,20 +311,35 @@ export default function MapClient({
     return INITIAL_VIEW_STATE;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // When the user exits a hub view ("Όλοι οι αγώνες"), zoom back out to Greece.
-  const wasHubViewRef = useRef(!!hubArea || hubFocus);
+  // Client-side hub transitions: entering/switching a hub frames its area (or
+  // its races), exiting flies back out to Greece. The initial mount is framed
+  // by initialViewState, so this only reacts to hub identity *changes* —
+  // selection and exit never reload the page or reset the map.
+  const racesRef = useRef(races);
+  racesRef.current = races;
+  const prevHubKeyRef = useRef<string | null>(hubKey);
   useEffect(() => {
-    const isHubView = !!hubArea || hubFocus;
-    if (wasHubViewRef.current && !isHubView) {
-      mapRef.current?.flyTo({
+    const prev = prevHubKeyRef.current;
+    if (prev === hubKey) return;
+    prevHubKeyRef.current = hubKey;
+    const map = mapRef.current;
+    if (!map) return;
+    if (!hubKey) {
+      map.flyTo({
         center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
         zoom: INITIAL_VIEW_STATE.zoom,
         pitch: INITIAL_VIEW_STATE.pitch,
         duration: 1200,
       });
+      return;
     }
-    wasHubViewRef.current = isHubView;
-  }, [hubArea, hubFocus]);
+    if (hubArea) {
+      map.fitBounds(circleBounds(hubArea), { padding: 60, duration: 1200 });
+    } else {
+      const bounds = racesBounds(racesRef.current);
+      if (bounds) map.fitBounds(bounds, { padding: 70, duration: 1200 });
+    }
+  }, [hubKey, hubArea]);
 
   const hubCircle = useMemo(() => (hubArea ? circlePolygon(hubArea) : null), [hubArea]);
 

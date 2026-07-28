@@ -1442,10 +1442,6 @@ h1, h2, h3 {
   font-size: 0.83rem;
   line-height: 1.5;
   margin: 0 0 10px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .hub-exit-btn {
@@ -1493,4 +1489,30 @@ h1, h2, h3 {
   font-size: 1.05rem;
   margin: 2px 0 4px;
   color: var(--text-primary);
+}
+
+.hub-directory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hub-directory-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.hub-directory-close:hover {
+  color: var(--accent-primary);
+  border-color: rgba(255, 232, 0, 0.45);
 }
