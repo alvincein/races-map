@@ -1171,46 +1171,53 @@
   font-size: 12px;
 }
 
-/* Calendar link inside the brand card (desktop: text chip, mobile: icon square) */
-.brand-calendar-link {
-  margin-left: auto;
+/* Εξερεύνηση toggle — standalone button next to the brand card.
+   Toggles the hub directory panel in the sidebar (no navigation). */
+.explore-toggle {
+  position: absolute;
+  top: 20px;
+  left: 412px;
+  height: 76px;
+  z-index: 2000;
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 9px;
+  padding: 0 22px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 13, 15, 0.85);
   color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: all 0.25s ease;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.brand-calendar-link:hover {
+.explore-toggle:hover {
+  transform: translateY(-2px);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.explore-toggle.active {
   color: var(--accent-primary);
   border-color: rgba(255, 232, 0, 0.5);
+  background: rgba(255, 232, 0, 0.08);
 }
 
 @media (max-width: 768px) {
-  .brand-calendar-link {
-    position: absolute;
-    top: 0;
-    left: calc(100% + 8px);
+  .explore-toggle {
+    top: 12px;
+    left: 70px;
     width: 50px;
     height: 50px;
-    margin: 0;
     padding: 0;
     justify-content: center;
     border-radius: 12px;
-    background: rgba(13, 13, 15, 0.85);
-    backdrop-filter: blur(48px) saturate(180%);
-    -webkit-backdrop-filter: blur(48px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
-  .brand-calendar-link span {
+
+  .explore-toggle span {
     display: none;
   }
 }

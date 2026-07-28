@@ -124,6 +124,24 @@ export default function Sidebar({
               hubLinks={hubLinks}
             />
           </div>
+        ) : hubDirectory && hubDirectory.length > 0 ? (
+          <div key="directory" className="animation-fade-in hub-directory">
+            <h2 className="hub-directory-title">Εξερεύνηση Αγώνων</h2>
+            {hubDirectory.map((group) => (
+              <section key={group.heading}>
+                <h3>{group.heading}</h3>
+                <ul className="hub-link-grid">
+                  {group.links.map((l) => (
+                    <li key={l.href}>
+                      <a href={l.href}>
+                        {l.label} <span className="hub-count">({l.count})</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
         ) : (
           <div key="list" className="animation-fade-in">
             {hubHeader && (
@@ -136,24 +154,6 @@ export default function Sidebar({
                     Δες όλους τους αγώνες ✕
                   </button>
                 )}
-              </div>
-            )}
-            {hubDirectory && hubDirectory.length > 0 && (
-              <div className="hub-directory">
-                {hubDirectory.map((group) => (
-                  <section key={group.heading}>
-                    <h3>{group.heading}</h3>
-                    <ul className="hub-link-grid">
-                      {group.links.map((l) => (
-                        <li key={l.href}>
-                          <a href={l.href}>
-                            {l.label} <span className="hub-count">({l.count})</span>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                ))}
               </div>
             )}
             <RaceList

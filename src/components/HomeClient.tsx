@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Race, RaceWithSubRaces } from '../types/database';
 import { supabase } from '../lib/supabase';
 import { fetchRacesWithSubRaces, fetchRaceById } from '../lib/races';
+import { getActiveHubs, buildHubDirectory } from '../lib/hubs';
 import { FilterState, DEFAULT_FILTERS } from '../types/filters';
 import { applyFilters } from '../lib/filters';
 import type { RoutePoint } from '../types/routes';
@@ -12,7 +13,7 @@ import { useSubRaces } from '../lib/useSubRaces';
 import { useRouteIndex } from '../lib/useRouteIndex';
 import { useFavorites } from '../lib/useFavorites';
 import { getRaceSlug } from '../lib/slugs';
-import { List, Loader2, CalendarDays } from 'lucide-react';
+import { List, Loader2, Compass } from 'lucide-react';
 import Sidebar from './Sidebar';
 import dynamic from 'next/dynamic';
 
@@ -131,6 +132,27 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
     () => (initialHub ? new Set(initialHub.raceIds) : null),
     [initialHub],
   );
+  // The Εξερεύνηση panel (hub directory) replaces the race list when open.
+  // /agones passes an SSR'd directory (and starts open, for SEO); everywhere
+  // else it's computed client-side from the loaded race list on toggle.
+  const [showDirectory, setShowDirectory] = useState<boolean>(!!hubDirectory);
+  const directory = useMemo(() => {
+    if (hubDirectory) return hubDirectory;
+    if (races.length === 0) return [];
+    return buildHubDirectory(getActiveHubs(races));
+  }, [hubDirectory, races]);
+
+  const handleToggleDirectory = useCallback(() => {
+    setShowDirectory(prev => {
+      const next = !prev;
+      if (next) {
+        setSelectedRace(null);
+        setSelectedSubRaceId(null);
+        setSidebarState('half');
+      }
+      return next;
+    });
+  }, []);
 
   const { subRaces, isLoading: isLoadingSubRaces } = useSubRaces(selectedRace?.id ?? null);
   const { routes: fetchedRoutes } = useRouteIndex(subRaces);
@@ -293,6 +315,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
   const handleRaceSelect = useCallback((race: RaceWithSubRaces) => {
     setSelectedRace(race);
     setSelectedSubRaceId(null);
+    setShowDirectory(false);
     setSidebarState('half');
     pushStateBypassingNext(null, '', `/race/${getRaceSlug(race)}`);
   }, []);
@@ -308,6 +331,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
   const handleClusterClick = useCallback((racesInCluster: RaceWithSubRaces[]) => {
     setFocusedRaces(racesInCluster);
     setSelectedRace(null);
+    setShowDirectory(false);
     pushStateBypassingNext(null, '', basePath);
   }, [basePath]);
 
@@ -356,16 +380,16 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
       <div className="main-brand-card glass-panel" onClick={handleGoHome} title="Αρχική Σελίδα">
         <img src="/logo-128.png" alt="RaceMap" className="main-brand-logo" />
         <span className="main-brand-title">RaceMap</span>
-        <a
-          href="/agones"
-          className="brand-calendar-link"
-          title="Ημερολόγιο Αγώνων"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <CalendarDays size={16} />
-          <span>Ημερολόγιο</span>
-        </a>
       </div>
+
+      <button
+        className={`explore-toggle glass-panel no-shimmer ${showDirectory ? 'active' : ''}`}
+        onClick={handleToggleDirectory}
+        title="Εξερεύνηση αγώνων ανά πόλη, βουνό, μήνα και απόσταση"
+      >
+        <Compass size={18} />
+        <span>Εξερεύνηση</span>
+      </button>
 
       <MapClient
         races={filteredByControls}
@@ -418,7 +442,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
             : undefined
         }
         onExitHub={hubActive && initialHub ? handleExitHub : undefined}
-        hubDirectory={hubDirectory}
+        hubDirectory={showDirectory ? directory : undefined}
       />
 
 
