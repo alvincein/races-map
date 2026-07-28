@@ -4,6 +4,7 @@ import { fetchRacesCached } from '@/lib/races';
 import { getRaceSlug } from '@/lib/slugs';
 import { getRegionLabel } from '@/lib/regions';
 import { computeRelatedRaces } from '@/lib/relatedRaces';
+import { hubLinksForRace } from '@/lib/hubs';
 import { SITE_URL } from '@/lib/site';
 import type { RaceWithSubRaces } from '@/types/database';
 import type { Metadata } from 'next';
@@ -206,6 +207,9 @@ export default async function RacePage({ params }: Props) {
   // static HTML, so race pages link to each other instead of being islands
   // reachable only via the sitemap.
   const relatedRaces = computeRelatedRaces(race, races);
+  // Hub links ("Αγώνες κοντά στην Αθήνα", "Μαραθώνιοι…") — crawlable paths
+  // from every race page into the /agones landing pages and back.
+  const hubLinks = hubLinksForRace(race, races);
 
   return (
     <>
@@ -215,7 +219,12 @@ export default async function RacePage({ params }: Props) {
           __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
         }}
       />
-      <HomeClient initialSelectedRace={race} initialSelectedRaceId={race.id} relatedRaces={relatedRaces} />
+      <HomeClient
+        initialSelectedRace={race}
+        initialSelectedRaceId={race.id}
+        relatedRaces={relatedRaces}
+        hubLinks={hubLinks}
+      />
     </>
   );
 }

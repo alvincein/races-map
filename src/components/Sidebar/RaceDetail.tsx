@@ -26,10 +26,11 @@ interface RaceDetailProps {
   isFavorite: (id: string) => boolean;
   onReportRace: (raceId: string, raceName: string) => void;
   relatedRaces?: RelatedRaceLink[];
+  hubLinks?: { href: string; label: string }[];
 }
 
 export function RaceDetail({
-  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, isLoadingRaceDetail = false, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace, relatedRaces,
+  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, isLoadingRaceDetail = false, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace, relatedRaces, hubLinks,
 }: RaceDetailProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
@@ -243,6 +244,19 @@ export function RaceDetail({
                       {r.place}
                     </span>
                   </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {hubLinks && hubLinks.length > 0 && (
+          <div className="detail-section">
+            <h3>Εξερεύνηση</h3>
+            <ul className="hub-link-grid">
+              {hubLinks.map((l) => (
+                <li key={l.href}>
+                  <a href={l.href}>{l.label}</a>
                 </li>
               ))}
             </ul>

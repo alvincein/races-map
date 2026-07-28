@@ -29,6 +29,7 @@ interface SidebarProps {
   onReportRace: (raceId: string, raceName: string) => void;
   onRaceHover?: (raceId: string | null) => void;
   relatedRaces?: RelatedRaceLink[];
+  hubLinks?: { href: string; label: string }[];
 }
 
 export default function Sidebar({
@@ -51,6 +52,7 @@ export default function Sidebar({
   onReportRace,
   onRaceHover,
   relatedRaces,
+  hubLinks,
 }: SidebarProps) {
   const drag = useBottomSheetDrag({
     state: sidebarState,
@@ -110,6 +112,7 @@ export default function Sidebar({
               isFavorite={isFavorite}
               onReportRace={onReportRace}
               relatedRaces={relatedRaces}
+              hubLinks={hubLinks}
             />
           </div>
         ) : (

@@ -12,7 +12,7 @@ import { useSubRaces } from '../lib/useSubRaces';
 import { useRouteIndex } from '../lib/useRouteIndex';
 import { useFavorites } from '../lib/useFavorites';
 import { getRaceSlug } from '../lib/slugs';
-import { List, Loader2 } from 'lucide-react';
+import { List, Loader2, CalendarDays } from 'lucide-react';
 import Sidebar from './Sidebar';
 import dynamic from 'next/dynamic';
 
@@ -87,9 +87,11 @@ interface HomeClientProps {
   // Server-computed "Σχετικοί Αγώνες" links for the initially selected race
   // (race detail pages only) — rendered into the SSR HTML for SEO.
   relatedRaces?: RelatedRaceLink[];
+  // Server-computed /agones hub links for the initially selected race.
+  hubLinks?: { href: string; label: string }[];
 }
 
-export default function HomeClient({ initialRaces, initialSelectedRaceId, initialSelectedRace, relatedRaces }: HomeClientProps) {
+export default function HomeClient({ initialRaces, initialSelectedRaceId, initialSelectedRace, relatedRaces, hubLinks }: HomeClientProps) {
   const seedRaces = initialRaces ?? (initialSelectedRace ? [initialSelectedRace] : []);
   const [races, setRaces] = useState<RaceWithSubRaces[]>(seedRaces);
   const [selectedRace, setSelectedRace] = useState<RaceWithSubRaces | null>(() => {
@@ -309,6 +311,15 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
       <div className="main-brand-card glass-panel" onClick={handleBack} title="Αρχική Σελίδα">
         <img src="/logo-128.png" alt="RaceMap" className="main-brand-logo" />
         <span className="main-brand-title">RaceMap</span>
+        <a
+          href="/agones"
+          className="brand-calendar-link"
+          title="Ημερολόγιο Αγώνων"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <CalendarDays size={16} />
+          <span>Ημερολόγιο</span>
+        </a>
       </div>
 
       <MapClient
@@ -353,6 +364,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
         onReportRace={handleReportRace}
         onRaceHover={handleRaceHover}
         relatedRaces={selectedRace && selectedRace.id === initialSelectedRaceId ? relatedRaces : undefined}
+        hubLinks={selectedRace && selectedRace.id === initialSelectedRaceId ? hubLinks : undefined}
       />
 
 

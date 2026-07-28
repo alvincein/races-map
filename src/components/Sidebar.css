@@ -1170,3 +1170,47 @@
   color: var(--text-secondary);
   font-size: 12px;
 }
+
+/* Calendar link inside the brand card (desktop: text chip, mobile: icon square) */
+.brand-calendar-link {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+}
+
+.brand-calendar-link:hover {
+  color: var(--accent-primary);
+  border-color: rgba(255, 232, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+  .brand-calendar-link {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 8px);
+    width: 50px;
+    height: 50px;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(13, 13, 15, 0.85);
+    backdrop-filter: blur(48px) saturate(180%);
+    -webkit-backdrop-filter: blur(48px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  .brand-calendar-link span {
+    display: none;
+  }
+}

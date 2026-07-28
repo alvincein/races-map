@@ -26,7 +26,10 @@ export async function POST(request: NextRequest) {
   revalidatePath('/api/races');
   revalidatePath('/');
   revalidatePath('/sitemap.xml');
-  const revalidated = ['/api/races', '/', '/sitemap.xml'];
+  // Hub landing pages (/agones/*) list many races each — refresh them all.
+  revalidatePath('/agones');
+  revalidatePath('/agones/[hub]', 'page');
+  const revalidated = ['/api/races', '/', '/sitemap.xml', '/agones', '/agones/[hub]'];
 
   let slugs: string[] = [];
   let ids: string[] = [];
