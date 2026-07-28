@@ -30,6 +30,12 @@ interface SidebarProps {
   onRaceHover?: (raceId: string | null) => void;
   relatedRaces?: RelatedRaceLink[];
   hubLinks?: { href: string; label: string }[];
+  // Hub landing pages: header (title/count/intro) shown above the race list,
+  // with an exit button that clears the hub scope.
+  hubHeader?: { title: string; count: number; intro?: string };
+  onExitHub?: () => void;
+  // /agones index: grouped hub links rendered as a directory above the list.
+  hubDirectory?: { heading: string; links: { href: string; label: string; count: number }[] }[];
 }
 
 export default function Sidebar({
@@ -53,6 +59,9 @@ export default function Sidebar({
   onRaceHover,
   relatedRaces,
   hubLinks,
+  hubHeader,
+  onExitHub,
+  hubDirectory,
 }: SidebarProps) {
   const drag = useBottomSheetDrag({
     state: sidebarState,
@@ -117,6 +126,36 @@ export default function Sidebar({
           </div>
         ) : (
           <div key="list" className="animation-fade-in">
+            {hubHeader && (
+              <div className="hub-panel-header">
+                <h2>{hubHeader.title}</h2>
+                <p className="hub-panel-count">{hubHeader.count} αγώνες</p>
+                {hubHeader.intro && <p className="hub-panel-intro">{hubHeader.intro}</p>}
+                {onExitHub && (
+                  <button className="hub-exit-btn" onClick={onExitHub}>
+                    Δες όλους τους αγώνες ✕
+                  </button>
+                )}
+              </div>
+            )}
+            {hubDirectory && hubDirectory.length > 0 && (
+              <div className="hub-directory">
+                {hubDirectory.map((group) => (
+                  <section key={group.heading}>
+                    <h3>{group.heading}</h3>
+                    <ul className="hub-link-grid">
+                      {group.links.map((l) => (
+                        <li key={l.href}>
+                          <a href={l.href}>
+                            {l.label} <span className="hub-count">({l.count})</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            )}
             <RaceList
               races={races}
               isFiltered={isFiltered}

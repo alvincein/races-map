@@ -112,6 +112,33 @@ export function fetchRaceListItems(
 }
 
 /**
+ * Strips a (possibly full) race down to the slim list shape — used when
+ * embedding a race subset into server-rendered HTML (hub pages) so heavy
+ * fields like descriptions don't bloat the page payload.
+ */
+export function toRaceListItem(race: RaceWithSubRaces): RaceWithSubRaces {
+  return {
+    id: race.id,
+    event_name: race.event_name,
+    event_name_en: race.event_name_en,
+    event_type: race.event_type,
+    max_distance: race.max_distance,
+    dates: race.dates,
+    location_lat: race.location_lat,
+    location_lng: race.location_lng,
+    location_region: race.location_region,
+    location_city: race.location_city,
+    location_place: race.location_place,
+    status: race.status,
+    sub_races: race.sub_races.map((s) => ({
+      id: s.id,
+      has_gpx: s.has_gpx,
+      distance: s.distance,
+    })),
+  } as unknown as RaceWithSubRaces;
+}
+
+/**
  * Full detail for a single race, loaded on-demand when a race is selected so the
  * list payload can stay slim. Returns `null` on error or if not found.
  */

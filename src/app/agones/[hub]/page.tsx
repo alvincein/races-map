@@ -1,22 +1,22 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import HomeClient from '@/components/HomeClient';
 import { supabase } from '@/lib/supabase';
-import { fetchRacesCached } from '@/lib/races';
+import { fetchRacesCached, toRaceListItem } from '@/lib/races';
 import {
   getActiveHubs,
   resolveHub,
   athensToday,
   hubPath,
   getRaceSlug,
-  KIND_META,
-  type ResolvedHub,
 } from '@/lib/hubs';
 import { SITE_URL } from '@/lib/site';
-import type { RaceWithSubRaces } from '@/types/database';
 
-// Daily refresh keeps "upcoming vs past" honest; the scraper's
-// /api/revalidate hook refreshes immediately when race data changes.
+// Hub landing pages render the map app scoped to the hub's races: the SEO
+// payload (title/meta, sr-only H1, SSR'd sidebar list with real race links,
+// JSON-LD) lives in the initial HTML, while the presentation stays the
+// compact map-based design. Daily refresh keeps "upcoming" honest; the
+// scraper's /api/revalidate hook refreshes immediately on data changes.
 export const revalidate = 86400;
 
 interface Props {
@@ -46,58 +46,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function distanceLabel(meters: number): string {
-  return meters >= 1000 ? `${meters / 1000}χλμ` : `${meters}μ`;
-}
-
-function raceDateOf(race: RaceWithSubRaces): string | null {
-  return race.start_date || (race.dates && race.dates[0]) || null;
-}
-
-function RaceRow({ race }: { race: RaceWithSubRaces }) {
-  const d = raceDateOf(race);
-  const dateStr = d
-    ? new Date(d).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' })
-    : 'Χωρίς ημερομηνία';
-  const distances = race.sub_races
-    .map((s) => s.distance)
-    .filter((x): x is number => typeof x === 'number')
-    .sort((a, b) => b - a)
-    .slice(0, 4);
-  return (
-    <li className="hub-race-row">
-      {d && <time dateTime={d.slice(0, 10)}>{dateStr}</time>}
-      <div className="hub-race-main">
-        <Link href={`/race/${getRaceSlug(race)}`}>{race.event_name}</Link>
-        <span className="hub-race-place">
-          {race.location_place || race.location_city || 'Ελλάδα'}
-          {race.status === 'cancelled' && <em className="hub-cancelled"> · ΑΚΥΡΩΘΗΚΕ</em>}
-          {race.status === 'postponed' && <em className="hub-cancelled"> · ΑΝΑΒΛΗΘΗΚΕ</em>}
-        </span>
-      </div>
-      <span className="hub-race-distances">
-        {distances.map((x) => (
-          <span key={x} className="hub-chip">
-            {distanceLabel(x)}
-          </span>
-        ))}
-      </span>
-    </li>
-  );
-}
-
-function groupByMonth(races: RaceWithSubRaces[]): [string, RaceWithSubRaces[]][] {
-  const groups = new Map<string, RaceWithSubRaces[]>();
-  for (const r of races) {
-    const d = raceDateOf(r);
-    const key = d
-      ? new Date(d).toLocaleDateString('el-GR', { month: 'long', year: 'numeric' })
-      : 'Χωρίς ημερομηνία';
-    groups.set(key, [...(groups.get(key) ?? []), r]);
-  }
-  return [...groups.entries()];
-}
-
 export default async function HubPage({ params }: Props) {
   const { hub: slug } = await params;
   const races = await fetchRacesCached(supabase);
@@ -105,9 +53,8 @@ export default async function HubPage({ params }: Props) {
   const hub = resolveHub(slug, races, today);
   if (!hub) notFound();
 
-  const allHubs = getActiveHubs(races, today);
-  const siblings = allHubs.filter((h) => h.kind === hub.kind && h.slug !== hub.slug).slice(0, 10);
-  const monthHubs = allHubs.filter((h) => h.kind === 'month').slice(0, 6);
+  // Slim payload for the SSR'd sidebar list — no heavy detail fields.
+  const hubRaces = hub.upcoming.map(toRaceListItem);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -142,73 +89,20 @@ export default async function HubPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
-      <nav className="hub-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/">Αρχική</Link> › <Link href="/agones">Ημερολόγιο Αγώνων</Link> ›{' '}
-        <span>{hub.name}</span>
-      </nav>
-
-      <h1>{hub.h1}</h1>
-      <p className="hub-intro">{hub.intro}</p>
-
-      {hub.upcoming.length > 0 ? (
-        groupByMonth(hub.upcoming).map(([month, group]) => (
-          <section key={month} className="hub-month-section">
-            <h2>{month}</h2>
-            <ul className="hub-race-list">
-              {group.map((r) => (
-                <RaceRow key={r.id} race={r} />
-              ))}
-            </ul>
-          </section>
-        ))
-      ) : (
-        <p>Δεν υπάρχουν προγραμματισμένοι αγώνες αυτή τη στιγμή.</p>
-      )}
-
-      {hub.past.length > 0 && (
-        <details className="hub-past">
-          <summary>Πρόσφατοι αγώνες που ολοκληρώθηκαν ({hub.past.length})</summary>
-          <ul className="hub-race-list">
-            {hub.past.map((r) => (
-              <RaceRow key={r.id} race={r} />
-            ))}
-          </ul>
-        </details>
-      )}
-
-      {monthHubs.length > 0 && hub.kind !== 'month' && (
-        <section className="hub-related">
-          <h2>Αγώνες ανά μήνα</h2>
-          <ul className="hub-link-grid">
-            {monthHubs.map((h) => (
-              <li key={h.slug}>
-                <Link href={hubPath(h)}>
-                  {h.name} <span className="hub-count">({h.upcoming.length})</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {siblings.length > 0 && (
-        <section className="hub-related">
-          <h2>{KIND_META[hub.kind].heading}</h2>
-          <ul className="hub-link-grid">
-            {siblings.map((h) => (
-              <li key={h.slug}>
-                <Link href={hubPath(h)}>
-                  {h.name} <span className="hub-count">({h.upcoming.length})</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <p className="hub-map-cta">
-        <Link href="/">Δες όλους τους αγώνες στον διαδραστικό χάρτη →</Link>
-      </p>
+      {/* The map UI shows the hub title inside the list panel; give crawlers
+          an explicit page heading too. */}
+      <h1 className="sr-only">{hub.h1}</h1>
+      <HomeClient
+        initialRaces={hubRaces}
+        initialHub={{
+          slug: hub.slug,
+          name: hub.name,
+          h1: hub.h1,
+          intro: hub.intro,
+          raceIds: hubRaces.map((r) => r.id),
+          area: hub.area ?? null,
+        }}
+      />
     </>
   );
 }

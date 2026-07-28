@@ -27,6 +27,8 @@ export interface ResolvedHub {
   upcoming: RaceWithSubRaces[];
   /** Races already run (shown collapsed), descending, capped. */
   past: RaceWithSubRaces[];
+  /** Geographic footprint for city/mountain hubs — outlined on the map. */
+  area?: { lat: number; lng: number; radiusKm: number };
 }
 
 export const KIND_META: Record<HubKind, { heading: string; order: number }> = {
@@ -268,6 +270,7 @@ function buildAllHubs(all: RaceWithSubRaces[], today: string): ResolvedHub[] {
     });
     if (hub.upcoming.length < 5) continue;
     hub.intro = `Βρες όλους τους αγώνες δρόμου και ορεινού τρεξίματος ${c.inPhrase} για το ${year}. Αυτή τη στιγμή υπάρχουν ${hub.upcoming.length} προγραμματισμένοι αγώνες σε ακτίνα ${c.radiusKm}χλμ.${nextRacePhrase(hub.upcoming)} Δες αποστάσεις, διαδρομές και υψομετρικά στον διαδραστικό χάρτη.`;
+    hub.area = { lat: c.lat, lng: c.lng, radiusKm: c.radiusKm };
     hubs.push(hub);
   }
 
@@ -286,6 +289,7 @@ function buildAllHubs(all: RaceWithSubRaces[], today: string): ResolvedHub[] {
     });
     if (races.length < 2 || hub.upcoming.length < 1) continue;
     hub.intro = `Οι αγώνες βουνού και trail ${m.inPhrase} για το ${year}, με ημερομηνίες, αποστάσεις και υψομετρικά.${nextRacePhrase(hub.upcoming)} Κάθε αγώνας έχει τη διαδρομή του στον διαδραστικό χάρτη.`;
+    hub.area = { lat: m.lat, lng: m.lng, radiusKm: m.radiusKm };
     hubs.push(hub);
   }
 
@@ -421,6 +425,26 @@ export function hubLinksForRace(
 /** Absolute-path helper shared by sitemap and pages. */
 export function hubPath(hub: Pick<ResolvedHub, 'slug'>): string {
   return `/agones/${hub.slug}`;
+}
+
+export interface HubDirectoryGroup {
+  heading: string;
+  links: { href: string; label: string; count: number }[];
+}
+
+/** Grouped hub links for the /agones directory panel in the sidebar. */
+export function buildHubDirectory(hubs: ResolvedHub[]): HubDirectoryGroup[] {
+  const kinds = (Object.keys(KIND_META) as HubKind[]).sort(
+    (a, b) => KIND_META[a].order - KIND_META[b].order,
+  );
+  return kinds
+    .map((kind) => ({
+      heading: KIND_META[kind].heading,
+      links: hubs
+        .filter((h) => h.kind === kind)
+        .map((h) => ({ href: hubPath(h), label: h.name, count: h.upcoming.length })),
+    }))
+    .filter((g) => g.links.length > 0);
 }
 
 export { getRaceSlug };

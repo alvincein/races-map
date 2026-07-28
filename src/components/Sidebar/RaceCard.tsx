@@ -109,7 +109,22 @@ export const RaceCard = React.memo(function RaceCard({
             />
           </div>
         )}
-        <h3>{race.event_name}</h3>
+        {/* Real anchor for crawlability + open-in-new-tab; plain clicks keep
+            the in-map selection behavior via the card's onClick. */}
+        <h3>
+          <a
+            href={`/race/${getRaceSlug(race)}`}
+            onClick={(e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey) {
+                e.stopPropagation();
+                return;
+              }
+              e.preventDefault();
+            }}
+          >
+            {race.event_name}
+          </a>
+        </h3>
       </div>
       <div className="race-location">
         <MapPin size={14} />

@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { Maximize2 } from 'lucide-react';
-import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre';
+import Map, { Marker, NavigationControl, Source, Layer } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
 import useSupercluster from 'use-supercluster';
 import { Race, SubRace, RaceWithSubRaces } from '../types/database';
@@ -31,6 +31,51 @@ const VIEWPORT_DEBOUNCE_MS = 150;
 const CLUSTER_RADIUS = 50;
 const CLUSTER_MAX_ZOOM = 20;
 
+export interface HubArea {
+  lat: number;
+  lng: number;
+  radiusKm: number;
+}
+
+// Approximate a km-radius circle as a GeoJSON polygon (64 segments).
+function circlePolygon(area: HubArea) {
+  const latR = area.radiusKm / 110.574;
+  const lngR = area.radiusKm / (111.32 * Math.cos((area.lat * Math.PI) / 180));
+  const coords: [number, number][] = [];
+  for (let i = 0; i <= 64; i++) {
+    const t = (i / 64) * 2 * Math.PI;
+    coords.push([area.lng + lngR * Math.cos(t), area.lat + latR * Math.sin(t)]);
+  }
+  return {
+    type: 'Feature' as const,
+    properties: {},
+    geometry: { type: 'Polygon' as const, coordinates: [coords] },
+  };
+}
+
+function circleBounds(area: HubArea): [[number, number], [number, number]] {
+  const latR = area.radiusKm / 110.574;
+  const lngR = area.radiusKm / (111.32 * Math.cos((area.lat * Math.PI) / 180));
+  return [
+    [area.lng - lngR, area.lat - latR],
+    [area.lng + lngR, area.lat + latR],
+  ];
+}
+
+function racesBounds(races: RaceWithSubRaces[]): [[number, number], [number, number]] | null {
+  const pts = races.filter((r) => r.location_lat != null && r.location_lng != null);
+  if (pts.length === 0) return null;
+  let minLng = pts[0].location_lng!, minLat = pts[0].location_lat!;
+  let maxLng = minLng, maxLat = minLat;
+  for (const r of pts) {
+    if (r.location_lng! < minLng) minLng = r.location_lng!;
+    if (r.location_lat! < minLat) minLat = r.location_lat!;
+    if (r.location_lng! > maxLng) maxLng = r.location_lng!;
+    if (r.location_lat! > maxLat) maxLat = r.location_lat!;
+  }
+  return [[minLng, minLat], [maxLng, maxLat]];
+}
+
 interface MapClientProps {
   races: RaceWithSubRaces[];
   selectedRace: RaceWithSubRaces | null;
@@ -52,6 +97,10 @@ interface MapClientProps {
   favoritesCount: number;
   onToggleFavorites: () => void;
   hoveredRaceId: string | null;
+  /** Hub landing pages: geographic area to outline and frame (city/mountain). */
+  hubArea?: HubArea | null;
+  /** Hub landing pages without a geo area: frame the given races instead. */
+  hubFocus?: boolean;
 }
 
 export default function MapClient({
@@ -75,6 +124,8 @@ export default function MapClient({
   favoritesCount,
   onToggleFavorites,
   hoveredRaceId,
+  hubArea = null,
+  hubFocus = false,
 }: MapClientProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES[0]);
@@ -246,8 +297,33 @@ export default function MapClient({
         bearing: 0,
       };
     }
+    // Hub landing pages open framed on their area (or their races).
+    if (hubArea) {
+      return { bounds: circleBounds(hubArea), fitBoundsOptions: { padding: 60 } };
+    }
+    if (hubFocus) {
+      const bounds = racesBounds(races);
+      if (bounds) return { bounds, fitBoundsOptions: { padding: 70 } };
+    }
     return INITIAL_VIEW_STATE;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When the user exits a hub view ("Όλοι οι αγώνες"), zoom back out to Greece.
+  const wasHubViewRef = useRef(!!hubArea || hubFocus);
+  useEffect(() => {
+    const isHubView = !!hubArea || hubFocus;
+    if (wasHubViewRef.current && !isHubView) {
+      mapRef.current?.flyTo({
+        center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
+        zoom: INITIAL_VIEW_STATE.zoom,
+        pitch: INITIAL_VIEW_STATE.pitch,
+        duration: 1200,
+      });
+    }
+    wasHubViewRef.current = isHubView;
+  }, [hubArea, hubFocus]);
+
+  const hubCircle = useMemo(() => (hubArea ? circlePolygon(hubArea) : null), [hubArea]);
 
   // Navigate to race on select
   useEffect(() => {
@@ -406,6 +482,26 @@ export default function MapClient({
             isFavorite={isFavorite}
             hoveredRaceId={hoveredRaceId}
           />
+        )}
+
+        {hubCircle && (
+          <Source id="hub-area" type="geojson" data={hubCircle}>
+            <Layer
+              id="hub-area-fill"
+              type="fill"
+              paint={{ 'fill-color': '#FFE800', 'fill-opacity': 0.05 }}
+            />
+            <Layer
+              id="hub-area-line"
+              type="line"
+              paint={{
+                'line-color': '#FFE800',
+                'line-width': 2,
+                'line-opacity': 0.65,
+                'line-dasharray': [2.5, 2.5],
+              }}
+            />
+          </Source>
         )}
 
         {routesToShow.map((route, index) => (
