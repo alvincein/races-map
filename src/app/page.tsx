@@ -1,5 +1,13 @@
+import type { Metadata } from 'next';
 import HomeClient from '@/components/HomeClient';
 import { SITE_URL } from '@/lib/site';
+
+// The root layout's relative `canonical: './'` resolves to /index on the home
+// route, which pointed Google at an alias of this page instead of the origin.
+// Every other route sets its own canonical, so pin this one absolutely.
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 // WebSite markup drives Google's "site name" display in search results
 // (proper-case "RaceMap" instead of the bare domain); Organization + logo

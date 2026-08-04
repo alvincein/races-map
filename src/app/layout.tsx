@@ -27,10 +27,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "./",
   },
+  // Google only accepts a favicon that is square and a multiple of 48px, so
+  // these are padded squares — distinct from the logo-* assets, which keep the
+  // mark's natural aspect ratio for in-app and OG use.
   icons: {
-    icon: "/logo-192.png",
-    shortcut: "/logo-192.png",
-    apple: "/logo-512.png",
+    icon: "/icon-192.png",
+    shortcut: "/icon-192.png",
+    apple: "/icon-512.png",
   },
   appleWebApp: {
     capable: true,
