@@ -172,10 +172,18 @@ export default function Sidebar({
         ) : (
           <div key="list" className="animation-fade-in">
             {onToggleDirectory && (
-              <button className="explore-row" onClick={onToggleDirectory}>
+              <a
+                href="/agones"
+                className="explore-row"
+                onClick={(e) => {
+                  if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+                  e.preventDefault();
+                  onToggleDirectory();
+                }}
+              >
                 <Compass size={16} />
                 <span>Εξερεύνηση αγώνων</span>
-              </button>
+              </a>
             )}
             {hubHeader && (
               <div className="hub-panel-header">

@@ -413,14 +413,22 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
         <span className="main-brand-title">RaceMap</span>
       </div>
 
-      <button
+      {/* A real href, not a button: this is the only link out of the SSR'd
+          homepage, so crawlers reach the hub tree (and every race) through it.
+          The click is still handled client-side, so the map never reloads. */}
+      <a
+        href="/agones"
         className={`explore-toggle glass-panel no-shimmer ${showDirectory ? 'active' : ''}`}
-        onClick={handleToggleDirectory}
+        onClick={(e) => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+          e.preventDefault();
+          handleToggleDirectory();
+        }}
         title="Εξερεύνηση αγώνων ανά πόλη, βουνό, μήνα και απόσταση"
       >
         <Compass size={18} />
         <span>Εξερεύνηση</span>
-      </button>
+      </a>
 
       <MapClient
         races={filteredByControls}
