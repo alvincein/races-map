@@ -78,10 +78,11 @@ function pushStateBypassingNext(state: any, title: string, url: string) {
 }
 
 interface HomeClientProps {
-  // The full race list is normally loaded client-side from the cached
-  // /api/races endpoint. `initialRaces` is optional for callers that already
-  // have the list; race detail pages instead pass just `initialSelectedRace`
-  // so the detail panel renders immediately while the map data loads.
+  // The full race list is always loaded client-side from the cached /api/races
+  // endpoint. `initialRaces` is an optional partial seed so the sidebar list is
+  // server-rendered — real race links and text in the initial HTML, for SEO —
+  // and is replaced by the full set on hydration. Race detail pages instead
+  // pass just `initialSelectedRace` so the detail panel renders immediately.
   initialRaces?: RaceWithSubRaces[];
   initialSelectedRaceId?: string;
   initialSelectedRace?: RaceWithSubRaces;
@@ -192,14 +193,13 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
 
 
   // Load the full race list from the edge-cached /api/races endpoint. This keeps
-  // the ~1,000-race payload out of every statically generated page: the home
-  // page ships an empty shell and race detail pages ship only their own race,
-  // then the map data streams in from the CDN here. Skipped when a caller
-  // already provided the full list via `initialRaces` — except on hub pages,
-  // where `initialRaces` holds only the hub's races and the full list is still
-  // needed so "Όλοι οι αγώνες" can exit the hub instantly.
+  // the ~1,000-race payload out of every statically generated page: pages ship
+  // only the slice they need for their initial HTML, then the map data streams
+  // in from the CDN here and replaces it. Every caller's `initialRaces` is a
+  // partial seed (the home page's next few races, a hub's own races), so this
+  // always runs — the full set is needed for the map, the filters, and for
+  // "Όλοι οι αγώνες" to exit a hub instantly.
   useEffect(() => {
-    if (initialRaces && initialRaces.length > 0 && !initialHub) return;
     let cancelled = false;
     setIsListRefreshing(true);
     fetch('/api/races')

@@ -1,6 +1,22 @@
 import type { Metadata } from 'next';
 import HomeClient from '@/components/HomeClient';
 import { SITE_URL } from '@/lib/site';
+import { supabase } from '@/lib/supabase';
+import { fetchRacesCached, toRaceListItem } from '@/lib/races';
+import { raceDate } from '@/lib/relatedRaces';
+import { athensToday } from '@/lib/hubs';
+
+// Daily refresh keeps the server-rendered "upcoming" list honest as dates roll
+// past, the same reason the hub pages use it. One ISR write a day for one route.
+// The scraper's /api/revalidate hook still refreshes immediately on data change.
+export const revalidate = 86400;
+
+// How many upcoming races to server-render into the sidebar list. The home page
+// is the site's highest-authority page but shipped an empty map shell: a single
+// outbound link and no indexable text, which is what left the race pages
+// stranded in "Discovered - currently not indexed". Keep this modest — each
+// race adds its slim payload to the HTML twice (markup + RSC).
+const SSR_RACE_COUNT = 24;
 
 // The root layout's relative `canonical: './'` resolves to /index on the home
 // route, which pointed Google at an alias of this page instead of the origin.
@@ -34,10 +50,21 @@ const homeJsonLd = {
   ],
 };
 
-// Static shell. The race list is loaded client-side from the edge-cached
-// /api/races endpoint, so this page carries no per-request data cost and never
-// needs time-based revalidation.
-export default function Home() {
+export default async function Home() {
+  // Next SSR_RACE_COUNT races by date, so the initial HTML carries real
+  // /race/ links. The client replaces this with the full set from the
+  // edge-cached /api/races on hydration.
+  const races = await fetchRacesCached(supabase);
+  const today = athensToday();
+  const upcoming = races
+    .filter((r) => {
+      const d = raceDate(r);
+      return !!d && d.slice(0, 10) >= today;
+    })
+    .sort((a, b) => (raceDate(a) ?? '').localeCompare(raceDate(b) ?? ''))
+    .slice(0, SSR_RACE_COUNT)
+    .map(toRaceListItem);
+
   return (
     <>
       <script
@@ -51,7 +78,7 @@ export default function Home() {
       <h1 className="sr-only">
         Αγώνες Δρόμου & Trail στην Ελλάδα – Διαδραστικός Χάρτης Αγώνων
       </h1>
-      <HomeClient />
+      <HomeClient initialRaces={upcoming} />
     </>
   );
 }
