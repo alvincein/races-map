@@ -109,22 +109,11 @@ export const RaceCard = React.memo(function RaceCard({
             />
           </div>
         )}
-        {/* Real anchor for crawlability + open-in-new-tab; plain clicks keep
-            the in-map selection behavior via the card's onClick. */}
-        <h3>
-          <a
-            href={`/race/${getRaceSlug(race)}`}
-            onClick={(e) => {
-              if (e.metaKey || e.ctrlKey || e.shiftKey) {
-                e.stopPropagation();
-                return;
-              }
-              e.preventDefault();
-            }}
-          >
-            {race.event_name}
-          </a>
-        </h3>
+        {/* No anchor here: the whole card is already one, pointing at the same
+            URL. Nesting a second <a> is invalid HTML — the parser implicitly
+            closes the outer anchor, so crawlers saw different markup than we
+            wrote and React threw a hydration error on every render. */}
+        <h3>{race.event_name}</h3>
       </div>
       <div className="race-location">
         <MapPin size={14} />
