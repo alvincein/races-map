@@ -5,9 +5,17 @@ import { getRaceSlug } from '@/lib/slugs';
 import { SITE_URL } from '@/lib/site';
 import { getActiveHubs, athensToday, hubPath } from '@/lib/hubs';
 
-// Cache indefinitely; refreshed on-demand via /api/revalidate when races are
-// imported or updated (which calls revalidatePath('/sitemap.xml')).
-export const revalidate = false;
+// Refreshed on-demand via /api/revalidate when races are imported or updated
+// (which calls revalidatePath('/sitemap.xml')), plus a daily floor.
+//
+// The floor is not redundant with the on-demand hook. The hub URLs below come
+// from getActiveHubs(races, athensToday()), whose gating is calendar-dependent,
+// so the correct sitemap changes as days pass even when no race data does. It is
+// also a safety net: this was `false`, and when the scraper stopped calling
+// /api/revalidate the sitemap silently froze for a week (2026-07-28 → 08-05)
+// while ~26 new races sat in the database with no pages. One ISR write a day for
+// one route — the free-tier problem was 500+ race pages on a short timer.
+export const revalidate = 86400;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
