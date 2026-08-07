@@ -29,11 +29,14 @@ export const metadata: Metadata = {
   },
   // Google only accepts a favicon that is square and a multiple of 48px, so
   // these are padded squares — distinct from the logo-* assets, which keep the
-  // mark's natural aspect ratio for in-app and OG use.
+  // mark's natural aspect ratio for in-app and OG use. The dark #121214 tile is
+  // baked into the files: SERPs render favicons on white, where the mark's
+  // white pin is invisible. apple-icon is full-bleed because iOS applies its
+  // own corner mask; the rounded tile is for everything else.
   icons: {
     icon: "/icon-192.png",
     shortcut: "/icon-192.png",
-    apple: "/icon-512.png",
+    apple: "/apple-icon.png",
   },
   appleWebApp: {
     capable: true,
