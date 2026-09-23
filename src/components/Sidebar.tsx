@@ -30,6 +30,7 @@ interface SidebarProps {
   onReportRace: (raceId: string, raceName: string) => void;
   onRaceHover?: (raceId: string | null) => void;
   relatedRaces?: RelatedRaceLink[];
+  otherEditions?: RelatedRaceLink[];
   hubLinks?: { href: string; label: string }[];
   // Hub landing pages: header (title/count/intro) shown above the race list,
   // with an exit button that clears the hub scope.
@@ -65,6 +66,7 @@ export default function Sidebar({
   onReportRace,
   onRaceHover,
   relatedRaces,
+  otherEditions,
   hubLinks,
   hubHeader,
   onExitHub,
@@ -130,6 +132,7 @@ export default function Sidebar({
               isFavorite={isFavorite}
               onReportRace={onReportRace}
               relatedRaces={relatedRaces}
+              otherEditions={otherEditions}
               hubLinks={hubLinks}
             />
           </div>

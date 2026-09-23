@@ -3,7 +3,8 @@ import HomeClient from '@/components/HomeClient';
 import { fetchRacesCached } from '@/lib/races';
 import { getRaceSlug } from '@/lib/slugs';
 import { getRegionLabel } from '@/lib/regions';
-import { computeRelatedRaces } from '@/lib/relatedRaces';
+import { computeRelatedRaces, toRaceLink } from '@/lib/relatedRaces';
+import { findOtherEditions } from '@/lib/editions';
 import { hubLinksForRace } from '@/lib/hubs';
 import { SITE_URL } from '@/lib/site';
 import type { RaceWithSubRaces } from '@/types/database';
@@ -203,10 +204,14 @@ export default async function RacePage({ params }: Props) {
   }
 
   const jsonLd = buildRaceJsonLd(race, getRaceSlug(race));
+  // Other years of this event ("Άλλες χρονιές") — a past race's page links to
+  // the upcoming edition people are actually searching for.
+  const editions = findOtherEditions(race, races);
+  const editionIds = new Set(editions.map((r) => r.id));
   // Server-computed internal links ("Σχετικοί Αγώνες") — crawlable in the
   // static HTML, so race pages link to each other instead of being islands
   // reachable only via the sitemap.
-  const relatedRaces = computeRelatedRaces(race, races);
+  const relatedRaces = computeRelatedRaces(race, races.filter((r) => !editionIds.has(r.id)));
   // Hub links ("Αγώνες κοντά στην Αθήνα", "Μαραθώνιοι…") — crawlable paths
   // from every race page into the /agones landing pages and back.
   const hubLinks = hubLinksForRace(race, races);
@@ -223,6 +228,7 @@ export default async function RacePage({ params }: Props) {
         initialSelectedRace={race}
         initialSelectedRaceId={race.id}
         relatedRaces={relatedRaces}
+        otherEditions={editions.map(toRaceLink)}
         hubLinks={hubLinks}
       />
     </>

@@ -104,9 +104,15 @@ export type UserFeedbackInsert = Database['public']['Tables']['user_feedback']['
 
 // The joined sub-race shape. `id`/`has_gpx`/`distance` are always present
 // (slim client payload); the rest ride along only in build-time fetches that
-// use SUB_RACE_SCHEMA_COLUMNS (race pages, for structured data).
+// use SUB_RACE_SCHEMA_COLUMNS (race pages: structured data and the
+// server-rendered distance cards).
 export type SubRaceJoined = Pick<SubRace, 'id' | 'has_gpx' | 'distance'> &
-  Partial<Pick<SubRace, 'name' | 'date' | 'price' | 'start_time' | 'race_type'>>;
+  Partial<
+    Pick<
+      SubRace,
+      'name' | 'date' | 'price' | 'start_time' | 'race_type' | 'elevation' | 'cut_off_time_hours' | 'category'
+    >
+  >;
 
 export type RaceWithSubRaces = Race & {
   sub_races: SubRaceJoined[];

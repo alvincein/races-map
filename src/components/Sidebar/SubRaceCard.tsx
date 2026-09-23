@@ -33,7 +33,9 @@ export function SubRaceCard({ subRace, routeData, isSelected, onClick }: SubRace
           {subRace.date && (
             <div className="sub-race-date">
               <Calendar size={12} />
-              <span>{new Date(subRace.date).toLocaleDateString('el-GR', { day: 'numeric', month: 'short' })}</span>
+              {/* Date-only values parse as UTC midnight; formatting in UTC keeps
+                  the server-rendered day identical in every visitor timezone. */}
+              <span>{new Date(subRace.date).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', timeZone: 'UTC' })}</span>
             </div>
           )}
         </div>

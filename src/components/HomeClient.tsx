@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Race, RaceWithSubRaces } from '../types/database';
 import { supabase } from '../lib/supabase';
-import { fetchRacesWithSubRaces, fetchRaceById } from '../lib/races';
+import { fetchRacesWithSubRaces, fetchRaceById, toSubRaceRows } from '../lib/races';
 import { getActiveHubs, buildHubDirectory, toActiveHub, type ActiveHub, type HubDirectoryGroup } from '../lib/hubs';
 import { FilterState, DEFAULT_FILTERS } from '../types/filters';
 import { applyFilters } from '../lib/filters';
@@ -89,6 +89,8 @@ interface HomeClientProps {
   // Server-computed "Σχετικοί Αγώνες" links for the initially selected race
   // (race detail pages only) — rendered into the SSR HTML for SEO.
   relatedRaces?: RelatedRaceLink[];
+  // Other years of the initially selected race ("Άλλες χρονιές").
+  otherEditions?: RelatedRaceLink[];
   // Server-computed /agones hub links for the initially selected race.
   hubLinks?: { href: string; label: string }[];
   // Hub landing pages (/agones/[hub]): the map opens filtered to this hub's
@@ -99,7 +101,7 @@ interface HomeClientProps {
   hubDirectory?: HubDirectoryGroup[];
 }
 
-export default function HomeClient({ initialRaces, initialSelectedRaceId, initialSelectedRace, relatedRaces, hubLinks, initialHub, hubDirectory }: HomeClientProps) {
+export default function HomeClient({ initialRaces, initialSelectedRaceId, initialSelectedRace, relatedRaces, otherEditions, hubLinks, initialHub, hubDirectory }: HomeClientProps) {
   const seedRaces = initialRaces ?? (initialSelectedRace ? [initialSelectedRace] : []);
   const [races, setRaces] = useState<RaceWithSubRaces[]>(seedRaces);
   const [selectedRace, setSelectedRace] = useState<RaceWithSubRaces | null>(() => {
@@ -168,6 +170,20 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
 
   const { subRaces, isLoading: isLoadingSubRaces } = useSubRaces(selectedRace?.id ?? null);
   const { routes: fetchedRoutes } = useRouteIndex(subRaces);
+  // Race pages arrive with the race's sub-races already fetched on the server.
+  // The detail panel shows those until the client fetch returns rows for the
+  // same race, so the distances are in the server HTML rather than an empty
+  // "no distances" state. The map keeps waiting for the fetched rows.
+  const seededSubRaces = useMemo(
+    () =>
+      initialSelectedRace && selectedRace?.id === initialSelectedRace.id
+        ? toSubRaceRows(initialSelectedRace)
+        : null,
+    [initialSelectedRace, selectedRace?.id],
+  );
+  const hasFetchedSelectedSubRaces = subRaces.length > 0 && subRaces[0].race_id === selectedRace?.id;
+  const detailSubRaces = seededSubRaces && !hasFetchedSelectedSubRaces ? seededSubRaces : subRaces;
+  const isLoadingDetailSubRaces = isLoadingSubRaces && !seededSubRaces;
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
   // Feedback modal state
@@ -461,9 +477,9 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
         isFiltered={focusedRaces !== null}
         selectedRace={selectedRace}
         selectedSubRaceId={selectedSubRaceId}
-        subRaces={subRaces}
+        subRaces={detailSubRaces}
         fetchedRoutes={fetchedRoutes}
-        isLoadingSubRaces={isLoadingSubRaces}
+        isLoadingSubRaces={isLoadingDetailSubRaces}
         isLoadingRaceDetail={isLoadingRaceDetail}
         onRaceClick={handleRaceSelect}
         onSubRaceClick={handleSubRaceSelect}
@@ -475,6 +491,7 @@ export default function HomeClient({ initialRaces, initialSelectedRaceId, initia
         onReportRace={handleReportRace}
         onRaceHover={handleRaceHover}
         relatedRaces={selectedRace && selectedRace.id === initialSelectedRaceId ? relatedRaces : undefined}
+        otherEditions={selectedRace && selectedRace.id === initialSelectedRaceId ? otherEditions : undefined}
         hubLinks={selectedRace && selectedRace.id === initialSelectedRaceId ? hubLinks : undefined}
         hubHeader={
           activeHub

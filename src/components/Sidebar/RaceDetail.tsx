@@ -11,7 +11,9 @@ import { SubRaceCard } from './SubRaceCard';
 import { getRaceSlug } from '../../lib/slugs';
 import { getRegionLabel } from '../../lib/regions';
 
-const DESCRIPTION_TRUNCATE_LENGTH = 250;
+// Long descriptions are collapsed with CSS, never cut in code: the full text
+// has to be in the HTML for search engines to index it.
+const DESCRIPTION_COLLAPSE_LENGTH = 250;
 
 interface RaceDetailProps {
   race: RaceWithSubRaces;
@@ -26,11 +28,35 @@ interface RaceDetailProps {
   isFavorite: (id: string) => boolean;
   onReportRace: (raceId: string, raceName: string) => void;
   relatedRaces?: RelatedRaceLink[];
+  otherEditions?: RelatedRaceLink[];
   hubLinks?: { href: string; label: string }[];
 }
 
+function RaceLinkList({ links }: { links: RelatedRaceLink[] }) {
+  return (
+    <ul className="related-races-list">
+      {links.map((r) => (
+        <li key={r.slug}>
+          <a href={`/race/${r.slug}`} className="related-race-link">
+            <span className="related-race-name">{r.name}</span>
+            <span className="related-race-meta">
+              {r.date && (
+                <time dateTime={r.date}>
+                  {new Date(r.date).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </time>
+              )}
+              {r.date && r.place ? ' · ' : ''}
+              {r.place}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function RaceDetail({
-  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, isLoadingRaceDetail = false, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace, relatedRaces, hubLinks,
+  race, subRaces, selectedSubRaceId, fetchedRoutes, isLoadingSubRaces, isLoadingRaceDetail = false, onSubRaceClick, onBack, toggleFavorite, isFavorite, onReportRace, relatedRaces, otherEditions, hubLinks,
 }: RaceDetailProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
@@ -61,10 +87,7 @@ export function RaceDetail({
 
   const description =
     race.display_description || race.description_en || 'Δεν υπάρχουν διαθέσιμες πληροφορίες για αυτή την εκδήλωση.';
-  const isLong = description.length > DESCRIPTION_TRUNCATE_LENGTH;
-  const displayedDescription = isDescriptionExpanded || !isLong
-    ? description
-    : description.substring(0, DESCRIPTION_TRUNCATE_LENGTH) + '...';
+  const isLong = description.length > DESCRIPTION_COLLAPSE_LENGTH;
 
   const firstDate = race.dates && race.dates.length > 0 ? race.dates[0] : null;
   const isDetailLoading = isLoadingRaceDetail || !('display_description' in race);
@@ -190,7 +213,7 @@ export function RaceDetail({
             </div>
           ) : (
             <div className="full-description">
-              <p>{displayedDescription}</p>
+              <p className={isLong && !isDescriptionExpanded ? 'description-collapsed' : undefined}>{description}</p>
               {isLong && (
                 <button
                   className="text-toggle-btn"
@@ -226,27 +249,17 @@ export function RaceDetail({
           )}
         </div>
 
+        {otherEditions && otherEditions.length > 0 && (
+          <div className="detail-section">
+            <h3>Άλλες χρονιές</h3>
+            <RaceLinkList links={otherEditions} />
+          </div>
+        )}
+
         {relatedRaces && relatedRaces.length > 0 && (
           <div className="detail-section">
             <h3>Σχετικοί Αγώνες</h3>
-            <ul className="related-races-list">
-              {relatedRaces.map((r) => (
-                <li key={r.slug}>
-                  <a href={`/race/${r.slug}`} className="related-race-link">
-                    <span className="related-race-name">{r.name}</span>
-                    <span className="related-race-meta">
-                      {r.date && (
-                        <time dateTime={r.date}>
-                          {new Date(r.date).toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </time>
-                      )}
-                      {r.date && r.place ? ' · ' : ''}
-                      {r.place}
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <RaceLinkList links={relatedRaces} />
           </div>
         )}
 

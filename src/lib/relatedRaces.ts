@@ -23,6 +23,15 @@ export function raceDate(race: RaceWithSubRaces): string | null {
   return race.start_date || (race.dates && race.dates[0]) || null;
 }
 
+export function toRaceLink(r: RaceWithSubRaces): RelatedRaceLink {
+  return {
+    slug: getRaceSlug(r),
+    name: r.event_name,
+    date: raceDate(r),
+    place: r.location_place || r.location_city || null,
+  };
+}
+
 /**
  * Picks related races for a race detail page: up to half from the same region
  * (closest in the calendar to this race's own date) and the rest by geographic
@@ -76,10 +85,5 @@ export function computeRelatedRaces(
     take(candidates.sort(byCalendarProximity), limit - picked.length);
   }
 
-  return picked.map((r) => ({
-    slug: getRaceSlug(r),
-    name: r.event_name,
-    date: raceDate(r),
-    place: r.location_place || r.location_city || null,
-  }));
+  return picked.map(toRaceLink);
 }

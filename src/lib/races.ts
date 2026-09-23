@@ -11,6 +11,9 @@ interface SubRaceJoin {
   price?: number | null;
   start_time?: string | null;
   race_type?: string | null;
+  elevation?: number | null;
+  cut_off_time_hours?: number | null;
+  category?: string | null;
 }
 
 // Sub-race columns for the slim client payload (/api/races) — just enough for
@@ -18,9 +21,10 @@ interface SubRaceJoin {
 const SUB_RACE_LIST_COLUMNS = 'id, has_gpx, distance';
 
 // Wider sub-race columns used at build time for race detail pages, where the
-// extra fields feed SportsEvent structured data (subEvent names, dates, offers).
+// extra fields feed SportsEvent structured data (subEvent names, dates, offers)
+// and the server-rendered distance cards (elevation, cut-off, category).
 export const SUB_RACE_SCHEMA_COLUMNS =
-  'id, has_gpx, distance, name, date, price, start_time, race_type';
+  'id, has_gpx, distance, name, date, price, start_time, race_type, elevation, cut_off_time_hours, category';
 
 interface RawRaceRow {
   id: string;
@@ -109,6 +113,43 @@ export function fetchRaceListItems(
   supabase: SupabaseClient<Database>,
 ): Promise<RaceWithSubRaces[]> {
   return fetchRacesWithSubRaces(supabase, RACE_LIST_COLUMNS);
+}
+
+/**
+ * Races for the sitemap: the slim list columns (enough to resolve the same hub
+ * set as the hub pages) plus the dates and timestamps behind <lastmod>.
+ */
+export function fetchSitemapRaces(
+  supabase: SupabaseClient<Database>,
+): Promise<RaceWithSubRaces[]> {
+  return fetchRacesWithSubRaces(
+    supabase,
+    `${RACE_LIST_COLUMNS}, start_date, end_date, updated_at, created_at`,
+  );
+}
+
+/**
+ * A race's joined sub-races as full `SubRace` rows (absent columns null), so
+ * server-fetched sub-races can render through the same components as rows
+ * fetched client-side with `select('*')`.
+ */
+export function toSubRaceRows(race: RaceWithSubRaces): SubRace[] {
+  return race.sub_races.map((s) => ({
+    id: s.id,
+    race_id: race.id,
+    has_gpx: s.has_gpx,
+    distance: s.distance,
+    name: s.name ?? null,
+    date: s.date ?? null,
+    price: s.price ?? null,
+    start_time: s.start_time ?? null,
+    race_type: s.race_type ?? null,
+    elevation: s.elevation ?? null,
+    cut_off_time_hours: s.cut_off_time_hours ?? null,
+    category: s.category ?? null,
+    created_at: null,
+    aid_stations: null,
+  }));
 }
 
 /**
