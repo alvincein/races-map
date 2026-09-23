@@ -60,12 +60,13 @@ Inject a JSON-LD script tag in the race page representing a `SportsEvent`.
 />
 ```
 
-## 4. Crawlability (`sitemap.ts` & `robots.txt`)
+## 4. Crawlability (sitemap & `robots.txt`)
 Search engines need a roadmap to find all your race pages.
 
 ### Implementation:
-- **`app/sitemap.ts`**: Use Next.js dynamic sitemap generation. Fetch all race IDs from Supabase and return an array of URLs (`https://yourdomain.com/race/1`, `https://yourdomain.com/race/2`, etc.) with their `lastModified` dates.
-- **`app/robots.txt.ts`**: Allow crawling for all endpoints and point directly to your generated sitemap.
+- **`app/sitemap.xml/route.ts`** (logic in `lib/sitemap.ts`): home, `/agones`, the active hubs, and every race that hasn't run yet. Past races keep their pages but are left out, so a small crawl budget goes to the races people search for. `<lastmod>` comes from the data (race edits, and races dropping out of a listing), never "now". It's a CDN-cached route handler rather than the `sitemap.ts` convention — see Gotchas.
+- **`app/robots.ts`**: Allow crawling for all endpoints and point directly to the sitemap.
+- **Race-page HTML carries the content, not just the client:** distances render on the server, and the full description is collapsed with CSS, never cut in code. Past editions link to other years of the same race (`lib/editions.ts`).
 
 ## 5. Semantic HTML & On-Page SEO
 Ensure the content within the sidebar is semantically structured, even though it's part of a complex interactive UI.

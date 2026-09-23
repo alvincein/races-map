@@ -360,6 +360,14 @@ If a date string like `"2026-04-01"` is parsed by `new Date()`, the result is in
 
 ---
 
+## The sitemap must not be an ISR route
+
+As `app/sitemap.ts` with `revalidate = 86400`, the sitemap **never refreshed on Vercel**: neither the timer nor `revalidatePath('/sitemap.xml')` replaced the build-time copy, even while the same `/api/revalidate` call refreshed `/`, the hubs and `/api/races`. It only changed on deploys, and sat frozen for five weeks (2026-08-17 → 09-23) with dozens of new races missing. The cause inside Vercel's handling of metadata-route prerenders wasn't identified.
+
+It is now a plain route handler, [sitemap.xml/route.ts](src/app/sitemap.xml/route.ts), rendered per request and cached by the CDN through `Cache-Control: s-maxage`. Each render prints `<!-- generated … -->` at the top, so staleness is visible with one `curl`. Keep it that way; don't move it back to the `sitemap.ts` convention.
+
+---
+
 ## ESLint not run on build
 
 [package.json:5-10](package.json:5):

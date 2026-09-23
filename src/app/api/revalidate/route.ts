@@ -13,28 +13,27 @@ import { getRaceSlug } from '@/lib/slugs';
 //                    or { "slugs": ["athens-marathon-2026-1c6eda51", ...] }
 //
 // Always refreshes the shared map data (/api/races), the home page, and the
-// sitemap — that covers newly added races. Pass the `ids` of races whose own
+// hub pages — that covers newly added races. Pass the `ids` of races whose own
 // details changed to also refresh their individual detail pages; the slug is
 // resolved server-side so callers don't need to reproduce the slug logic.
+// The sitemap is not ISR and refreshes on its own CDN timer.
+
 // Surfaces that depend on the whole race set — or on the calendar: the home
-// race list, the month-hub gating, and the sitemap's hub section all change as
-// days pass even when no race data does.
+// race list and the month-hub gating change as days pass even when no race
+// data does.
 function revalidateSharedSurfaces(): string[] {
   revalidatePath('/api/races');
   revalidatePath('/');
-  revalidatePath('/sitemap.xml');
   // Hub landing pages (/agones/*) list many races each — refresh them all.
   revalidatePath('/agones');
   revalidatePath('/agones/[hub]', 'page');
-  return ['/api/races', '/', '/sitemap.xml', '/agones', '/agones/[hub]'];
+  return ['/api/races', '/', '/agones', '/agones/[hub]'];
 }
 
-// Daily freshness floor, called by Vercel Cron (see vercel.json). Needed
-// because the `export const revalidate` timers on these routes are not
-// enforced by Vercel's edge cache (entries observed served as fresh HITs days
-// past expiry), and the scraper's POST is a single point of failure. Vercel
-// sends `Authorization: Bearer ${CRON_SECRET}` with cron requests once that
-// env var is set; without the env var this fails closed.
+// Daily freshness floor, called by Vercel Cron (see vercel.json), so the
+// calendar-dependent pages refresh even on nights the scraper's POST doesn't
+// arrive. Vercel sends `Authorization: Bearer ${CRON_SECRET}` with cron
+// requests once that env var is set; without the env var this fails closed.
 export async function GET(request: NextRequest) {
   const auth = request.headers.get('authorization');
   if (!process.env.CRON_SECRET || auth !== `Bearer ${process.env.CRON_SECRET}`) {

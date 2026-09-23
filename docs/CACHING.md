@@ -13,13 +13,13 @@ This document details the caching and data-refresh mechanisms implemented across
 
 ---
 
-## 2. Page-level Cache (Incremental Static Regeneration - ISR)
-* **Description:** Pre-renders and caches entire pages on the server, serving them statically until the revalidation time passes.
+## 2. Page-level Cache (ISR) and CDN
+* **Description:** Pages are prerendered and served from Vercel's cache; they refresh on demand through `/api/revalidate`, which the race-scraper calls after each nightly import (`POST`, `REVALIDATE_SECRET`) and Vercel Cron calls daily at 03:30 UTC (`GET`, `CRON_SECRET`, see `vercel.json`).
 * **Implementation:**
-  * **Main Page:** `export const revalidate = 1800;` in [page.tsx](file:///Users/theo/Documents/Projects/races-map/src/app/page.tsx#L6).
-  * **Race Detail Page:** `export const revalidate = 1800;` in [page.tsx](file:///Users/theo/Documents/Projects/races-map/src/app/race/%5Bslug%5D/page.tsx#L8).
-  * **Sitemap XML:** `export const revalidate = 1800;` in [sitemap.ts](file:///Users/theo/Documents/Projects/races-map/src/app/sitemap.ts#L6).
-* **Duration:** **30 minutes** (1800 seconds).
+  * **Race detail pages:** `revalidate = false` in [page.tsx](src/app/race/[slug]/page.tsx) — refreshed only when the scraper passes the race's id. Timed revalidation across ~600 pages blew through the free-tier ISR write quota before.
+  * **Home, `/agones`, `/agones/[hub]`:** `revalidate = 86400`, and refreshed on every `/api/revalidate` call (their race lists and month gating depend on the calendar).
+  * **`/api/races`:** `force-static` + `revalidate = false`, refreshed on every `/api/revalidate` call.
+  * **Sitemap:** **not ISR.** [sitemap.xml/route.ts](src/app/sitemap.xml/route.ts) renders per request and Vercel's CDN caches it for an hour (`s-maxage=3600, stale-while-revalidate=86400`). See the Gotchas entry on why it can't be ISR.
 * **Bypass Shortcut:** A client-side key event handler listens for `Ctrl/Cmd + Shift + R` to fetch live data directly from the Supabase client, bypassing the cached ISR page context (see [HomeClient.tsx](file:///Users/theo/Documents/Projects/races-map/src/components/HomeClient.tsx#L123-L137)).
 
 ---
