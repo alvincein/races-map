@@ -3,6 +3,8 @@ import { revalidatePath } from 'next/cache';
 import { supabase } from '@/lib/supabase';
 import { fetchRaceById } from '@/lib/races';
 import { getRaceSlug } from '@/lib/slugs';
+import { submitToIndexNow } from '@/lib/indexnow';
+import { SITE_URL } from '@/lib/site';
 
 // On-demand revalidation hook. Call this from the import/scrape pipeline after
 // races are added or updated so cached content refreshes immediately instead of
@@ -16,6 +18,7 @@ import { getRaceSlug } from '@/lib/slugs';
 // hub pages — that covers newly added races. Pass the `ids` of races whose own
 // details changed to also refresh their individual detail pages; the slug is
 // resolved server-side so callers don't need to reproduce the slug logic.
+// Those race pages, plus the home page, are also submitted to IndexNow.
 // The sitemap is not ISR and refreshes on its own CDN timer.
 
 // Surfaces that depend on the whole race set — or on the calendar: the home
@@ -71,10 +74,16 @@ export async function POST(request: NextRequest) {
   }
 
   // Refresh individual race detail pages (deduped).
-  for (const slug of Array.from(new Set(slugs))) {
+  const raceSlugs = Array.from(new Set(slugs));
+  for (const slug of raceSlugs) {
     revalidatePath(`/race/${slug}`);
     revalidated.push(`/race/${slug}`);
   }
 
-  return NextResponse.json({ revalidated });
+  const indexNow =
+    raceSlugs.length > 0
+      ? await submitToIndexNow([`${SITE_URL}/`, ...raceSlugs.map((s) => `${SITE_URL}/race/${s}`)])
+      : { submitted: 0, status: null };
+
+  return NextResponse.json({ revalidated, indexNow });
 }

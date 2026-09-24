@@ -66,6 +66,7 @@ Search engines need a roadmap to find all your race pages.
 ### Implementation:
 - **`app/sitemap.xml/route.ts`** (logic in `lib/sitemap.ts`): home, `/agones`, the active hubs, and every race that hasn't run yet. Past races keep their pages but are left out, so a small crawl budget goes to the races people search for. `<lastmod>` comes from the data (race edits, and races dropping out of a listing), never "now". It's a CDN-cached route handler rather than the `sitemap.ts` convention — see Gotchas.
 - **`app/robots.ts`**: Allow crawling for all endpoints and point directly to the sitemap.
+- **IndexNow** (`lib/indexnow.ts`): when the scraper's `POST /api/revalidate` names races, their pages and the home page are submitted to IndexNow — Bing, Yandex, Seznam, Naver, Yep; **not Google**. The key is public by design in `public/<key>.txt`; a test keeps it in sync with `INDEXNOW_KEY`.
 - **Race-page HTML carries the content, not just the client:** distances render on the server, and the full description is collapsed with CSS, never cut in code. Past editions link to other years of the same race (`lib/editions.ts`).
 
 ## 5. Semantic HTML & On-Page SEO
